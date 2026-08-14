@@ -50,5 +50,76 @@
       "wellmanifest/env-dsl",
       "wellmanifest/poa"
     ]
+  },
+  "delivery": {
+    "acceptedBaseSha": "f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14",
+    "targetBranch": "main",
+    "outcome": "Publish a self-contained Policy DSL v1 contract with typed Policy IR, constrained LLM generation, deterministic standalone and CONTRIBUTING.md conformance, and immutable Wellmanifest composition metadata",
+    "nonGoals": [
+      "Execute policy actions or shell commands",
+      "Grant authority from a policy document or model output",
+      "Implement a daemon or remote service",
+      "Modify sibling repositories in this ticket"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 15,
+      "maxAffectedComponents": 5,
+      "maxPublicInterfaceChanges": 3,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Make Policy DSL text the canonical inert representation, compile every condition/action into closed typed Policy IR, constrain LLM output to a safe proposal subset, and leave authority/effects to POA-controlled consumers.",
+      "components": [
+        {"name": "normative-language", "paths": ["spec/**"]},
+        {"name": "policy-ir", "paths": ["schemas/**"]},
+        {"name": "reference-conformance", "paths": ["tests/**"]},
+        {"name": "fixtures-and-guidance", "paths": ["examples/**", "docs/**"]},
+        {"name": "dsl-publication", "paths": ["dsl-manifest.json"]}
+      ],
+      "responsibilityChanges": true,
+      "interfaceChanges": [
+        "Publish Policy DSL v1 EBNF and stable diagnostic codes",
+        "Publish closed wellmanifest.policy/ir/v1 JSON Schema",
+        "Publish constrained policy candidate GBNF and deterministic CONTRIBUTING.md validation for propose-only policy data"
+      ],
+      "dataChanges": [
+        "Normalize rule conditions and actions into typed expression/sequence AST nodes",
+        "Separate native Policy DSL version from consuming document profile versions",
+        "Represent legacy environment declarations as compatibility bindings rather than Env DSL semantics"
+      ],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Before publication revert the implementation commit; after publication preserve v1 and issue a compatible successor."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-05",
+        "commands": ["python3 tests/policy_dsl_check.py validate examples/valid/contributing.policy"],
+        "evidence": "project/ticket-001/ai-codex-logs.txt"
+      },
+      {
+        "criterion": "AC-07",
+        "commands": ["python3 tests/policy_dsl_check.py ir examples/valid/contributing.policy --check-schema"],
+        "evidence": "project/ticket-001/ai-codex-logs.txt"
+      },
+      {
+        "criterion": "AC-08",
+        "commands": ["python3 -m unittest discover -s tests -p 'test_*.py'", "python3 tests/policy_dsl_check.py self-test"],
+        "evidence": "project/ticket-001/ai-codex-logs.txt"
+      },
+      {
+        "criterion": "AC-09",
+        "commands": ["python3 ../dsl/src/dsl_check.py validate dsl-manifest.json", "python3 ../dsl/src/dsl_check.py standards dsl-manifest.json", "./project/governance-check.sh --actor agent"],
+        "evidence": "project/ticket-001/ai-codex-logs.txt"
+      },
+      {
+        "criterion": "AC-10",
+        "commands": ["python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md"],
+        "evidence": "project/ticket-001/ai-codex-logs.txt"
+      }
+    ]
   }
 }

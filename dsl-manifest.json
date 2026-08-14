@@ -1,0 +1,231 @@
+{
+  "$schema": "https://raw.githubusercontent.com/wellmanifest/dsl/b7d0595c95e5abbb48ebfdbdae0bc6d43c6f82f4/schemas/dsl-manifest.schema.json",
+  "schema": "wellmanifest.dsl/manifest/v1",
+  "id": "wellmanifest.policy",
+  "name": "Wellmanifest Policy DSL",
+  "version": "0.1.0-dev",
+  "status": "experimental",
+  "purpose": "Portable inert repository and process policy with fully typed conditions and actions",
+  "domain": "policy-as-code",
+  "owners": [
+    {
+      "kind": "repository",
+      "id": "github:wellmanifest/policy-dsl",
+      "responsibilities": ["semantics", "validation", "compatibility", "runtime", "security"]
+    }
+  ],
+  "source": {
+    "repository": "https://github.com/wellmanifest/policy-dsl",
+    "path": "spec/policy-dsl.ebnf",
+    "declaredVersion": "1",
+    "canonical": "text",
+    "mediaType": "application/vnd.wellmanifest.policy",
+    "selectors": ["fenced-code:dsl"]
+  },
+  "ownedPaths": [
+    "dsl-manifest.json",
+    "spec/**",
+    "schemas/**",
+    "examples/**",
+    "tests/**",
+    "docs/**"
+  ],
+  "artifacts": [
+    {
+      "path": "spec/POLICY_DSL.md",
+      "role": "normative-source",
+      "digest": "sha256:4d7da4b9ded58e9fa24eec76375f752ad6ae1712c49dd466480ce10fb0f04ba6"
+    },
+    {
+      "path": "spec/policy-dsl.ebnf",
+      "role": "normative-source",
+      "digest": "sha256:78423cac9bd9172006fd292feeb68bacd4586ae5ebf89299e2c05a58643bc982"
+    },
+    {
+      "path": "spec/policy-dsl-candidate.v1.gbnf",
+      "role": "grammar",
+      "digest": "sha256:ca24f970beb0f17c082e7b146ac6b47e7effba22baa0076f1ad7b4424a23770d"
+    },
+    {
+      "path": "schemas/policy-ir.schema.json",
+      "role": "schema",
+      "digest": "sha256:b80d6ed236111dbeddfa0ecb277816e254436c9bf54c9b00e433019abf7dc607"
+    },
+    {
+      "path": "tests/policy_dsl_check.py",
+      "role": "parser-contract",
+      "digest": "sha256:1ebed8ada3f687bf82de235b352ec1ce94b606887ad2a1657d66bd58f04314e8"
+    },
+    {
+      "path": "tests/test_policy_dsl.py",
+      "role": "parser-contract",
+      "digest": "sha256:854eff27987b9786a8e1470d072244a0740e6eb5fe2ef8e398108b5b93476afe"
+    },
+    {
+      "path": "examples/valid/contributing.policy",
+      "role": "example",
+      "digest": "sha256:1e786a6a7ee47a51e26928f928b0dafc087466cee351a6e5142f528fb9173620"
+    },
+    {
+      "path": "examples/valid/CONTRIBUTING.md",
+      "role": "example",
+      "digest": "sha256:0e77dc9725cfda5073d82d3ffc32492c40448cd0c45ed7716834965f0437e69a"
+    },
+    {
+      "path": "examples/invalid/shell-injection.policy",
+      "role": "example",
+      "digest": "sha256:69621c56264b4f1c66237cfca73a41b17c31f8b9659b736d9b29d880a790274d"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "role": "documentation",
+      "digest": "sha256:fdb6b3d9664998f73c713e4aad95c76b10d953c93a68faf98d23a6b72b61036a"
+    },
+    {
+      "path": "docs/LOGIC_FLOW.md",
+      "role": "documentation",
+      "digest": "sha256:b986403201fb3094af58ffc9bbc1b690265f94c4d69804747da81f9cdd2ea6f9"
+    },
+    {
+      "path": "docs/ERROR/POLICY-SYNTAX-001.md",
+      "role": "documentation",
+      "digest": "sha256:c5eee1208d42e185c4e09c50d076a32edf8a260410d1bdf59a78aba3fafa0995"
+    },
+    {
+      "path": "docs/ERROR/POLICY-SEMANTIC-001.md",
+      "role": "documentation",
+      "digest": "sha256:380ad7cc0d1ab8b8c5d5bb03d59fc3b183537f342968df0c4cb327f88328d263"
+    },
+    {
+      "path": "docs/CRITICAL/POLICY-SECURITY-001.md",
+      "role": "documentation",
+      "digest": "sha256:df05ef29896c7c35606597aa3e7a527de656b06255117d80d98c954cde5829d6"
+    }
+  ],
+  "namespaces": [
+    {"prefix": "policy", "uri": "https://wellmanifest.dev/policy/"}
+  ],
+  "projections": [],
+  "lifecycle": {
+    "compatibility": "semver",
+    "stability": "experimental",
+    "breaking": "major",
+    "additive": "minor",
+    "fix": "patch"
+  },
+  "semantics": {
+    "effectModel": "declarative-policy",
+    "unknownPolicy": "reject",
+    "authoritySchema": null
+  },
+  "llm": {
+    "mode": "output",
+    "requestSchemas": [],
+    "responseSchemas": ["schemas/policy-ir.schema.json"],
+    "naturalLanguage": "forbidden",
+    "sourceSchema": null,
+    "modelAuthority": "propose-only",
+    "strict": true
+  },
+  "documentation": {
+    "vocabularyKind": "documents",
+    "commandRoot": "docs",
+    "errorRoot": "docs/ERROR",
+    "criticalRoot": "docs/CRITICAL",
+    "commands": [],
+    "errorCodes": ["POLICY-SEMANTIC-001", "POLICY-SYNTAX-001"],
+    "criticalCodes": ["POLICY-SECURITY-001"]
+  },
+  "findingPolicy": {
+    "schema": "wellmanifest.dsl/findings/v1",
+    "requiredProducers": ["wellmanifest.policy-dsl-check"],
+    "securityProducers": ["wellmanifest.policy-dsl-check"],
+    "blockingSeverities": ["critical"],
+    "requireEvaluable": true,
+    "blockUnresolvedSecurity": true
+  },
+  "publicationPolicy": {
+    "declaredTier": "review",
+    "deterministic": true,
+    "independentReview": true,
+    "externalAuthority": false,
+    "runtimeIsolation": false
+  },
+  "conformance": {
+    "levels": ["manifest", "contract", "runtime", "llm-boundary"],
+    "commands": [
+      "python3 tests/policy_dsl_check.py validate examples/valid/contributing.policy",
+      "python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md",
+      "python3 tests/policy_dsl_check.py ir examples/valid/contributing.policy --check-schema",
+      "python3 tests/policy_dsl_check.py self-test",
+      "python3 -m unittest discover -s tests -p 'test_*.py'"
+    ],
+    "validExamples": ["examples/valid/contributing.policy", "examples/valid/CONTRIBUTING.md"],
+    "invalidExamples": ["examples/invalid/shell-injection.policy"]
+  },
+  "mappings": [
+    {
+      "standard": "wellmanifest/dsl",
+      "version": "0.1.0-dev",
+      "relation": "implements",
+      "uri": "https://github.com/wellmanifest/dsl"
+    },
+    {
+      "standard": "wellmanifest/env-dsl",
+      "version": "0.1.0-dev",
+      "relation": "compatible-with",
+      "uri": "https://github.com/wellmanifest/env-dsl"
+    },
+    {
+      "standard": "wellmanifest/poa",
+      "version": "0.1.0",
+      "relation": "maps-to",
+      "uri": "https://github.com/wellmanifest/poa"
+    }
+  ],
+  "standardsLock": {
+    "schema": "wellmanifest.standards-lock/v1",
+    "entries": [
+      {
+        "standard": "wellmanifest.dsl",
+        "version": "0.1.0-dev",
+        "repository": "https://github.com/wellmanifest/dsl",
+        "revision": "b7d0595c95e5abbb48ebfdbdae0bc6d43c6f82f4",
+        "contracts": [
+          {
+            "ref": "https://wellmanifest.dev/schemas/dsl-manifest/v1",
+            "digest": "sha256:34d356b76bbd483372df84bb986e15bb84e9c1f8b11b7dc9e3a6c7276c85ed13"
+          }
+        ]
+      },
+      {
+        "standard": "wellmanifest.env",
+        "version": "0.1.0-dev",
+        "repository": "https://github.com/wellmanifest/env-dsl",
+        "revision": "1d5ed6cdb99656850c482cc3f2dd97431daec89d",
+        "contracts": [
+          {
+            "ref": "https://github.com/wellmanifest/env-dsl/blob/1d5ed6cdb99656850c482cc3f2dd97431daec89d/spec/env-dsl.abnf",
+            "digest": "sha256:24e60c97c4729cd528942abf1db3512caef11c3edf121c546e2d55d68407c486"
+          }
+        ]
+      },
+      {
+        "standard": "wellmanifest.poa",
+        "version": "0.1.0",
+        "repository": "https://github.com/wellmanifest/poa",
+        "revision": "8424a7f5c977915ee08404b8b82d63e0f5e44ea2",
+        "contracts": [
+          {
+            "ref": "https://github.com/wellmanifest/poa/blob/8424a7f5c977915ee08404b8b82d63e0f5e44ea2/standard/poa-process.schema.v1.json",
+            "digest": "sha256:9222fbe9aded60df6d3c0b39b7a4a89b8ad627f122349e909fdfba44047669ab"
+          },
+          {
+            "ref": "https://github.com/wellmanifest/poa/blob/8424a7f5c977915ee08404b8b82d63e0f5e44ea2/standard/poa-process.v1.gbnf",
+            "digest": "sha256:d13d736cc3f4e07dd9366378183055ff0d9ad10dd4fc5bf1f322e2dc37d919ee"
+          }
+        ]
+      }
+    ]
+  }
+}

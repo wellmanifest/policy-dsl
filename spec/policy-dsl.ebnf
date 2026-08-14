@@ -1,0 +1,62 @@
+(* Policy DSL 1 canonical grammar. Semantic constraints are normative in
+   POLICY_DSL.md. UTF-8 and LF are required. *)
+
+document       = metadata, { declaration | binding | state | transition | rule } ;
+metadata       = "DOCUMENT", symbol, EOL,
+                 "VERSION", integer, EOL,
+                 [ "LANGUAGE", symbol, EOL ],
+                 "MODE", ("STRICT" | "PROCEDURAL"), EOL,
+                 [ "PURPOSE", string, EOL ],
+                 [ "POLICY", string, EOL ] ;
+
+declaration    = env-file | variable | secret ;
+env-file       = "ENV_FILE", string, ("OPTIONAL" | "REQUIRED"), EOL ;
+variable       = "VARIABLE", symbol, "TYPE", scalar-type, "FROM", "ENV",
+                 ("REQUIRED" | "DEFAULT", literal), EOL ;
+secret         = "SECRET", symbol, "TYPE", scalar-type, "FROM", "ENV",
+                 "REQUIRED", "REDACT", EOL ;
+scalar-type    = "STRING" | "INTEGER" | "NUMBER" | "BOOLEAN" | "URL" | "PATH" ;
+
+binding        = symbol, ("=", expression | "IN", list), EOL ;
+state          = "STATE", symbol, EOL ;
+transition     = "TRANSITION", symbol, "->", symbol,
+                 [ "WHEN", condition ], EOL ;
+
+rule           = "RULE", stable-id, [ "TYPE", rule-type ], EOL,
+                 "WHEN", condition, EOL,
+                 { do | forbid | assert },
+                 [ next ] ;
+rule-type      = "REQUIRED" | "FORBIDDEN" ;
+do             = "DO", action, EOL ;
+forbid         = "FORBID", action, EOL ;
+assert         = "ASSERT", expression, EOL ;
+next           = "NEXT", next-branch, { "OR", next-branch }, EOL ;
+next-branch    = symbol, [ "WHEN", condition ] ;
+
+action         = opcode, [ action-payload ], [ "WHEN", condition ] ;
+action-payload = expression, { expression } ;
+opcode         = symbol ;
+
+condition      = expression, { expression } ;
+
+expression     = or-expression ;
+or-expression = and-expression, { "OR", and-expression } ;
+and-expression = membership-expression, { "AND", membership-expression } ;
+membership-expression = equality-expression, { "IN", equality-expression } ;
+equality-expression = order-expression, { ("=" | "!=") , order-expression } ;
+order-expression = add-expression, { ("<" | "<=" | ">" | ">=") , add-expression } ;
+add-expression = multiply-expression, { ("+" | "-") , multiply-expression } ;
+multiply-expression = unary-expression, { ("*" | "/" | "%") , unary-expression } ;
+unary-expression = { "NOT" | "-" }, primary ;
+primary        = literal | symbol | placeholder | list | group ;
+list           = "[", [ expression, { ",", expression } ], "]" ;
+group          = "(", expression, { [ "," ], expression }, ")" ;
+literal        = string | integer | number | "TRUE" | "FALSE" | "true" | "false" ;
+
+stable-id      = upper, { upper | digit | "-" | "_" } ;
+symbol         = letter, { letter | digit | "_" | "." | ":" | "/" | "-" } ;
+placeholder    = "{", symbol, "}" ;
+integer        = [ "-" ], digit, { digit } ;
+number         = integer, ".", digit, { digit } ;
+string         = '"', { json-character | json-escape }, '"' ;
+EOL            = LF ;

@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/policy/policy-ir.schema.json",
+  "title": "Wellmanifest Policy IR v1",
+  "description": "Closed, inert intermediate representation for Policy DSL v1. Validation never grants execution authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "dialect",
+    "language_version",
+    "document",
+    "environment",
+    "bindings",
+    "rules",
+    "assertions",
+    "states",
+    "transitions"
+  ],
+  "properties": {
+    "schema": {"const": "wellmanifest.policy/ir/v1"},
+    "dialect": {"const": "wellmanifest.policy/v1"},
+    "language_version": {"const": "1"},
+    "document": {"$ref": "#/$defs/document"},
+    "environment": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"$ref": "#/$defs/environmentBinding"}
+    },
+    "bindings": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {"$ref": "#/$defs/binding"}
+    },
+    "rules": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {"$ref": "#/$defs/rule"}
+    },
+    "assertions": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {"$ref": "#/$defs/expression"}
+    },
+    "states": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/symbolName"}
+    },
+    "transitions": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {"$ref": "#/$defs/transition"}
+    }
+  },
+  "$defs": {
+    "symbolName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_.:/-]*$"
+    },
+    "stableId": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160,
+      "pattern": "^[A-Z][A-Z0-9_-]*$"
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "language", "mode", "purpose", "policy"],
+      "properties": {
+        "name": {"$ref": "#/$defs/symbolName"},
+        "version": {"type": "integer", "minimum": 1},
+        "language": {"anyOf": [{"$ref": "#/$defs/symbolName"}, {"type": "null"}]},
+        "mode": {"enum": ["STRICT", "PROCEDURAL"]},
+        "purpose": {"type": ["string", "null"], "maxLength": 1000},
+        "policy": {"type": ["string", "null"], "maxLength": 320}
+      }
+    },
+    "environmentBinding": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "path", "required"],
+          "properties": {
+            "kind": {"const": "env_file"},
+            "path": {"type": "string", "minLength": 1, "maxLength": 320},
+            "required": {"type": "boolean"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "name", "value_type", "required", "default"],
+          "properties": {
+            "kind": {"const": "variable"},
+            "name": {"$ref": "#/$defs/symbolName"},
+            "value_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "URL", "PATH"]},
+            "required": {"type": "boolean"},
+            "default": {"anyOf": [{"$ref": "#/$defs/scalar"}, {"type": "null"}]}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "name", "value_type", "required", "redact"],
+          "properties": {
+            "kind": {"const": "secret"},
+            "name": {"$ref": "#/$defs/symbolName"},
+            "value_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "URL", "PATH"]},
+            "required": {"const": true},
+            "redact": {"const": true}
+          }
+        }
+      ]
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "operator", "value"],
+      "properties": {
+        "name": {"$ref": "#/$defs/symbolName"},
+        "operator": {"enum": ["=", "IN"]},
+        "value": {"$ref": "#/$defs/expression"}
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "condition", "actions", "forbidden", "assertions", "next"],
+      "properties": {
+        "id": {"$ref": "#/$defs/stableId"},
+        "type": {"enum": ["REQUIRED", "FORBIDDEN"]},
+        "condition": {"$ref": "#/$defs/expression"},
+        "actions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}},
+        "forbidden": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}},
+        "assertions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/expression"}},
+        "next": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/nextTarget"}}
+      }
+    },
+    "nextTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "condition"],
+      "properties": {
+        "target": {"$ref": "#/$defs/symbolName"},
+        "condition": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]}
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "opcode", "payload", "guard"],
+      "properties": {
+        "kind": {"const": "action"},
+        "opcode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$", "maxLength": 96},
+        "payload": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]},
+        "guard": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]}
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "condition"],
+      "properties": {
+        "from": {"$ref": "#/$defs/symbolName"},
+        "to": {"$ref": "#/$defs/symbolName"},
+        "condition": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]}
+      }
+    },
+    "scalar": {"type": ["string", "integer", "number", "boolean"]},
+    "expression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "value"],
+          "properties": {
+            "node": {"const": "literal"},
+            "value": {"$ref": "#/$defs/scalar"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "name"],
+          "properties": {
+            "node": {"const": "symbol"},
+            "name": {"type": "string", "minLength": 1, "maxLength": 160, "pattern": "^(?:[A-Za-z_][A-Za-z0-9_.:/-]*|\\{[A-Za-z_][A-Za-z0-9_.:/-]*\\})$"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "operator", "operand"],
+          "properties": {
+            "node": {"const": "unary"},
+            "operator": {"enum": ["NOT", "-"]},
+            "operand": {"$ref": "#/$defs/expression"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "operator", "left", "right"],
+          "properties": {
+            "node": {"const": "binary"},
+            "operator": {"enum": ["OR", "AND", "IN", "=", "!=", "<", "<=", ">", ">=", "+", "-", "*", "/", "%"]},
+            "left": {"$ref": "#/$defs/expression"},
+            "right": {"$ref": "#/$defs/expression"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "items"],
+          "properties": {
+            "node": {"const": "list"},
+            "items": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/expression"}}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "items"],
+          "properties": {
+            "node": {"const": "sequence"},
+            "items": {"type": "array", "minItems": 2, "maxItems": 256, "items": {"$ref": "#/$defs/expression"}}
+          }
+        }
+      ]
+    }
+  }
+}

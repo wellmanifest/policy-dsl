@@ -5,3 +5,20 @@
 - Initial governance scaffold created.
 - No human participant identity or content was generated.
 - Adopted published `new-project` v0.18.0 and bounded the unborn-HEAD seed.
+- Created seed baseline `f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14`
+  and bound ordinary Policy DSL implementation to that exact base.
+- Expanded conformance to canonical Policy DSL fences in `CONTRIBUTING.md` and
+  recorded immutable publication as the prerequisite for adopter tickets.
+- Added Policy DSL v1 EBNF, safe LLM-candidate GBNF and closed Policy IR Schema.
+- Added a dependency-free typed parser, Markdown carrier selector and shared
+  positive/negative conformance tests.
+- Added direct diagnostic pages and a portable Markdown conformance fixture.
+- Bound all artifacts and exact DSL, Env DSL and POA revisions in the manifest.
+- Verified the current `new-project/CONTRIBUTING.md`, artifact digests, manifest
+  and lock conformance, JSON Schema, parser tests and governance gate.
+- Verified that the exact Env DSL revision and contract digest resolve from
+  the public `wellmanifest/env-dsl` repository before Policy DSL publication.
+- Created public pull request #1 and protected `main`; final merge remains
+  blocked until independent exact-head approval exists.
+- Closed the manually validated Policy IR surface so malformed candidate JSON
+  fails with stable semantic diagnostics instead of host-language exceptions.
