@@ -23,3 +23,39 @@ USER_REQUEST="continue policy-dsl dependency and CONTRIBUTING.md runtime validat
 SESSION_EXECUTION_AUTHORIZATION=EXPANDED_TO_PROTECTED_PUBLICATION_AND_ADOPTION
 TICKET_REUSED=ticket-001
 TARGET_ISOLATION="policy-dsl owns standard/runtime; each adopter owns its dependency ticket"
+
+2026-08-14 Policy DSL v1 implementation and validation
+
+$ artifact digest comparison
+ARTIFACT-DIGEST-PASS
+
+$ Draft202012Validator.check_schema + jsonschema.validate
+JSON-SCHEMA-PASS
+
+$ python3 ../dsl/src/dsl_check.py validate dsl-manifest.json
+DSL-PASS: passed (0 errors)
+
+$ python3 ../dsl/src/dsl_check.py standards dsl-manifest.json
+DSL-PASS: passed (0 errors)
+
+$ python3 tests/policy_dsl_check.py self-test
+POLICY-CONFORMANCE-PASS
+
+$ python3 -m unittest discover -s tests -p 'test_*.py'
+......
+Ran 6 tests in 0.005s
+OK
+
+$ python3 tests/policy_dsl_check.py validate examples/valid/contributing.policy
+POLICY-VALIDATION-PASS
+
+$ python3 tests/policy_dsl_check.py validate-markdown ../new-project/CONTRIBUTING.md
+POLICY-MARKDOWN-PASS
+
+$ ./project/governance-check.sh --actor agent
+GOV-PASS: passed (0 errors, 0 warnings)
+
+DOCKER_REQUIRED=false
+IMPLEMENTATION_FILES=11
+RUNTIME_DEPENDENCIES=0
+IMPLEMENTATION_COMMITS=1f3ed97,adad427

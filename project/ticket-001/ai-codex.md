@@ -45,10 +45,23 @@ separate sibling-repository ticket.
   dependency of `new-project` and to validate repositories containing
   `CONTRIBUTING.md`. This ticket now owns the Markdown conformance surface;
   sibling adoption remains isolated in target-owned tickets after publication.
+- Defined Policy DSL v1 EBNF, the safe proposal-only GBNF and the closed Policy
+  IR Schema while keeping `policy-sh@1` as a compatibility alias and document
+  `VERSION 13` as an independent profile revision.
+- Implemented the dependency-free conformance parser. Conditions, actions,
+  assertions, next guards and action guards are recursive typed nodes; no
+  clause is retained as opaque source text and no execution adapter exists.
+- Added a deterministic Markdown selector and verified the complete current
+  `wellmanifest/new-project/CONTRIBUTING.md` carrier while ignoring unrelated
+  Markdown, Bash examples and embedded independent DSL documents.
+- Added shared valid/invalid fixtures, unit/self tests, architecture/flow
+  documentation and an artifact-digest manifest pinned to exact DSL, Env DSL
+  and POA revisions.
 
 ## Blockers
 
-- None inside the recorded intent; proceed without a second confirmation.
+- No implementation blocker. AC-12 remains a publication-boundary task until
+  an immutable remote revision and exact-head trusted review exist.
 - Protected publication is in scope under the continuation request, but its
   exact-head trusted approval remains independent evidence. Destructive action
   and secret access remain outside authority.

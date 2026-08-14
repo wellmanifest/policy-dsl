@@ -3,7 +3,7 @@
 - **ID**: ticket-001
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-14
 
 ## Goal and scope
@@ -25,19 +25,19 @@ commit remains governance-only; ordinary implementation begins from that base.
   root project metadata and this ticket, with no implementation files.
 - [x] AC-04: The resulting commit becomes the accepted base for later,
   ordinary integration implementation.
-- [ ] AC-05: Normative EBNF defines metadata, rules, typed conditions/actions,
+- [x] AC-05: Normative EBNF defines metadata, rules, typed conditions/actions,
   assertions, states and transitions without shell execution.
-- [ ] AC-06: A request/candidate-only GBNF constrains LLM generation and cannot
+- [x] AC-06: A request/candidate-only GBNF constrains LLM generation and cannot
   generate authority, execution envelopes or arbitrary shell commands.
-- [ ] AC-07: A closed JSON Schema defines canonical Policy IR v1.
-- [ ] AC-08: A deterministic reference parser produces typed condition/action
+- [x] AC-07: A closed JSON Schema defines canonical Policy IR v1.
+- [x] AC-08: A deterministic reference parser produces typed condition/action
   AST and shared positive/negative conformance fixtures.
-- [ ] AC-09: A `wellmanifest.dsl/manifest/v1` binds grammar, schema, parser,
+- [x] AC-09: A `wellmanifest.dsl/manifest/v1` binds grammar, schema, parser,
   fixtures and documentation by SHA-256 and pins composed standards.
-- [ ] AC-10: The deterministic runtime validates standalone policy files and
+- [x] AC-10: The deterministic runtime validates standalone policy files and
   canonical Policy DSL fences embedded in `CONTRIBUTING.md` without executing
   actions or interpreting unrelated Markdown and shell examples.
-- [ ] AC-11: Governance, unit, invalid-fixture, manifest, standards-lock,
+- [x] AC-11: Governance, unit, invalid-fixture, manifest, standards-lock,
   secret and exact-diff checks pass with recorded evidence.
 - [ ] AC-12: The reviewed standard can be published at an immutable revision
   for adoption by `new-project` and target-owned repositories.
@@ -59,3 +59,5 @@ commit remains governance-only; ordinary implementation begins from that base.
 - Implementation branch: `ticket/001-policy-dsl-standard`.
 - Complexity: L; at most 11 implementation files, 5 components, 3 public
   interfaces and no runtime dependencies.
+- Implementation commits: `1f3ed97` and `adad427`; exactly 11 implementation
+  files and zero runtime dependencies.
