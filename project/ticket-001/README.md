@@ -62,3 +62,13 @@ commit remains governance-only; ordinary implementation begins from that base.
   interfaces and no runtime dependencies.
 - Implementation commits: `1f3ed97`, `adad427` and `09b5500`; exactly 15
   implementation files and zero runtime dependencies.
+
+## Publication state
+
+- Public repository: <https://github.com/wellmanifest/policy-dsl>.
+- Pull request: <https://github.com/wellmanifest/policy-dsl/pull/1>.
+- `main` requires the exact `governance / remote lifecycle` check, one
+  independent approval after the last push, current conversations resolved,
+  and has admin enforcement with force-push/deletion disabled.
+- The remote lifecycle check is green. AC-12 remains open until a trusted
+  reviewer approves the final exact head and the protected merge completes.

@@ -65,3 +65,15 @@ ENV_DSL_REMOTE=https://github.com/wellmanifest/env-dsl
 ENV_DSL_REVISION=1d5ed6cdb99656850c482cc3f2dd97431daec89d
 ENV_DSL_CONTRACT_DIGEST=sha256:24e60c97c4729cd528942abf1db3512caef11c3edf121c546e2d55d68407c486
 ENV_DSL_REMOTE_DIGEST_CHECK=PASS
+
+2026-08-14 protected publication
+REMOTE=https://github.com/wellmanifest/policy-dsl
+PULL_REQUEST=https://github.com/wellmanifest/policy-dsl/pull/1
+PUBLISHED_BRANCH=ticket/001-policy-dsl-standard
+REMOTE_LIFECYCLE=PASS
+BRANCH_PROTECTION=PASS
+REQUIRED_CHECK="governance / remote lifecycle"
+REQUIRED_APPROVALS=1
+REQUIRE_LAST_PUSH_APPROVAL=true
+REVIEW_DECISION=REVIEW_REQUIRED
+MERGE=NOT_PERFORMED

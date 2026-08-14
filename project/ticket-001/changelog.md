@@ -18,3 +18,5 @@
   and lock conformance, JSON Schema, parser tests and governance gate.
 - Verified that the exact Env DSL revision and contract digest resolve from
   the public `wellmanifest/env-dsl` repository before Policy DSL publication.
+- Created public pull request #1 and protected `main`; final merge remains
+  blocked until independent exact-head approval exists.

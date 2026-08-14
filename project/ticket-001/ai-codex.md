@@ -63,6 +63,8 @@ separate sibling-repository ticket.
   security diagnostic and bound the Markdown fixture into conformance.
 - Verified the pinned Env DSL contract and digest from its public exact Git
   revision before Policy DSL publication.
+- Created the public repository and pull request, enabled fail-closed `main`
+  protection, and left merge blocked on independent exact-head review.
 
 ## Blockers
 
@@ -71,3 +73,5 @@ separate sibling-repository ticket.
 - Protected publication is in scope under the continuation request, but its
   exact-head trusted approval remains independent evidence. Destructive action
   and secret access remain outside authority.
+- Pull request #1 has a green remote lifecycle check and no approval yet; the
+  agent cannot manufacture or self-issue trusted review evidence.
