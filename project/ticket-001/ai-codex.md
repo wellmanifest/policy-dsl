@@ -29,6 +29,8 @@ separate sibling-repository ticket.
 5. Define EBNF, GBNF, closed Policy IR Schema and compatibility semantics.
 6. Implement a dependency-free typed conformance parser under `tests/`.
 7. Bind artifacts in the DSL manifest and run conformance/governance checks.
+8. Publish through exact-head review, then let each adopter pin the immutable
+   Policy DSL revision in its own governance ticket.
 
 ## Actual changes
 
@@ -59,6 +61,8 @@ separate sibling-repository ticket.
   and POA revisions.
 - Added direct help pages for every declared syntax, semantic and critical
   security diagnostic and bound the Markdown fixture into conformance.
+- Verified the pinned Env DSL contract and digest from its public exact Git
+  revision before Policy DSL publication.
 
 ## Blockers
 

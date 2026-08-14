@@ -16,3 +16,5 @@
 - Bound all artifacts and exact DSL, Env DSL and POA revisions in the manifest.
 - Verified the current `new-project/CONTRIBUTING.md`, artifact digests, manifest
   and lock conformance, JSON Schema, parser tests and governance gate.
+- Verified that the exact Env DSL revision and contract digest resolve from
+  the public `wellmanifest/env-dsl` repository before Policy DSL publication.

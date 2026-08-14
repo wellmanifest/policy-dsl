@@ -50,8 +50,9 @@ commit remains governance-only; ordinary implementation begins from that base.
 ## Non-goals
 
 - No effectful policy executor, daemon or generic shell adapter.
-- No remote repository creation, push, pull request, merge, tag or release.
-- No modification of sibling repositories.
+- No unreviewed merge, mutable dependency reference or publication bypass.
+- No implementation changes in sibling repositories from this ticket; adopter
+  work remains isolated in each target repository.
 
 ## Authorized delivery boundary
 
