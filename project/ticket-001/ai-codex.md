@@ -68,13 +68,13 @@ separate sibling-repository ticket.
 - Hardened dependency-free candidate validation to enforce document,
   environment, collection, rule, state and transition types across the entire
   closed Policy IR contract.
+- Received independent Validator App approval bound to exact implementation
+  head `daaf7b7b96312a2469de1b4799f2f81c7396de4e`; the protected process merged
+  PR #1 as `6fe12f9fcce206c1d69b95f9cac1b4bc8c10abbf` and deleted its head branch.
+- Revalidated the integrated default branch and created this governance-only
+  closure without carrying implementation changes.
 
 ## Blockers
 
-- No implementation blocker. AC-12 remains a publication-boundary task until
-  an immutable remote revision and exact-head trusted review exist.
-- Protected publication is in scope under the continuation request, but its
-  exact-head trusted approval remains independent evidence. Destructive action
-  and secret access remain outside authority.
-- Pull request #1 has a green remote lifecycle check and no approval yet; the
-  agent cannot manufacture or self-issue trusted review evidence.
+- None. Implementation publication is integrated; adopter packaging and
+  versioned release metadata remain target-owned follow-up work.

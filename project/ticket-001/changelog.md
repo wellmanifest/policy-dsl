@@ -22,3 +22,6 @@
   blocked until independent exact-head approval exists.
 - Closed the manually validated Policy IR surface so malformed candidate JSON
   fails with stable semantic diagnostics instead of host-language exceptions.
+- Recorded exact-head Validator App approval, protected merge
+  `6fe12f9fcce206c1d69b95f9cac1b4bc8c10abbf`, head-branch deletion and the
+  governance-only closure from integrated `main`.
