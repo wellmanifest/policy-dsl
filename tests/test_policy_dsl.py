@@ -1,0 +1,49 @@
+import importlib.util
+import json
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("policy_dsl_check", Path(__file__).with_name("policy_dsl_check.py"))
+CHECK = importlib.util.module_from_spec(SPEC)
+assert SPEC.loader is not None
+sys.modules[SPEC.name] = CHECK
+SPEC.loader.exec_module(CHECK)
+
+
+class PolicyDslConformanceTest(unittest.TestCase):
+    def test_valid_fixture_produces_typed_ir(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        self.assertEqual("1", ir["language_version"])
+        self.assertEqual(13, ir["document"]["version"])
+        self.assertEqual("binary", ir["rules"][0]["condition"]["node"])
+        self.assertEqual("symbol", ir["rules"][0]["actions"][0]["payload"]["node"])
+        self.assertNotIn('"text"', json.dumps(ir))
+
+    def test_invalid_shell_fixture_is_rejected(self):
+        with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SECURITY-001"):
+            CHECK.parse((ROOT / "examples/invalid/shell-injection.policy").read_text(encoding="utf-8"))
+
+    def test_ir_contract_is_closed(self):
+        schema = json.loads((ROOT / "schemas/policy-ir.schema.json").read_text(encoding="utf-8"))
+        self.assertTrue(CHECK.schema_is_closed(schema))
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        ir["unexpected"] = True
+        with self.assertRaisesRegex(CHECK.PolicyError, "closed Policy IR"):
+            CHECK.validate_ir(ir)
+
+    def test_candidate_boundary_rejects_runtime_opcode(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SECURITY-001"):
+            CHECK.validate_candidate(ir)
+
+    def test_operator_precedence(self):
+        expression = CHECK.parse_expression("A = TRUE OR B = FALSE AND C IN [A, B]", 1)
+        self.assertEqual("OR", expression["operator"])
+        self.assertEqual("AND", expression["right"]["operator"])
+
+
+if __name__ == "__main__":
+    unittest.main()

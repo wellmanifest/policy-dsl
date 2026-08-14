@@ -1,0 +1,13 @@
+# Policy DSL v1 safe proposal projection. The accepted language is the
+# intersection of this grammar and schemas/policy-ir.schema.json. It can emit
+# one required rule with proposal-safe actions only. It cannot name execution,
+# authority, credential, transport, shell or approval-envelope fields.
+root ::= "{\"schema\":\"wellmanifest.policy/ir/v1\",\"dialect\":\"wellmanifest.policy/v1\",\"language_version\":\"1\",\"document\":{\"name\":" string ",\"version\":1,\"language\":\"EN\",\"mode\":\"STRICT\",\"purpose\":null,\"policy\":null},\"environment\":[],\"bindings\":[],\"rules\":[{\"id\":" string ",\"type\":\"REQUIRED\",\"condition\":{\"node\":\"literal\",\"value\":true},\"actions\":[" safe-action "],\"forbidden\":[],\"assertions\":[],\"next\":[]}],\"assertions\":[],\"states\":[],\"transitions\":[]}"
+safe-action ::= "{\"kind\":\"action\",\"opcode\":" safe-opcode ",\"payload\":" safe-payload ",\"guard\":null}"
+safe-opcode ::= "\"REQUIRE\"" | "\"ALLOW\"" | "\"REPORT\"" | "\"VALIDATE\"" | "\"RECORD\""
+safe-payload ::= "null" | "{\"node\":\"symbol\",\"name\":" string "}" | "{\"node\":\"literal\",\"value\":" scalar "}"
+scalar ::= string | "true" | "false" | integer
+integer ::= "0" | "-"? [1-9] [0-9]*
+string ::= "\"" chars "\""
+chars ::= ([^"\\\x00-\x1f] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))*
+
