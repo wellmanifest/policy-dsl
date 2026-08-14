@@ -38,6 +38,9 @@ separate sibling-repository ticket.
   `769183ca27593af1d166acee11bc9e37decf9870`.
 - Created only root/governance carriers and customized workstream ownership for
   the future standard-contract and parser tickets.
+- Created the one local seed commit
+  `f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14` with no implementation paths or
+  remote effects, then created `ticket/001-policy-dsl-standard` from that base.
 
 ## Blockers
 

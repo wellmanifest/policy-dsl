@@ -19,11 +19,11 @@ commit remains governance-only; ordinary implementation begins from that base.
 
 - [x] AC-01: The user's request to create and implement the repository records
   `SESSION_EXECUTION_AUTHORIZATION` and the narrow unborn-HEAD seed exception.
-- [ ] AC-02: The governance package is pinned to published revision
+- [x] AC-02: The governance package is pinned to published revision
   `769183ca27593af1d166acee11bc9e37decf9870`.
-- [ ] AC-03: Exactly one local seed commit contains governance carriers,
+- [x] AC-03: Exactly one local seed commit contains governance carriers,
   root project metadata and this ticket, with no implementation files.
-- [ ] AC-04: The resulting commit becomes the accepted base for later,
+- [x] AC-04: The resulting commit becomes the accepted base for later,
   ordinary integration implementation.
 - [ ] AC-05: Normative EBNF defines metadata, rules, typed conditions/actions,
   assertions, states and transitions without shell execution.
@@ -45,3 +45,10 @@ commit remains governance-only; ordinary implementation begins from that base.
 - No effectful policy executor, daemon or generic shell adapter.
 - No remote repository creation, push, pull request, merge, tag or release.
 - No modification of sibling repositories.
+
+## Authorized delivery boundary
+
+- Seed baseline: `main@f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14`.
+- Implementation branch: `ticket/001-policy-dsl-standard`.
+- Complexity: L; at most 11 implementation files, 5 components, 3 public
+  interfaces and no runtime dependencies.
