@@ -59,12 +59,17 @@
     {
       "path": "tests/test_policy_dsl.py",
       "role": "parser-contract",
-      "digest": "sha256:6da515f9ee0762ad3be7f2dd9e649778bc2b1cbab467221dbc53736aeaded486"
+      "digest": "sha256:ee43ecab46c4418e9e8078436f82c4b2b0aa6a619acdce56044d85326838e950"
     },
     {
       "path": "examples/valid/contributing.policy",
       "role": "example",
       "digest": "sha256:1e786a6a7ee47a51e26928f928b0dafc087466cee351a6e5142f528fb9173620"
+    },
+    {
+      "path": "examples/valid/CONTRIBUTING.md",
+      "role": "example",
+      "digest": "sha256:0e77dc9725cfda5073d82d3ffc32492c40448cd0c45ed7716834965f0437e69a"
     },
     {
       "path": "examples/invalid/shell-injection.policy",
@@ -80,6 +85,21 @@
       "path": "docs/LOGIC_FLOW.md",
       "role": "documentation",
       "digest": "sha256:b986403201fb3094af58ffc9bbc1b690265f94c4d69804747da81f9cdd2ea6f9"
+    },
+    {
+      "path": "docs/ERROR/POLICY-SYNTAX-001.md",
+      "role": "documentation",
+      "digest": "sha256:c5eee1208d42e185c4e09c50d076a32edf8a260410d1bdf59a78aba3fafa0995"
+    },
+    {
+      "path": "docs/ERROR/POLICY-SEMANTIC-001.md",
+      "role": "documentation",
+      "digest": "sha256:380ad7cc0d1ab8b8c5d5bb03d59fc3b183537f342968df0c4cb327f88328d263"
+    },
+    {
+      "path": "docs/CRITICAL/POLICY-SECURITY-001.md",
+      "role": "documentation",
+      "digest": "sha256:df05ef29896c7c35606597aa3e7a527de656b06255117d80d98c954cde5829d6"
     }
   ],
   "namespaces": [
@@ -113,8 +133,8 @@
     "errorRoot": "docs/ERROR",
     "criticalRoot": "docs/CRITICAL",
     "commands": [],
-    "errorCodes": [],
-    "criticalCodes": []
+    "errorCodes": ["POLICY-SEMANTIC-001", "POLICY-SYNTAX-001"],
+    "criticalCodes": ["POLICY-SECURITY-001"]
   },
   "findingPolicy": {
     "schema": "wellmanifest.dsl/findings/v1",
@@ -135,11 +155,12 @@
     "levels": ["manifest", "contract", "runtime", "llm-boundary"],
     "commands": [
       "python3 tests/policy_dsl_check.py validate examples/valid/contributing.policy",
+      "python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md",
       "python3 tests/policy_dsl_check.py ir examples/valid/contributing.policy --check-schema",
       "python3 tests/policy_dsl_check.py self-test",
       "python3 -m unittest discover -s tests -p 'test_*.py'"
     ],
-    "validExamples": ["examples/valid/contributing.policy"],
+    "validExamples": ["examples/valid/contributing.policy", "examples/valid/CONTRIBUTING.md"],
     "invalidExamples": ["examples/invalid/shell-injection.policy"]
   },
   "mappings": [

@@ -1,0 +1,34 @@
+# Contributing
+
+This prose is not part of the policy document.
+
+```dsl
+DOCUMENT CONTRIBUTING
+VERSION 1
+LANGUAGE EN
+MODE PROCEDURAL
+PURPOSE "portable contribution policy"
+```
+
+This illustrative grammar is ignored because it has placeholder metadata.
+
+```dsl
+DOCUMENT <NAME>
+VERSION <INTEGER>
+MODE <STRICT|PROCEDURAL>
+```
+
+```bash
+printf '%s\n' "This shell example is never Policy DSL"
+```
+
+```dsl
+REPOSITORY_KIND = STANDARD
+ALLOWED_STATES IN [PLAN, VALIDATION, PUBLICATION]
+
+RULE C-CONTRIBUTING-001 TYPE REQUIRED
+WHEN CHANGE_REQUESTED AND ACTIVE_TICKET
+DO VALIDATE CONTRIBUTING.md
+ASSERT POLICY_SOURCE = VERIFIED
+NEXT VALIDATION WHEN IMPLEMENTATION_COMPLETE OR PLAN
+```
