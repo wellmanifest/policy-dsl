@@ -39,6 +39,17 @@ class PolicyDslConformanceTest(unittest.TestCase):
         with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SECURITY-001"):
             CHECK.validate_candidate(ir)
 
+    def test_candidate_boundary_rejects_malformed_closed_ir(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        ir["rules"][0]["type"] = "OPTIONAL"
+        with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SEMANTIC-001"):
+            CHECK.validate_candidate(ir)
+
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        ir["states"] = "START"
+        with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SEMANTIC-001"):
+            CHECK.validate_candidate(ir)
+
     def test_operator_precedence(self):
         expression = CHECK.parse_expression("A = TRUE OR B = FALSE AND C IN [A, B]", 1)
         self.assertEqual("OR", expression["operator"])

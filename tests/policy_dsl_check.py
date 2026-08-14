@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from dataclasses import dataclass
@@ -554,6 +555,8 @@ def parse_markdown(source: str) -> dict[str, Any]:
 
 
 def _keys(value: dict[str, Any], allowed: set[str], required: set[str], label: str) -> None:
+    if not isinstance(value, dict):
+        raise PolicyError("POLICY-SEMANTIC-001", f"{label} must be an object")
     unknown = set(value) - allowed
     missing = required - set(value)
     if unknown or missing:
@@ -568,9 +571,13 @@ def validate_expression(value: Any) -> None:
         _keys(value, {"node", "value"}, {"node", "value"}, "literal")
         if isinstance(value["value"], (dict, list)) or value["value"] is None:
             raise PolicyError("POLICY-SEMANTIC-001", "invalid literal")
+        if isinstance(value["value"], float) and not math.isfinite(value["value"]):
+            raise PolicyError("POLICY-SEMANTIC-001", "literal number must be finite")
     elif node == "symbol":
         _keys(value, {"node", "name"}, {"node", "name"}, "symbol")
-        if not isinstance(value["name"], str):
+        if not isinstance(value["name"], str) or not re.fullmatch(
+            r"(?:" + SYMBOL + r"|\{" + SYMBOL + r"\})", value["name"]
+        ) or len(value["name"]) > 160:
             raise PolicyError("POLICY-SEMANTIC-001", "invalid symbol")
     elif node == "unary":
         _keys(value, {"node", "operator", "operand"}, {"node", "operator", "operand"}, "unary")
@@ -585,7 +592,11 @@ def validate_expression(value: Any) -> None:
         validate_expression(value["right"])
     elif node in {"list", "sequence"}:
         _keys(value, {"node", "items"}, {"node", "items"}, node)
-        if not isinstance(value["items"], list) or (node == "sequence" and len(value["items"]) < 2):
+        if (
+            not isinstance(value["items"], list)
+            or len(value["items"]) > 256
+            or (node == "sequence" and len(value["items"]) < 2)
+        ):
             raise PolicyError("POLICY-SEMANTIC-001", f"invalid {node}")
         for item in value["items"]:
             validate_expression(item)
@@ -600,18 +611,85 @@ def validate_ir(ir: Any) -> None:
     _keys(ir, root_keys, root_keys, "Policy IR")
     if (ir["schema"], ir["dialect"], ir["language_version"]) != ("wellmanifest.policy/ir/v1", "wellmanifest.policy/v1", "1"):
         raise PolicyError("POLICY-SEMANTIC-001", "incompatible Policy IR identity")
+    collection_limits = {
+        "environment": 128,
+        "bindings": 256,
+        "rules": 4096,
+        "assertions": 1024,
+        "states": 256,
+        "transitions": 1024,
+    }
+    for name, limit in collection_limits.items():
+        if not isinstance(ir[name], list) or len(ir[name]) > limit:
+            raise PolicyError("POLICY-SEMANTIC-001", f"invalid {name} collection")
     document_keys = {"name", "version", "language", "mode", "purpose", "policy"}
     _keys(ir["document"], document_keys, document_keys, "document")
+    document = ir["document"]
+    if not isinstance(document["name"], str) or not re.fullmatch(SYMBOL, document["name"]):
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid document name")
+    if isinstance(document["version"], bool) or not isinstance(document["version"], int) or document["version"] < 1:
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid document version")
+    if document["language"] is not None and (
+        not isinstance(document["language"], str) or not re.fullmatch(SYMBOL, document["language"])
+    ):
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid document language")
+    if document["mode"] not in {"STRICT", "PROCEDURAL"}:
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid document mode")
+    for name, limit in (("purpose", 1000), ("policy", 320)):
+        if document[name] is not None and (not isinstance(document[name], str) or len(document[name]) > limit):
+            raise PolicyError("POLICY-SEMANTIC-001", f"invalid document {name}")
+    for environment in ir["environment"]:
+        if not isinstance(environment, dict):
+            raise PolicyError("POLICY-SEMANTIC-001", "environment binding must be an object")
+        kind = environment.get("kind")
+        if kind == "env_file":
+            _keys(environment, {"kind", "path", "required"}, {"kind", "path", "required"}, "env_file")
+            if not isinstance(environment["path"], str) or not environment["path"] or len(environment["path"]) > 320:
+                raise PolicyError("POLICY-SEMANTIC-001", "invalid ENV_FILE path")
+            if not isinstance(environment["required"], bool):
+                raise PolicyError("POLICY-SEMANTIC-001", "invalid ENV_FILE requirement")
+        elif kind == "variable":
+            keys = {"kind", "name", "value_type", "required", "default"}
+            _keys(environment, keys, keys, "variable")
+            _validate_environment_name_type(environment)
+            if not isinstance(environment["required"], bool):
+                raise PolicyError("POLICY-SEMANTIC-001", "invalid VARIABLE requirement")
+            if environment["default"] is not None:
+                validate_expression({"node": "literal", "value": environment["default"]})
+        elif kind == "secret":
+            keys = {"kind", "name", "value_type", "required", "redact"}
+            _keys(environment, keys, keys, "secret")
+            _validate_environment_name_type(environment)
+            if environment["required"] is not True or environment["redact"] is not True:
+                raise PolicyError("POLICY-SEMANTIC-001", "SECRET must be required and redacted")
+        else:
+            raise PolicyError("POLICY-SEMANTIC-001", "unknown environment binding kind")
     for binding in ir["bindings"]:
         _keys(binding, {"name", "operator", "value"}, {"name", "operator", "value"}, "binding")
+        if not isinstance(binding["name"], str) or not re.fullmatch(SYMBOL, binding["name"]):
+            raise PolicyError("POLICY-SEMANTIC-001", "invalid binding name")
+        if binding["operator"] not in {"=", "IN"}:
+            raise PolicyError("POLICY-SEMANTIC-001", "invalid binding operator")
         validate_expression(binding["value"])
     for rule in ir["rules"]:
         rule_keys = {"id", "type", "condition", "actions", "forbidden", "assertions", "next"}
         _keys(rule, rule_keys, rule_keys, "rule")
+        if not isinstance(rule["id"], str) or not re.fullmatch(STABLE_ID, rule["id"]):
+            raise PolicyError("POLICY-SEMANTIC-001", "invalid rule identifier")
+        if rule["type"] not in {"REQUIRED", "FORBIDDEN"}:
+            raise PolicyError("POLICY-SEMANTIC-001", "invalid rule type")
+        for name, limit in (("actions", 128), ("forbidden", 128), ("assertions", 128), ("next", 32)):
+            if not isinstance(rule[name], list) or len(rule[name]) > limit:
+                raise PolicyError("POLICY-SEMANTIC-001", f"invalid rule {name}")
         validate_expression(rule["condition"])
         for action in rule["actions"] + rule["forbidden"]:
             _keys(action, {"kind", "opcode", "payload", "guard"}, {"kind", "opcode", "payload", "guard"}, "action")
-            if action["kind"] != "action" or not re.fullmatch(r"[A-Z][A-Z0-9_]*", action["opcode"]):
+            if (
+                action["kind"] != "action"
+                or not isinstance(action["opcode"], str)
+                or not re.fullmatch(r"[A-Z][A-Z0-9_]*", action["opcode"])
+                or len(action["opcode"]) > 96
+            ):
                 raise PolicyError("POLICY-SEMANTIC-001", "invalid action identity")
             if action["payload"] is not None:
                 validate_expression(action["payload"])
@@ -621,14 +699,31 @@ def validate_ir(ir: Any) -> None:
             validate_expression(assertion)
         for target in rule["next"]:
             _keys(target, {"target", "condition"}, {"target", "condition"}, "next target")
+            if not isinstance(target["target"], str) or not re.fullmatch(SYMBOL, target["target"]):
+                raise PolicyError("POLICY-SEMANTIC-001", "invalid NEXT target")
             if target["condition"] is not None:
                 validate_expression(target["condition"])
+    if len({rule["id"] for rule in ir["rules"]}) != len(ir["rules"]):
+        raise PolicyError("POLICY-SEMANTIC-001", "duplicate rule identifier")
     for assertion in ir["assertions"]:
         validate_expression(assertion)
+    if any(not isinstance(state, str) or not re.fullmatch(SYMBOL, state) for state in ir["states"]):
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid state")
+    if len(set(ir["states"])) != len(ir["states"]):
+        raise PolicyError("POLICY-SEMANTIC-001", "duplicate state")
     for transition in ir["transitions"]:
         _keys(transition, {"from", "to", "condition"}, {"from", "to", "condition"}, "transition")
+        if any(not isinstance(transition[name], str) or not re.fullmatch(SYMBOL, transition[name]) for name in ("from", "to")):
+            raise PolicyError("POLICY-SEMANTIC-001", "invalid transition state")
         if transition["condition"] is not None:
             validate_expression(transition["condition"])
+
+
+def _validate_environment_name_type(environment: dict[str, Any]) -> None:
+    if not isinstance(environment["name"], str) or not re.fullmatch(SYMBOL, environment["name"]):
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid environment name")
+    if environment["value_type"] not in SCALAR_TYPES:
+        raise PolicyError("POLICY-SEMANTIC-001", "invalid environment scalar type")
 
 
 def validate_candidate(candidate: Any) -> None:

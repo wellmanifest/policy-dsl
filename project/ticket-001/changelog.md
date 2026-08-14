@@ -20,3 +20,5 @@
   the public `wellmanifest/env-dsl` repository before Policy DSL publication.
 - Created public pull request #1 and protected `main`; final merge remains
   blocked until independent exact-head approval exists.
+- Closed the manually validated Policy IR surface so malformed candidate JSON
+  fails with stable semantic diagnostics instead of host-language exceptions.

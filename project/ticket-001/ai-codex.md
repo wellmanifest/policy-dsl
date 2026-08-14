@@ -65,6 +65,9 @@ separate sibling-repository ticket.
   revision before Policy DSL publication.
 - Created the public repository and pull request, enabled fail-closed `main`
   protection, and left merge blocked on independent exact-head review.
+- Hardened dependency-free candidate validation to enforce document,
+  environment, collection, rule, state and transition types across the entire
+  closed Policy IR contract.
 
 ## Blockers
 
