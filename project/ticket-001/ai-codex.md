@@ -57,6 +57,8 @@ separate sibling-repository ticket.
 - Added shared valid/invalid fixtures, unit/self tests, architecture/flow
   documentation and an artifact-digest manifest pinned to exact DSL, Env DSL
   and POA revisions.
+- Added direct help pages for every declared syntax, semantic and critical
+  security diagnostic and bound the Markdown fixture into conformance.
 
 ## Blockers
 

@@ -12,6 +12,7 @@
 - Added Policy DSL v1 EBNF, safe LLM-candidate GBNF and closed Policy IR Schema.
 - Added a dependency-free typed parser, Markdown carrier selector and shared
   positive/negative conformance tests.
+- Added direct diagnostic pages and a portable Markdown conformance fixture.
 - Bound all artifacts and exact DSL, Env DSL and POA revisions in the manifest.
 - Verified the current `new-project/CONTRIBUTING.md`, artifact digests, manifest
   and lock conformance, JSON Schema, parser tests and governance gate.

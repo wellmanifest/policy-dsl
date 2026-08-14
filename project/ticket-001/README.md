@@ -57,7 +57,7 @@ commit remains governance-only; ordinary implementation begins from that base.
 
 - Seed baseline: `main@f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14`.
 - Implementation branch: `ticket/001-policy-dsl-standard`.
-- Complexity: L; at most 11 implementation files, 5 components, 3 public
+- Complexity: L; at most 15 implementation files, 5 components, 3 public
   interfaces and no runtime dependencies.
-- Implementation commits: `1f3ed97` and `adad427`; exactly 11 implementation
-  files and zero runtime dependencies.
+- Implementation commits: `1f3ed97`, `adad427` and `09b5500`; exactly 15
+  implementation files and zero runtime dependencies.
