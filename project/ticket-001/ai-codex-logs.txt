@@ -1,0 +1,15 @@
+2026-08-14 governance seed preparation
+
+STANDARD=wellmanifest/new-project@0.18.0
+STANDARD_REVISION=769183ca27593af1d166acee11bc9e37decf9870
+ADOPTION_CHECK=PASS
+HEAD_STATE=unborn
+IMPLEMENTATION_PATHS=ABSENT
+SECRET_SCAN=PASS
+
+$ ./project/governance-check.sh --actor agent
+GOV-DIFF-001=EXPECTED_UNBORN_HEAD
+OTHER_GOVERNANCE_FINDINGS=0
+
+SEED_ALLOWLIST=managed-governance,root-carriers,ticket-001
+REMOTE_EFFECTS=FORBIDDEN
