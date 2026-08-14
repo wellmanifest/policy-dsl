@@ -2,8 +2,8 @@
 
 - **ID**: ticket-001
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: PUBLICATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-14
 
 ## Goal and scope
@@ -39,7 +39,7 @@ commit remains governance-only; ordinary implementation begins from that base.
   actions or interpreting unrelated Markdown and shell examples.
 - [x] AC-11: Governance, unit, invalid-fixture, manifest, standards-lock,
   secret and exact-diff checks pass with recorded evidence.
-- [ ] AC-12: The reviewed standard can be published at an immutable revision
+- [x] AC-12: The reviewed standard can be published at an immutable revision
   for adoption by `new-project` and target-owned repositories.
 
 ## Participants
@@ -70,5 +70,8 @@ commit remains governance-only; ordinary implementation begins from that base.
 - `main` requires the exact `governance / remote lifecycle` check, one
   independent approval after the last push, current conversations resolved,
   and has admin enforcement with force-push/deletion disabled.
-- The remote lifecycle check is green. AC-12 remains open until a trusted
-  reviewer approves the final exact head and the protected merge completes.
+- The remote lifecycle check passed, Validator App `ifuri-validator-agent[bot]`
+  approved exact implementation head
+  `daaf7b7b96312a2469de1b4799f2f81c7396de4e`, and the protected process merged
+  it as `6fe12f9fcce206c1d69b95f9cac1b4bc8c10abbf`.
+- The implementation branch was deleted. The only remote branch is `main`.
