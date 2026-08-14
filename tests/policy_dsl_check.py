@@ -86,10 +86,23 @@ def statements(source: str) -> list[Statement]:
     buffer: list[str] = []
     start = 1
     square = round_ = 0
+    continuation = False
+
+    def emit() -> None:
+        nonlocal buffer, continuation
+        result.append(Statement(" ".join(buffer), start))
+        buffer = []
+        continuation = False
+
     for number, raw in enumerate(source.splitlines(), 1):
         line = _strip_comment(raw).strip()
         if not line:
+            if buffer and square == 0 and round_ == 0 and continuation:
+                emit()
             continue
+        indented = raw[:1].isspace()
+        if buffer and square == 0 and round_ == 0 and continuation and not indented:
+            emit()
         # Shell syntax outside a quoted literal violates the inert boundary.
         unquoted = re.sub(r'"(?:\\.|[^"\\])*"', '""', line)
         if "$(" in unquoted or "`" in unquoted or re.search(r"(^|\s)(?:;|&&|\|\|)(\s|$)", unquoted):
@@ -111,11 +124,50 @@ def statements(source: str) -> list[Statement]:
         if square < 0 or round_ < 0:
             raise PolicyError("POLICY-SYNTAX-001", "unbalanced delimiter", number)
         if square == 0 and round_ == 0:
-            result.append(Statement(" ".join(buffer), start))
-            buffer = []
+            if line.endswith(" WHEN") or (continuation and indented):
+                continuation = True
+            else:
+                emit()
+    if buffer and square == 0 and round_ == 0:
+        emit()
     if buffer or square or round_:
         raise PolicyError("POLICY-SYNTAX-001", "unterminated multiline statement", start)
     return result
+
+
+def extract_markdown(source: str) -> str:
+    """Extract the canonical distributed Policy DSL document from Markdown."""
+    blocks: list[str] = []
+    current: list[str] | None = None
+    for raw in source.splitlines():
+        if current is None:
+            if raw.strip() == "```dsl":
+                current = []
+        elif raw.strip() == "```":
+            blocks.append("\n".join(current) + "\n")
+            current = None
+        else:
+            current.append(raw)
+    if current is not None:
+        raise PolicyError("POLICY-SYNTAX-001", "unterminated dsl fence")
+
+    header: str | None = None
+    selected: list[str] = []
+    binding_start = re.compile(r"^" + SYMBOL + r"\s+(?:=|IN)\s+")
+    policy_starts = ("RULE ", "STATE ", "TRANSITION ", "ENV_FILE ", "VARIABLE ", "SECRET ", "ASSERT ")
+    for block in blocks:
+        significant = [line.strip() for line in block.splitlines() if _strip_comment(line).strip()]
+        if not significant:
+            continue
+        first = _strip_comment(significant[0]).strip()
+        if header is None and re.fullmatch(r"DOCUMENT " + SYMBOL, first):
+            header = block
+            continue
+        if header is not None and (first.startswith(policy_starts) or binding_start.match(first)):
+            selected.append(block)
+    if header is None:
+        raise PolicyError("POLICY-SYNTAX-001", "Markdown has no concrete Policy DSL DOCUMENT fence")
+    return header + "".join(selected)
 
 
 def tokenize(text: str, line: int) -> list[Token]:
@@ -198,8 +250,8 @@ class ExpressionParser:
             return {"node": "literal", "value": value}
         if current.kind == "SYMBOL":
             self.take()
-            if current.value in {"TRUE", "FALSE"}:
-                return {"node": "literal", "value": current.value == "TRUE"}
+            if current.value in {"TRUE", "FALSE", "true", "false"}:
+                return {"node": "literal", "value": current.value in {"TRUE", "true"}}
             return {"node": "symbol", "name": current.value}
         if current.kind == "PLACEHOLDER":
             self.take()
@@ -242,6 +294,11 @@ class ExpressionParser:
             if self.current.kind == "COMMA":
                 self.take()
                 continue
+            if self.current.kind == "OP" and self.current.value not in {"NOT", "-"}:
+                # Domain actions use words such as IN/AND as typed prepositions
+                # when no left operand exists; they remain symbols, not text.
+                items.append({"node": "symbol", "name": self.take().value})
+                continue
             items.append(self.expression())
         if not items:
             return None
@@ -250,6 +307,13 @@ class ExpressionParser:
 
 def parse_expression(text: str, line: int) -> dict[str, Any]:
     return ExpressionParser(tokenize(text, line)).complete()
+
+
+def parse_condition(text: str, line: int) -> dict[str, Any]:
+    value = ExpressionParser(tokenize(text, line)).sequence()
+    if value is None:
+        raise PolicyError("POLICY-SYNTAX-001", "condition must not be empty", line)
+    return value
 
 
 def parse_action(text: str, line: int) -> dict[str, Any]:
@@ -275,8 +339,33 @@ def parse_action(text: str, line: int) -> dict[str, Any]:
     if guard_at is not None:
         if not guard_tokens:
             raise PolicyError("POLICY-SYNTAX-001", "action WHEN requires a condition", line)
-        guard = ExpressionParser(guard_tokens + [Token("EOF", "", line)]).complete()
+        guard = ExpressionParser(guard_tokens + [Token("EOF", "", line)]).sequence()
     return {"kind": "action", "opcode": opcode, "payload": payload, "guard": guard}
+
+
+def parse_next(text: str, line: int) -> list[dict[str, Any]]:
+    first = re.fullmatch(r"(" + SYMBOL + r")(.*)", text)
+    if not first:
+        raise PolicyError("POLICY-SYNTAX-001", "NEXT requires a target", line)
+    target, tail = first.group(1), first.group(2).strip()
+    if not tail:
+        return [{"target": target, "condition": None}]
+    if tail.startswith("OR "):
+        targets = [target] + tail[3:].split(" OR ")
+        if any(not re.fullmatch(SYMBOL, value) for value in targets):
+            raise PolicyError("POLICY-SYNTAX-001", "invalid NEXT targets", line)
+        return [{"target": value, "condition": None} for value in targets]
+    if not tail.startswith("WHEN "):
+        raise PolicyError("POLICY-SYNTAX-001", "NEXT accepts OR or WHEN after its target", line)
+    condition_text = tail[5:]
+    fallback: str | None = None
+    fallback_match = re.fullmatch(r"(.+) OR (" + SYMBOL + r")", condition_text)
+    if fallback_match:
+        condition_text, fallback = fallback_match.group(1), fallback_match.group(2)
+    result = [{"target": target, "condition": parse_condition(condition_text, line)}]
+    if fallback is not None:
+        result.append({"target": fallback, "condition": None})
+    return result
 
 
 def _quoted(value: str, line: int) -> str:
@@ -398,14 +487,14 @@ class PolicyParser:
         match = re.fullmatch(r"(" + SYMBOL + r")\s+(=|IN)\s+(.+)", item.text)
         if not match:
             raise PolicyError("POLICY-SYNTAX-001", "unknown top-level statement", item.line)
-        return {"name": match.group(1), "operator": match.group(2), "value": parse_expression(match.group(3), item.line)}
+        return {"name": match.group(1), "operator": match.group(2), "value": parse_condition(match.group(3), item.line)}
 
     def parse_transition(self) -> dict[str, Any]:
         item = self.take()
         match = re.fullmatch(r"TRANSITION (" + SYMBOL + r") -> (" + SYMBOL + r")(?: WHEN (.+))?", item.text)
         if not match:
             raise PolicyError("POLICY-SYNTAX-001", "invalid TRANSITION", item.line)
-        condition = parse_expression(match.group(3), item.line) if match.group(3) else None
+        condition = parse_condition(match.group(3), item.line) if match.group(3) else None
         return {"from": match.group(1), "to": match.group(2), "condition": condition}
 
     def parse_rule(self) -> dict[str, Any]:
@@ -419,7 +508,7 @@ class PolicyParser:
         rule = {
             "id": match.group(1),
             "type": match.group(2) or "REQUIRED",
-            "condition": parse_expression(condition_item.text[5:], condition_item.line),
+            "condition": parse_condition(condition_item.text[5:], condition_item.line),
             "actions": [],
             "forbidden": [],
             "assertions": [],
@@ -438,10 +527,7 @@ class PolicyParser:
                 rule["assertions"].append(parse_expression(item.text[7:], item.line))
             elif item.text.startswith("NEXT "):
                 self.take()
-                targets = item.text[5:].split(" OR ")
-                if not targets or any(not re.fullmatch(SYMBOL, target) for target in targets):
-                    raise PolicyError("POLICY-SYNTAX-001", "invalid NEXT targets", item.line)
-                rule["next"] = targets
+                rule["next"] = parse_next(item.text[5:], item.line)
                 break
             else:
                 break
@@ -461,6 +547,10 @@ class PolicyParser:
 
 def parse(source: str) -> dict[str, Any]:
     return PolicyParser(source).parse()
+
+
+def parse_markdown(source: str) -> dict[str, Any]:
+    return parse(extract_markdown(source))
 
 
 def _keys(value: dict[str, Any], allowed: set[str], required: set[str], label: str) -> None:
@@ -529,6 +619,10 @@ def validate_ir(ir: Any) -> None:
                 validate_expression(action["guard"])
         for assertion in rule["assertions"]:
             validate_expression(assertion)
+        for target in rule["next"]:
+            _keys(target, {"target", "condition"}, {"target", "condition"}, "next target")
+            if target["condition"] is not None:
+                validate_expression(target["condition"])
     for assertion in ir["assertions"]:
         validate_expression(assertion)
     for transition in ir["transitions"]:
@@ -575,6 +669,8 @@ def self_test() -> None:
         assert error.code == "POLICY-SECURITY-001"
     else:
         raise AssertionError("invalid fixture was accepted")
+    markdown = "before\n```dsl\n" + valid_path.read_text(encoding="utf-8") + "```\n```bash\nDO RUN evil\n```\n"
+    assert parse_markdown(markdown)["document"]["name"] == "CONTRIBUTING"
     print("POLICY-CONFORMANCE-PASS")
 
 
@@ -583,6 +679,8 @@ def main(argv: Iterable[str] | None = None) -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     validate_command = subparsers.add_parser("validate")
     validate_command.add_argument("path", type=Path)
+    markdown_command = subparsers.add_parser("validate-markdown")
+    markdown_command.add_argument("path", type=Path)
     ir_command = subparsers.add_parser("ir")
     ir_command.add_argument("path", type=Path)
     ir_command.add_argument("--check-schema", action="store_true")
@@ -596,6 +694,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         elif args.command == "validate-candidate":
             validate_candidate(json.loads(args.path.read_text(encoding="utf-8")))
             print("POLICY-CANDIDATE-PASS")
+        elif args.command == "validate-markdown":
+            parse_markdown(args.path.read_text(encoding="utf-8"))
+            print("POLICY-MARKDOWN-PASS")
         else:
             ir = parse(args.path.read_text(encoding="utf-8"))
             if args.command == "ir":

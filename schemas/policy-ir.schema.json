@@ -139,7 +139,16 @@
         "actions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}},
         "forbidden": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}},
         "assertions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/expression"}},
-        "next": {"type": "array", "maxItems": 32, "uniqueItems": true, "items": {"$ref": "#/$defs/symbolName"}}
+        "next": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/nextTarget"}}
+      }
+    },
+    "nextTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "condition"],
+      "properties": {
+        "target": {"$ref": "#/$defs/symbolName"},
+        "condition": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]}
       }
     },
     "action": {

@@ -20,21 +20,24 @@ scalar-type    = "STRING" | "INTEGER" | "NUMBER" | "BOOLEAN" | "URL" | "PATH" ;
 binding        = symbol, ("=", expression | "IN", list), EOL ;
 state          = "STATE", symbol, EOL ;
 transition     = "TRANSITION", symbol, "->", symbol,
-                 [ "WHEN", expression ], EOL ;
+                 [ "WHEN", condition ], EOL ;
 
 rule           = "RULE", stable-id, [ "TYPE", rule-type ], EOL,
-                 "WHEN", expression, EOL,
+                 "WHEN", condition, EOL,
                  { do | forbid | assert },
                  [ next ] ;
 rule-type      = "REQUIRED" | "FORBIDDEN" ;
 do             = "DO", action, EOL ;
 forbid         = "FORBID", action, EOL ;
 assert         = "ASSERT", expression, EOL ;
-next           = "NEXT", symbol, { "OR", symbol }, EOL ;
+next           = "NEXT", next-branch, { "OR", next-branch }, EOL ;
+next-branch    = symbol, [ "WHEN", condition ] ;
 
-action         = opcode, [ action-payload ], [ "WHEN", expression ] ;
+action         = opcode, [ action-payload ], [ "WHEN", condition ] ;
 action-payload = expression, { expression } ;
 opcode         = symbol ;
+
+condition      = expression, { expression } ;
 
 expression     = or-expression ;
 or-expression = and-expression, { "OR", and-expression } ;
@@ -48,7 +51,7 @@ unary-expression = { "NOT" | "-" }, primary ;
 primary        = literal | symbol | placeholder | list | group ;
 list           = "[", [ expression, { ",", expression } ], "]" ;
 group          = "(", expression, { [ "," ], expression }, ")" ;
-literal        = string | integer | number | "TRUE" | "FALSE" ;
+literal        = string | integer | number | "TRUE" | "FALSE" | "true" | "false" ;
 
 stable-id      = upper, { upper | digit | "-" | "_" } ;
 symbol         = letter, { letter | digit | "_" | "." | ":" | "/" | "-" } ;

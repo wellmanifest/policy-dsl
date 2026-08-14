@@ -53,10 +53,31 @@ An action consists of an uppercase opcode, an optional typed payload and an
 optional typed guard. Adjacent payload expressions form a `sequence` node;
 their source is never stored as an opaque command string. An implementation
 MAY map domain opcodes to capabilities only after separate authorization.
+Legacy predicate-style conditions with adjacent terms are normalized to the
+same typed `sequence` node; consumers MUST resolve that predicate explicitly
+and MUST reject it when no domain binding exists.
 
 `STATE` and `TRANSITION A -> B WHEN ...` describe a state graph. Declaring a
 transition does not authorize the transition. A consumer MUST independently
 verify its input, policy, current state and authority.
+
+### 3.1 Markdown carrier
+
+A Markdown carrier such as `CONTRIBUTING.md` MAY distribute one policy
+document across fenced code blocks. The selector is deterministic:
+
+1. select the first `dsl` fence whose first statement is a concrete
+   `DOCUMENT <symbol>` header;
+2. ignore illustrative fences containing placeholder metadata and independent
+   embedded document types;
+3. after the header, select a `dsl` fence only when its first statement begins
+   with `RULE`, `STATE`, `TRANSITION`, `ENV_FILE`, `VARIABLE`, `SECRET` or
+   `ASSERT`, or is a top-level `symbol = expression` / `symbol IN list` binding;
+4. concatenate selected fences in source order and parse the complete result.
+
+Other Markdown, `bash` fences and independent DSL documents MUST NOT be
+interpreted as Policy DSL. Once a fence is selected, every statement in it is
+normative and a parse failure MUST NOT be silently skipped.
 
 ## 4. Expressions
 
@@ -148,4 +169,3 @@ normalizes Policy DSL; it deliberately has no executor.
 
 Tools MAY add locations and details but MUST NOT change a code's meaning
 within Policy DSL major version 1.
-

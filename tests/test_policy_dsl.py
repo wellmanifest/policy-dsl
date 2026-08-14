@@ -44,6 +44,28 @@ class PolicyDslConformanceTest(unittest.TestCase):
         self.assertEqual("OR", expression["operator"])
         self.assertEqual("AND", expression["right"]["operator"])
 
+    def test_markdown_selector_ignores_examples_and_shell_fences(self):
+        markdown = """```dsl
+DOCUMENT CONTRIBUTING
+VERSION 13
+MODE STRICT
+```
+```dsl
+DOCUMENT <NAME>
+VERSION <INTEGER>
+```
+```dsl
+RULE C-ONE-001
+WHEN TRUE
+DO REQUIRE SAFE
+```
+```bash
+DO RUN unsafe
+```
+"""
+        ir = CHECK.parse_markdown(markdown)
+        self.assertEqual(["C-ONE-001"], [rule["id"] for rule in ir["rules"]])
+
 
 if __name__ == "__main__":
     unittest.main()
