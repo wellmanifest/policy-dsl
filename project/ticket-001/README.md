@@ -34,6 +34,13 @@ commit remains governance-only; ordinary implementation begins from that base.
   AST and shared positive/negative conformance fixtures.
 - [ ] AC-09: A `wellmanifest.dsl/manifest/v1` binds grammar, schema, parser,
   fixtures and documentation by SHA-256 and pins composed standards.
+- [ ] AC-10: The deterministic runtime validates standalone policy files and
+  canonical Policy DSL fences embedded in `CONTRIBUTING.md` without executing
+  actions or interpreting unrelated Markdown and shell examples.
+- [ ] AC-11: Governance, unit, invalid-fixture, manifest, standards-lock,
+  secret and exact-diff checks pass with recorded evidence.
+- [ ] AC-12: The reviewed standard can be published at an immutable revision
+  for adoption by `new-project` and target-owned repositories.
 
 ## Participants
 

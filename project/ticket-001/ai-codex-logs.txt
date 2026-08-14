@@ -17,3 +17,9 @@ REMOTE_EFFECTS=FORBIDDEN
 SEED_COMMIT=f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14
 DELIVERY_ACCEPTED_BASE=f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14
 IMPLEMENTATION_BRANCH=ticket/001-policy-dsl-standard
+
+2026-08-14 dependency continuation
+USER_REQUEST="continue policy-dsl dependency and CONTRIBUTING.md runtime validation"
+SESSION_EXECUTION_AUTHORIZATION=EXPANDED_TO_PROTECTED_PUBLICATION_AND_ADOPTION
+TICKET_REUSED=ticket-001
+TARGET_ISOLATION="policy-dsl owns standard/runtime; each adopter owns its dependency ticket"

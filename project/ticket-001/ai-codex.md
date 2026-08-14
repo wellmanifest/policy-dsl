@@ -41,11 +41,14 @@ separate sibling-repository ticket.
 - Created the one local seed commit
   `f2008575ca1b2d45cd898cc2aa1c50e4e4a54f14` with no implementation paths or
   remote effects, then created `ticket/001-policy-dsl-standard` from that base.
+- The follow-up request explicitly requires `policy-dsl` to become an immutable
+  dependency of `new-project` and to validate repositories containing
+  `CONTRIBUTING.md`. This ticket now owns the Markdown conformance surface;
+  sibling adoption remains isolated in target-owned tickets after publication.
 
 ## Blockers
 
 - None inside the recorded intent; proceed without a second confirmation.
-- New authority remains required for destructive action, secret access, new
-  external coordination or material objective expansion. Protected delivery
-  may be invoked without another prompt when publication is in scope; its
-  exact-head trusted approval remains independent evidence.
+- Protected publication is in scope under the continuation request, but its
+  exact-head trusted approval remains independent evidence. Destructive action
+  and secret access remain outside authority.
