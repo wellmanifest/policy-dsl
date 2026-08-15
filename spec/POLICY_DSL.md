@@ -50,22 +50,41 @@ describes a blocking policy rule and does not turn its payload into executable
 code.
 
 An action consists of an uppercase opcode, an optional typed payload and an
-optional typed guard. Adjacent payload expressions form a `sequence` node;
-their source is never stored as an opaque command string. An implementation
-MAY map domain opcodes to capabilities only after separate authorization.
+optional typed guard. `action` is the Policy DSL v1 compatibility name for an
+inert policy directive, including a possible effect proposal. It MUST NOT be
+interpreted as an observed event, an agent task, a task run or a billable agent
+operation. Adjacent payload expressions form a `sequence` node; their source is
+never stored as an opaque command string. An implementation MAY map domain
+opcodes to capabilities only after separate authorization.
 Legacy predicate-style conditions with adjacent terms are normalized to the
 same typed `sequence` node; consumers MUST resolve that predicate explicitly
 and MUST reject it when no domain binding exists.
 
 `STATE` and `TRANSITION A -> B WHEN ...` describe a state graph. Declaring a
 transition does not authorize the transition. A consumer MUST independently
-verify its input, policy, current state and authority. `NEXT` targets and
-`TRANSITION` endpoints MUST name a declared `STATE`. Duplicate rule ids,
-binding names, environment variable/secret names, state names and
-`TRANSITION` edges (`from`,`to`) MUST be rejected whether the document was
-parsed from text or validated as Policy IR JSON.
+verify its input, policy, current state and authority.
 
-### 3.1 Markdown carrier
+### 3.1 Domain vocabulary boundary
+
+The Policy IR property `actions` and the node marker `kind: action` are stable
+v1 compatibility names for typed policy directives. They MUST NOT be treated
+as a commercial usage meter or as proof that an external effect occurred.
+Profiles SHOULD call these values *policy directives* in user-facing
+documentation while preserving the v1 JSON field names.
+
+Digital-twin profiles SHOULD use the following distinct terms:
+
+- `EVENT`: an observed or emitted fact;
+- `TASK`: a goal or work item;
+- `TASK_RUN`: one bounded execution attempt of a task or process;
+- `AGENT_OPERATION`: one metered unit of agent work inside a run;
+- `EFFECT`: an externally observable state change behind separate authority.
+
+An event occurs, a task is assigned, a task run is executed, an agent operation
+is performed and an effect is authorized. A profile MUST NOT use `ACTION` for
+both a Policy IR directive and an `AGENT_OPERATION` usage counter.
+
+### 3.2 Markdown carrier
 
 A Markdown carrier such as `CONTRIBUTING.md` MAY distribute one policy
 document across fenced code blocks. The selector is deterministic:
@@ -128,6 +147,20 @@ Secrets MUST remain outside Env DSL and Policy DSL values. A `SECRET`
 compatibility declaration identifies a required name and redaction duty; its
 value is supplied through a separately governed secret provider.
 
+### 5.1 Closed business-decision profiles
+
+A domain profile MAY evaluate Policy IR against an explicit context and emit a
+separate closed decision object. The decision remains inert: it MUST NOT charge
+a card, apply a discount, mutate an account, call a remote service or grant
+effect authority. An effectful backend MAY consume the decision only through
+its independently governed authorization boundary.
+
+When several consumers need the same rule, they SHOULD consume one versioned
+decision contract rather than reimplementing eligibility, sanitization or
+presentation guards in backend, frontend and legacy code. The reference
+`profiles/sales` package demonstrates this pattern for promotion eligibility
+and digital-twin operation packages.
+
 ## 6. LLM generation and POA
 
 `policy-dsl-candidate.v1.gbnf` is a generation projection, not the canonical
@@ -173,3 +206,24 @@ normalizes Policy DSL; it deliberately has no executor.
 
 Tools MAY add locations and details but MUST NOT change a code's meaning
 within Policy DSL major version 1.
+
+## 9. Application profiles
+
+An application profile MAY define domain symbols, explicit input context,
+opcode meanings and a descriptive decision projection over Policy IR. A
+profile MUST preserve the inert processing and POA boundaries of this
+standard. Profile evaluation cannot grant checkout, payment, entitlement,
+filesystem, network or other effect authority.
+
+Profiles MUST distinguish observed events, assigned tasks, task runs, metered
+work units and proposed external effects when those concepts exist in the
+domain. For digital-twin metering, `AGENT_OPERATION` is the recommended name
+for a billable operation; the Policy IR node kind `action` remains an inert
+policy directive. Non-normative vocabulary and the Subactor sales example are
+provided in `docs/DOMAIN_VOCABULARY.md` and `profiles/sales/README.md`.
+
+A frontend or legacy adapter MAY consume a profile decision for consistent
+presentation, but a client-side decision MUST NOT replace authoritative server
+validation. Unknown profile opcodes or conflicting decision records MUST be
+rejected rather than resolved by last-writer-wins behavior.
+

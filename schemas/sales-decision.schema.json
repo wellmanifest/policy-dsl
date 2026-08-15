@@ -1,0 +1,294 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-decision.schema.json",
+  "title": "Subactor Sales Decision v1",
+  "description": "Closed, inert sales decision. It never applies a promotion, performs payment, or grants checkout authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "input",
+    "offer",
+    "promotion",
+    "payment",
+    "metering",
+    "policy"
+  ],
+  "properties": {
+    "schema": {
+      "const": "subactor.sales/decision/v1"
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_id",
+        "promo_code"
+      ],
+      "properties": {
+        "plan_id": {
+          "enum": [
+            "saas-start",
+            "saas-business",
+            "prepaid-actions",
+            "on-premise",
+            "basic",
+            "operations-plus",
+            "twin-plus"
+          ]
+        },
+        "promo_code": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "offer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_id",
+        "public_code",
+        "kind",
+        "entitlement_kind",
+        "display_name",
+        "active_twins_included"
+      ],
+      "properties": {
+        "plan_id": {
+          "enum": [
+            "saas-start",
+            "saas-business",
+            "prepaid-actions",
+            "on-premise"
+          ]
+        },
+        "public_code": {
+          "enum": [
+            "basic",
+            "operations-plus",
+            "twin-plus",
+            "on-premise"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "BASE_PLAN",
+            "OPERATIONS_ADDON",
+            "TWIN_ADDON",
+            "OFFLINE_OFFER"
+          ]
+        },
+        "entitlement_kind": {
+          "enum": [
+            "DIGITAL_TWIN_WITH_OPERATIONS",
+            "AGENT_OPERATIONS",
+            "DIGITAL_TWIN",
+            "CONTRACT"
+          ]
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "active_twins_included": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        }
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normalized_code",
+        "eligibility",
+        "presentation",
+        "reason"
+      ],
+      "properties": {
+        "normalized_code": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "eligibility": {
+          "enum": [
+            "NONE",
+            "ELIGIBLE",
+            "INELIGIBLE",
+            "UNKNOWN"
+          ]
+        },
+        "presentation": {
+          "enum": [
+            "VISIBLE",
+            "HIDDEN"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "NO_PROMO",
+            "ELIGIBLE_BASIC",
+            "PLAN_NOT_ELIGIBLE",
+            "UNKNOWN_PROMO_CODE",
+            "INVALID_PROMO_FORMAT"
+          ]
+        }
+      }
+    },
+    "payment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "card_required"
+      ],
+      "properties": {
+        "card_required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "metering": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit",
+        "included",
+        "scope",
+        "source",
+        "label_pl"
+      ],
+      "properties": {
+        "unit": {
+          "const": "AGENT_OPERATION"
+        },
+        "included": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "scope": {
+          "enum": [
+            "PER_TWIN_MONTH",
+            "ACCOUNT_MONTH",
+            "NONE",
+            "CONTRACT"
+          ]
+        },
+        "source": {
+          "enum": [
+            "INCLUDED",
+            "ADD_ON",
+            "SEPARATE_PACKAGE",
+            "CONTRACT"
+          ]
+        },
+        "label_pl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 320
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "version",
+        "matched_rules",
+        "allowed",
+        "required",
+        "reports",
+        "forbidden"
+      ],
+      "properties": {
+        "document": {
+          "const": "SUBACTOR_SALES"
+        },
+        "version": {
+          "const": 1
+        },
+        "matched_rules": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]*$",
+            "maxLength": 160
+          }
+        },
+        "allowed": {
+          "type": "array",
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "const": "APPLY_PROMOTION"
+          }
+        },
+        "required": {
+          "type": "array",
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "const": "PROMOTION_SANITIZED"
+          }
+        },
+        "reports": {
+          "type": "array",
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "const": "OPERATIONS_PURCHASED_SEPARATELY"
+          }
+        },
+        "forbidden": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/forbiddenDirective"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nullableNonNegativeInteger": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "forbiddenDirective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "payload"
+      ],
+      "description": "Inert policy directive; not an execution command or checkout denial by itself.",
+      "properties": {
+        "opcode": {
+          "enum": [
+            "APPLY_PROMOTION",
+            "DISPLAY_PROMOTION",
+            "DISPLAY_OPERATION_LABEL"
+          ]
+        },
+        "payload": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    }
+  }
+}
