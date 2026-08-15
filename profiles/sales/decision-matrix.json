@@ -1,0 +1,384 @@
+{
+  "cases": [
+    {
+      "decision": {
+        "input": {
+          "plan_id": "saas-start",
+          "promo_code": "NOCC100"
+        },
+        "metering": {
+          "included": 1000,
+          "label_pl": "1 000 operacji agenta / miesiąc",
+          "scope": "PER_TWIN_MONTH",
+          "source": "INCLUDED",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": 1,
+          "display_name": "Basic",
+          "entitlement_kind": "DIGITAL_TWIN_WITH_OPERATIONS",
+          "kind": "BASE_PLAN",
+          "plan_id": "saas-start",
+          "public_code": "basic"
+        },
+        "payment": {
+          "card_required": false
+        },
+        "policy": {
+          "allowed": [
+            "APPLY_PROMOTION"
+          ],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [],
+          "matched_rules": [
+            "SALES-PROMO-NOCC100-BASIC"
+          ],
+          "reports": [],
+          "required": [],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "ELIGIBLE",
+          "normalized_code": "NOCC100",
+          "presentation": "VISIBLE",
+          "reason": "ELIGIBLE_BASIC"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "NOCC100_BASIC"
+    },
+    {
+      "decision": {
+        "input": {
+          "plan_id": "saas-business",
+          "promo_code": "NOCC100"
+        },
+        "metering": {
+          "included": 10000,
+          "label_pl": "10 000 operacji agenta / miesiąc",
+          "scope": "ACCOUNT_MONTH",
+          "source": "ADD_ON",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": 0,
+          "display_name": "Operations Plus",
+          "entitlement_kind": "AGENT_OPERATIONS",
+          "kind": "OPERATIONS_ADDON",
+          "plan_id": "saas-business",
+          "public_code": "operations-plus"
+        },
+        "payment": {
+          "card_required": true
+        },
+        "policy": {
+          "allowed": [],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [
+            {
+              "opcode": "APPLY_PROMOTION",
+              "payload": "NOCC100"
+            },
+            {
+              "opcode": "DISPLAY_PROMOTION",
+              "payload": "NOCC100"
+            }
+          ],
+          "matched_rules": [
+            "SALES-PROMO-NOCC100-NON-BASIC"
+          ],
+          "reports": [],
+          "required": [
+            "PROMOTION_SANITIZED"
+          ],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "INELIGIBLE",
+          "normalized_code": "",
+          "presentation": "HIDDEN",
+          "reason": "PLAN_NOT_ELIGIBLE"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "NOCC100_OPERATIONS_PLUS"
+    },
+    {
+      "decision": {
+        "input": {
+          "plan_id": "prepaid-actions",
+          "promo_code": "NOCC100"
+        },
+        "metering": {
+          "included": 0,
+          "label_pl": "0 operacji w pakiecie — dokupujesz przez Operations Plus",
+          "scope": "NONE",
+          "source": "SEPARATE_PACKAGE",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": 1,
+          "display_name": "Twin Plus",
+          "entitlement_kind": "DIGITAL_TWIN",
+          "kind": "TWIN_ADDON",
+          "plan_id": "prepaid-actions",
+          "public_code": "twin-plus"
+        },
+        "payment": {
+          "card_required": true
+        },
+        "policy": {
+          "allowed": [],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [
+            {
+              "opcode": "APPLY_PROMOTION",
+              "payload": "NOCC100"
+            },
+            {
+              "opcode": "DISPLAY_PROMOTION",
+              "payload": "NOCC100"
+            },
+            {
+              "opcode": "DISPLAY_OPERATION_LABEL",
+              "payload": "Brak"
+            }
+          ],
+          "matched_rules": [
+            "SALES-PROMO-NOCC100-NON-BASIC",
+            "SALES-TWIN-PLUS-PRESENTATION"
+          ],
+          "reports": [
+            "OPERATIONS_PURCHASED_SEPARATELY"
+          ],
+          "required": [
+            "PROMOTION_SANITIZED"
+          ],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "INELIGIBLE",
+          "normalized_code": "",
+          "presentation": "HIDDEN",
+          "reason": "PLAN_NOT_ELIGIBLE"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "NOCC100_TWIN_PLUS"
+    },
+    {
+      "decision": {
+        "input": {
+          "plan_id": "on-premise",
+          "promo_code": "NOCC100"
+        },
+        "metering": {
+          "included": null,
+          "label_pl": "Limity operacji zgodne z umową",
+          "scope": "CONTRACT",
+          "source": "CONTRACT",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": null,
+          "display_name": "On-premise",
+          "entitlement_kind": "CONTRACT",
+          "kind": "OFFLINE_OFFER",
+          "plan_id": "on-premise",
+          "public_code": "on-premise"
+        },
+        "payment": {
+          "card_required": null
+        },
+        "policy": {
+          "allowed": [],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [
+            {
+              "opcode": "APPLY_PROMOTION",
+              "payload": "NOCC100"
+            },
+            {
+              "opcode": "DISPLAY_PROMOTION",
+              "payload": "NOCC100"
+            }
+          ],
+          "matched_rules": [
+            "SALES-PROMO-NOCC100-NON-BASIC"
+          ],
+          "reports": [],
+          "required": [
+            "PROMOTION_SANITIZED"
+          ],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "INELIGIBLE",
+          "normalized_code": "",
+          "presentation": "HIDDEN",
+          "reason": "PLAN_NOT_ELIGIBLE"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "NOCC100_ON_PREMISE"
+    },
+    {
+      "decision": {
+        "input": {
+          "plan_id": "saas-start",
+          "promo_code": ""
+        },
+        "metering": {
+          "included": 1000,
+          "label_pl": "1 000 operacji agenta / miesiąc",
+          "scope": "PER_TWIN_MONTH",
+          "source": "INCLUDED",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": 1,
+          "display_name": "Basic",
+          "entitlement_kind": "DIGITAL_TWIN_WITH_OPERATIONS",
+          "kind": "BASE_PLAN",
+          "plan_id": "saas-start",
+          "public_code": "basic"
+        },
+        "payment": {
+          "card_required": true
+        },
+        "policy": {
+          "allowed": [],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [],
+          "matched_rules": [
+            "SALES-PROMO-NONE"
+          ],
+          "reports": [],
+          "required": [],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "NONE",
+          "normalized_code": "",
+          "presentation": "HIDDEN",
+          "reason": "NO_PROMO"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "NO_PROMO_BASIC"
+    },
+    {
+      "decision": {
+        "input": {
+          "plan_id": "saas-start",
+          "promo_code": "OTHER100"
+        },
+        "metering": {
+          "included": 1000,
+          "label_pl": "1 000 operacji agenta / miesiąc",
+          "scope": "PER_TWIN_MONTH",
+          "source": "INCLUDED",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": 1,
+          "display_name": "Basic",
+          "entitlement_kind": "DIGITAL_TWIN_WITH_OPERATIONS",
+          "kind": "BASE_PLAN",
+          "plan_id": "saas-start",
+          "public_code": "basic"
+        },
+        "payment": {
+          "card_required": true
+        },
+        "policy": {
+          "allowed": [],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [
+            {
+              "opcode": "APPLY_PROMOTION",
+              "payload": "OTHER100"
+            },
+            {
+              "opcode": "DISPLAY_PROMOTION",
+              "payload": "OTHER100"
+            }
+          ],
+          "matched_rules": [
+            "SALES-PROMO-UNKNOWN"
+          ],
+          "reports": [],
+          "required": [
+            "PROMOTION_SANITIZED"
+          ],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "UNKNOWN",
+          "normalized_code": "",
+          "presentation": "HIDDEN",
+          "reason": "UNKNOWN_PROMO_CODE"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "UNKNOWN_PROMO_BASIC"
+    },
+    {
+      "decision": {
+        "input": {
+          "plan_id": "saas-start",
+          "promo_code": "NOCC 100"
+        },
+        "metering": {
+          "included": 1000,
+          "label_pl": "1 000 operacji agenta / miesiąc",
+          "scope": "PER_TWIN_MONTH",
+          "source": "INCLUDED",
+          "unit": "AGENT_OPERATION"
+        },
+        "offer": {
+          "active_twins_included": 1,
+          "display_name": "Basic",
+          "entitlement_kind": "DIGITAL_TWIN_WITH_OPERATIONS",
+          "kind": "BASE_PLAN",
+          "plan_id": "saas-start",
+          "public_code": "basic"
+        },
+        "payment": {
+          "card_required": true
+        },
+        "policy": {
+          "allowed": [],
+          "document": "SUBACTOR_SALES",
+          "forbidden": [
+            {
+              "opcode": "APPLY_PROMOTION",
+              "payload": "__INVALID__"
+            },
+            {
+              "opcode": "DISPLAY_PROMOTION",
+              "payload": "__INVALID__"
+            }
+          ],
+          "matched_rules": [
+            "SALES-PROMO-UNKNOWN"
+          ],
+          "reports": [],
+          "required": [
+            "PROMOTION_SANITIZED"
+          ],
+          "version": 1
+        },
+        "promotion": {
+          "eligibility": "UNKNOWN",
+          "normalized_code": "",
+          "presentation": "HIDDEN",
+          "reason": "INVALID_PROMO_FORMAT"
+        },
+        "schema": "subactor.sales/decision/v1"
+      },
+      "name": "INVALID_PROMO_BASIC"
+    }
+  ],
+  "schema": "subactor.sales/decision-matrix/v1"
+}

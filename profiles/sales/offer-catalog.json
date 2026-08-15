@@ -1,0 +1,90 @@
+{
+  "schema": "subactor.sales/catalog/v1",
+  "vocabulary": {
+    "unit_code": "AGENT_OPERATION",
+    "label_pl_singular": "operacja agenta",
+    "label_pl_plural": "operacje agenta",
+    "definition_pl": "Pojedyncza rozliczana jednostka pracy agenta, na przykład analiza, decyzja, wywołanie narzędzia, walidacja albo zapis wyniku."
+  },
+  "compatibility": {
+    "read_aliases": {
+      "actions_included": "agent_operations_included",
+      "Actions Plus": "Operations Plus"
+    },
+    "write_policy": "CANONICAL_ONLY"
+  },
+  "plans": [
+    {
+      "plan_id": "saas-start",
+      "public_code": "basic",
+      "kind": "BASE_PLAN",
+      "entitlement_kind": "DIGITAL_TWIN_WITH_OPERATIONS",
+      "display_name": "Basic",
+      "legacy_display_names": [],
+      "active_twins_included": 1,
+      "agent_operations_included": 1000,
+      "operation_scope": "PER_TWIN_MONTH",
+      "operations_source": "INCLUDED",
+      "payment_card_required": true,
+      "eligible_promo_codes": [
+        "NOCC100"
+      ],
+      "seat_summary_pl": "1 aktywny bliźniak • 1 000 operacji / miesiąc",
+      "operation_label_pl": "1 000 operacji agenta / miesiąc",
+      "promo_hint_pl": "Z kodem NOCC100 zakładasz konto bez opłaty i bez podawania karty płatniczej."
+    },
+    {
+      "plan_id": "saas-business",
+      "public_code": "operations-plus",
+      "kind": "OPERATIONS_ADDON",
+      "entitlement_kind": "AGENT_OPERATIONS",
+      "display_name": "Operations Plus",
+      "legacy_display_names": [
+        "Actions Plus"
+      ],
+      "active_twins_included": 0,
+      "agent_operations_included": 10000,
+      "operation_scope": "ACCOUNT_MONTH",
+      "operations_source": "ADD_ON",
+      "payment_card_required": true,
+      "eligible_promo_codes": [],
+      "seat_summary_pl": "Nie dodaje bliźniaka • 10 000 operacji / miesiąc",
+      "operation_label_pl": "10 000 operacji agenta / miesiąc",
+      "promo_hint_pl": null
+    },
+    {
+      "plan_id": "prepaid-actions",
+      "public_code": "twin-plus",
+      "kind": "TWIN_ADDON",
+      "entitlement_kind": "DIGITAL_TWIN",
+      "display_name": "Twin Plus",
+      "legacy_display_names": [],
+      "active_twins_included": 1,
+      "agent_operations_included": 0,
+      "operation_scope": "NONE",
+      "operations_source": "SEPARATE_PACKAGE",
+      "payment_card_required": true,
+      "eligible_promo_codes": [],
+      "seat_summary_pl": "1 aktywny bliźniak • 0 operacji w pakiecie",
+      "operation_label_pl": "0 operacji w pakiecie — dokupujesz przez Operations Plus",
+      "promo_hint_pl": null
+    },
+    {
+      "plan_id": "on-premise",
+      "public_code": "on-premise",
+      "kind": "OFFLINE_OFFER",
+      "entitlement_kind": "CONTRACT",
+      "display_name": "On-premise",
+      "legacy_display_names": [],
+      "active_twins_included": null,
+      "agent_operations_included": null,
+      "operation_scope": "CONTRACT",
+      "operations_source": "CONTRACT",
+      "payment_card_required": null,
+      "eligible_promo_codes": [],
+      "seat_summary_pl": "Zakres zgodny z umową",
+      "operation_label_pl": "Limity operacji zgodne z umową",
+      "promo_hint_pl": null
+    }
+  ]
+}

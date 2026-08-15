@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-catalog.schema.json",
+  "title": "Subactor Sales Offer Catalog v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "vocabulary",
+    "compatibility",
+    "plans"
+  ],
+  "properties": {
+    "schema": {
+      "const": "subactor.sales/catalog/v1"
+    },
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit_code",
+        "label_pl_singular",
+        "label_pl_plural",
+        "definition_pl"
+      ],
+      "properties": {
+        "unit_code": {
+          "const": "AGENT_OPERATION"
+        },
+        "label_pl_singular": {
+          "const": "operacja agenta"
+        },
+        "label_pl_plural": {
+          "const": "operacje agenta"
+        },
+        "definition_pl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_aliases",
+        "write_policy"
+      ],
+      "properties": {
+        "read_aliases": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "actions_included",
+            "Actions Plus"
+          ],
+          "properties": {
+            "actions_included": {
+              "const": "agent_operations_included"
+            },
+            "Actions Plus": {
+              "const": "Operations Plus"
+            }
+          }
+        },
+        "write_policy": {
+          "const": "CANONICAL_ONLY"
+        }
+      }
+    },
+    "plans": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/plan"
+      }
+    }
+  },
+  "$defs": {
+    "nullableNonNegativeInteger": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_id",
+        "public_code",
+        "kind",
+        "entitlement_kind",
+        "display_name",
+        "legacy_display_names",
+        "active_twins_included",
+        "agent_operations_included",
+        "operation_scope",
+        "operations_source",
+        "payment_card_required",
+        "eligible_promo_codes",
+        "seat_summary_pl",
+        "operation_label_pl",
+        "promo_hint_pl"
+      ],
+      "properties": {
+        "plan_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "maxLength": 96
+        },
+        "public_code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "maxLength": 96
+        },
+        "kind": {
+          "enum": [
+            "BASE_PLAN",
+            "OPERATIONS_ADDON",
+            "TWIN_ADDON",
+            "OFFLINE_OFFER"
+          ]
+        },
+        "entitlement_kind": {
+          "enum": [
+            "DIGITAL_TWIN_WITH_OPERATIONS",
+            "AGENT_OPERATIONS",
+            "DIGITAL_TWIN",
+            "CONTRACT"
+          ]
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "legacy_display_names": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "active_twins_included": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "agent_operations_included": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "operation_scope": {
+          "enum": [
+            "PER_TWIN_MONTH",
+            "ACCOUNT_MONTH",
+            "NONE",
+            "CONTRACT"
+          ]
+        },
+        "operations_source": {
+          "enum": [
+            "INCLUDED",
+            "ADD_ON",
+            "SEPARATE_PACKAGE",
+            "CONTRACT"
+          ]
+        },
+        "payment_card_required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "eligible_promo_codes": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_-]+$",
+            "maxLength": 64
+          }
+        },
+        "seat_summary_pl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 320
+        },
+        "operation_label_pl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 320
+        },
+        "promo_hint_pl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        }
+      }
+    }
+  }
+}

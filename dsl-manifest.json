@@ -3,7 +3,7 @@
   "schema": "wellmanifest.dsl/manifest/v1",
   "id": "wellmanifest.policy",
   "name": "Wellmanifest Policy DSL",
-  "version": "0.1.0-dev",
+  "version": "0.2.0-dev",
   "status": "experimental",
   "purpose": "Portable inert repository and process policy with fully typed conditions and actions",
   "domain": "policy-as-code",
@@ -36,13 +36,14 @@
     "schemas/**",
     "examples/**",
     "tests/**",
-    "docs/**"
+    "docs/**",
+    "profiles/**"
   ],
   "artifacts": [
     {
       "path": "spec/POLICY_DSL.md",
       "role": "normative-source",
-      "digest": "sha256:1ea6af6454b55a30157f2af9b6a99da64c01d42e63aea44c80c5f89d96d92600"
+      "digest": "sha256:a4c7e89ba462a157cfaff510904422b91c60e1e6048ebfe6c35a0fe301ab1d1e"
     },
     {
       "path": "spec/policy-dsl.ebnf",
@@ -57,7 +58,7 @@
     {
       "path": "schemas/policy-ir.schema.json",
       "role": "schema",
-      "digest": "sha256:b80d6ed236111dbeddfa0ecb277816e254436c9bf54c9b00e433019abf7dc607"
+      "digest": "sha256:5aa8d5432833c5a027d23948a4fe6217b7e99350503d73dc3ba428c4390750ed"
     },
     {
       "path": "tests/policy_dsl_check.py",
@@ -87,12 +88,12 @@
     {
       "path": "docs/ARCHITECTURE.md",
       "role": "documentation",
-      "digest": "sha256:fdb6b3d9664998f73c713e4aad95c76b10d953c93a68faf98d23a6b72b61036a"
+      "digest": "sha256:a00f4989465befc3f081b166c642eb3f223e19020232cc7dab0bb57027c25593"
     },
     {
       "path": "docs/LOGIC_FLOW.md",
       "role": "documentation",
-      "digest": "sha256:b986403201fb3094af58ffc9bbc1b690265f94c4d69804747da81f9cdd2ea6f9"
+      "digest": "sha256:6168d36766aa5cbf19e9881135e8f4c3d6b971b9d46f568578c97661ac67dcec"
     },
     {
       "path": "docs/ERROR/POLICY-SYNTAX-001.md",
@@ -158,6 +159,86 @@
       "path": "examples/invalid/undeclared-next-state.policy",
       "role": "example",
       "digest": "sha256:561d13420fd375fa081e8ecbe9b03b2c292f4e8eadb3d4df868d06526d3c9bcf"
+    },
+    {
+      "path": "schemas/sales-request.schema.json",
+      "role": "schema",
+      "digest": "sha256:37279f00115db7421db57822abf49f580be538fef50304b966df8319d6c37c97"
+    },
+    {
+      "path": "schemas/sales-offer-catalog.schema.json",
+      "role": "schema",
+      "digest": "sha256:a3dcf97c90fc32bd1b6837b7e8da2a0cad23df39876feaf812c3943a0db960f0"
+    },
+    {
+      "path": "schemas/sales-decision.schema.json",
+      "role": "schema",
+      "digest": "sha256:bce105260e11eba1fbbee5e76392edb71546fdc66e2f87730a9e171775bdefc4"
+    },
+    {
+      "path": "tests/test_sales_profile.py",
+      "role": "parser-contract",
+      "digest": "sha256:65226147308d63421c972553df9dc2bc680c504a704d8de388975ee8135ce4fe"
+    },
+    {
+      "path": "tests/test_manifest.py",
+      "role": "parser-contract",
+      "digest": "sha256:44d9c71b9dd09354c860a4fb7fb528f1f64abdf0b570e87436086983938a81d2"
+    },
+    {
+      "path": "profiles/sales/subactor-sales.policy",
+      "role": "example",
+      "digest": "sha256:3fa338353f839f448e3484919570afa33260f0e9ef25426db4b9206a891d16a2"
+    },
+    {
+      "path": "profiles/sales/offer-catalog.json",
+      "role": "example",
+      "digest": "sha256:5c3cd62881c3e1b809ea2ee4ae89c565c0532bdfdaa0cb0bbf2accdba91e4469"
+    },
+    {
+      "path": "profiles/sales/decision-matrix.json",
+      "role": "example",
+      "digest": "sha256:f52ac37187afa954af4060a2903cbbd1763e10e67c2b6fa257b2a0adc88c3da2"
+    },
+    {
+      "path": "profiles/sales/reference_engine.py",
+      "role": "parser-contract",
+      "digest": "sha256:c4b2e5e1df531473e3a21246d68aed7b307698f4462d79240dba60e100ebab98"
+    },
+    {
+      "path": "profiles/sales/README.md",
+      "role": "documentation",
+      "digest": "sha256:d19714bb769073a9865c88185a039e1f01e0b2ff32c1bf287ed0777796c5b46b"
+    },
+    {
+      "path": "profiles/sales/ADOPTION_PL.md",
+      "role": "documentation",
+      "digest": "sha256:d6daa014fad4d4669c7cd4eb1ab2c862a3a1a2f0173524a8e0546e3e1ab4813e"
+    },
+    {
+      "path": "docs/DOMAIN_VOCABULARY_PL.md",
+      "role": "documentation",
+      "digest": "sha256:b321ca2e28694b7a673a53fd964f370d62aac72e2959550fb893336126f084dc"
+    },
+    {
+      "path": "docs/DOMAIN_VOCABULARY.md",
+      "role": "documentation",
+      "digest": "sha256:1f215f347e405a35a5aba33dffa0e43f608f1079ef6b8f920cae6a1a784a8bc5"
+    },
+    {
+      "path": "docs/SALES_POLICY_PROFILE.md",
+      "role": "documentation",
+      "digest": "sha256:b62d025ade3fcc1350d7a7f88e912ebe67f72cdb90d72bcee14dd7ae11405127"
+    },
+    {
+      "path": "examples/sales/README.md",
+      "role": "documentation",
+      "digest": "sha256:c4e90809be2c913c4ba46077946882ec4f070986438dec83bdf741fecdf0410c"
+    },
+    {
+      "path": "examples/sales/subactor-pricing-section.html",
+      "role": "example",
+      "digest": "sha256:d7bd28987656fb6dde8737964855d91af153e45d6c396ec1ef163001a140cca7"
     }
   ],
   "namespaces": [
@@ -241,13 +322,17 @@
       "python3 tests/policy_dsl_check.py ir examples/hosting/subactor-production-server.policy --check-schema",
       "python3 tests/policy_dsl_check.py ir examples/hosting/subactor-rpi5.policy --check-schema",
       "python3 tests/policy_dsl_check.py self-test",
-      "python3 -m unittest discover -s tests -p 'test_*.py'"
+      "python3 -m unittest discover -s tests -p 'test_*.py'",
+      "python3 tests/policy_dsl_check.py validate profiles/sales/subactor-sales.policy",
+      "python3 profiles/sales/reference_engine.py validate-catalog",
+      "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json"
     ],
     "validExamples": [
       "examples/valid/contributing.policy",
       "examples/valid/CONTRIBUTING.md",
       "examples/hosting/subactor-production-server.policy",
-      "examples/hosting/subactor-rpi5.policy"
+      "examples/hosting/subactor-rpi5.policy",
+      "profiles/sales/subactor-sales.policy"
     ],
     "invalidExamples": [
       "examples/invalid/shell-injection.policy",

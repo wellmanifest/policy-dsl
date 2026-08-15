@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-request.schema.json",
+  "title": "Subactor Sales Decision Request v1",
+  "description": "Closed input for an inert sales decision. Legacy plan identifiers and public plan codes are accepted during migration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "plan_id", "promo_code"],
+  "properties": {
+    "schema": {
+      "const": "subactor.sales/request/v1"
+    },
+    "plan_id": {
+      "enum": [
+        "saas-start",
+        "saas-business",
+        "prepaid-actions",
+        "on-premise",
+        "basic",
+        "operations-plus",
+        "twin-plus"
+      ]
+    },
+    "promo_code": {
+      "type": ["string", "null"],
+      "maxLength": 128
+    }
+  }
+}

@@ -136,8 +136,8 @@
         "id": {"$ref": "#/$defs/stableId"},
         "type": {"enum": ["REQUIRED", "FORBIDDEN"]},
         "condition": {"$ref": "#/$defs/expression"},
-        "actions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}},
-        "forbidden": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}},
+        "actions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}, "description": "Policy directives emitted when the rule applies; never billable agent operations."},
+        "forbidden": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/action"}, "description": "Policy directives prohibited when the rule applies."},
         "assertions": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/expression"}},
         "next": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/nextTarget"}}
       }
@@ -160,7 +160,8 @@
         "opcode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$", "maxLength": 96},
         "payload": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]},
         "guard": {"anyOf": [{"$ref": "#/$defs/expression"}, {"type": "null"}]}
-      }
+      },
+      "description": "Inert Policy DSL directive, including a possible effect proposal. The compatibility name action does not denote an observed event, an agent task, a task run or a billable agent operation, and grants no execution authority."
     },
     "transition": {
       "type": "object",
