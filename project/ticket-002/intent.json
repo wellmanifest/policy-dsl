@@ -1,0 +1,107 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-002",
+  "summary": "Subactor host hardware Policy DSL (server + RPi)",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": ["wellmanifest/dsl", "wellmanifest/policy-dsl"]
+  },
+  "allowedPaths": [
+    "project/ticket-002/**",
+    "project/TICKETS.md",
+    "examples/hosting/**",
+    "docs/HOST_*.md",
+    "dsl-manifest.json",
+    "tests/test_host_hardware_policy.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    ".github/**",
+    "spec/**",
+    "schemas/**"
+  ],
+  "stacks": ["python"],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "7d8b2da09454cd042053ddc18930e346829d6366",
+    "targetBranch": "main",
+    "outcome": "Publish separate inert Policy DSL host specs for production VPS and Raspberry Pi 5 with human docs and conformance tests",
+    "nonGoals": [
+      "Execute deploy or provision cloud VMs",
+      "Grant runtime authority from policy text",
+      "Change Policy DSL grammar or IR schema",
+      "Modify Subactor runtime repositories in this ticket"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 15,
+      "maxAffectedComponents": 5,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Encode host fitness as two separate wellmanifest.policy/v1 documents under examples/hosting, with parallel human markdown specs; keep evaluation inert and leave deploy authority to Subactor/POA.",
+      "components": [
+        {"name": "host-policy-profiles", "paths": ["examples/hosting/**"]},
+        {"name": "host-human-specs", "paths": ["docs/HOST_PRODUCTION_SERVER.md", "docs/HOST_RPI5.md"]},
+        {"name": "host-conformance", "paths": ["tests/test_host_hardware_policy.py", "dsl-manifest.json"]}
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "Publish subactor.host/production-server/v1 and subactor.host/rpi5/v1 Policy DSL profiles"
+      ],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Delete examples/hosting host policies, docs/HOST_*.md and the host conformance test; restore prior dsl-manifest.json artifacts list."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 tests/policy_dsl_check.py validate examples/hosting/subactor-production-server.policy"
+        ],
+        "evidence": "POLICY-VALIDATION-PASS for production-server policy"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 tests/policy_dsl_check.py validate examples/hosting/subactor-rpi5.policy"
+        ],
+        "evidence": "POLICY-VALIDATION-PASS for rpi5 policy; FORBID full platform rules present"
+      },
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "test -f docs/HOST_PRODUCTION_SERVER.md",
+          "test -f docs/HOST_RPI5.md"
+        ],
+        "evidence": "Human specs exist beside Policy DSL documents"
+      },
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "Unit tests including test_host_hardware_policy pass"
+      }
+    ]
+  }
+}

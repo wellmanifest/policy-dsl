@@ -11,7 +11,13 @@
     {
       "kind": "repository",
       "id": "github:wellmanifest/policy-dsl",
-      "responsibilities": ["semantics", "validation", "compatibility", "runtime", "security"]
+      "responsibilities": [
+        "semantics",
+        "validation",
+        "compatibility",
+        "runtime",
+        "security"
+      ]
     }
   ],
   "source": {
@@ -20,7 +26,9 @@
     "declaredVersion": "1",
     "canonical": "text",
     "mediaType": "application/vnd.wellmanifest.policy",
-    "selectors": ["fenced-code:dsl"]
+    "selectors": [
+      "fenced-code:dsl"
+    ]
   },
   "ownedPaths": [
     "dsl-manifest.json",
@@ -100,10 +108,43 @@
       "path": "docs/CRITICAL/POLICY-SECURITY-001.md",
       "role": "documentation",
       "digest": "sha256:df05ef29896c7c35606597aa3e7a527de656b06255117d80d98c954cde5829d6"
+    },
+    {
+      "path": "examples/hosting/subactor-production-server.policy",
+      "role": "profile",
+      "digest": "sha256:c880d0416e409634322a2f02cdbdda3d841719a3f160846c7f07984018527915"
+    },
+    {
+      "path": "examples/hosting/subactor-rpi5.policy",
+      "role": "profile",
+      "digest": "sha256:9f51d4d40bd4ea52ba12be8c1480b88bea4bce872c3024012acdf6fb5c3b2674"
+    },
+    {
+      "path": "examples/hosting/README.md",
+      "role": "documentation",
+      "digest": "sha256:ac3626460bf0a07e31fac3442444636b3d6e38a222b0c22ff849e5e756154696"
+    },
+    {
+      "path": "docs/HOST_PRODUCTION_SERVER.md",
+      "role": "documentation",
+      "digest": "sha256:91879016fbb6e17bd6cb59161551cf78d57d1c8a062de12d0640f97ccae4bd64"
+    },
+    {
+      "path": "docs/HOST_RPI5.md",
+      "role": "documentation",
+      "digest": "sha256:4d75dafe29958c53c43c7023fde9ecd587c744a43172f48359ac4db17c40636e"
+    },
+    {
+      "path": "tests/test_host_hardware_policy.py",
+      "role": "conformance-test",
+      "digest": "sha256:2cea57fc6e2f9e08a8c165b69c52aa6488037da04cd47bd227e6c487fd8e28ec"
     }
   ],
   "namespaces": [
-    {"prefix": "policy", "uri": "https://wellmanifest.dev/policy/"}
+    {
+      "prefix": "policy",
+      "uri": "https://wellmanifest.dev/policy/"
+    }
   ],
   "projections": [],
   "lifecycle": {
@@ -121,7 +162,9 @@
   "llm": {
     "mode": "output",
     "requestSchemas": [],
-    "responseSchemas": ["schemas/policy-ir.schema.json"],
+    "responseSchemas": [
+      "schemas/policy-ir.schema.json"
+    ],
     "naturalLanguage": "forbidden",
     "sourceSchema": null,
     "modelAuthority": "propose-only",
@@ -133,14 +176,25 @@
     "errorRoot": "docs/ERROR",
     "criticalRoot": "docs/CRITICAL",
     "commands": [],
-    "errorCodes": ["POLICY-SEMANTIC-001", "POLICY-SYNTAX-001"],
-    "criticalCodes": ["POLICY-SECURITY-001"]
+    "errorCodes": [
+      "POLICY-SEMANTIC-001",
+      "POLICY-SYNTAX-001"
+    ],
+    "criticalCodes": [
+      "POLICY-SECURITY-001"
+    ]
   },
   "findingPolicy": {
     "schema": "wellmanifest.dsl/findings/v1",
-    "requiredProducers": ["wellmanifest.policy-dsl-check"],
-    "securityProducers": ["wellmanifest.policy-dsl-check"],
-    "blockingSeverities": ["critical"],
+    "requiredProducers": [
+      "wellmanifest.policy-dsl-check"
+    ],
+    "securityProducers": [
+      "wellmanifest.policy-dsl-check"
+    ],
+    "blockingSeverities": [
+      "critical"
+    ],
     "requireEvaluable": true,
     "blockUnresolvedSecurity": true
   },
@@ -152,16 +206,32 @@
     "runtimeIsolation": false
   },
   "conformance": {
-    "levels": ["manifest", "contract", "runtime", "llm-boundary"],
+    "levels": [
+      "manifest",
+      "contract",
+      "runtime",
+      "llm-boundary"
+    ],
     "commands": [
       "python3 tests/policy_dsl_check.py validate examples/valid/contributing.policy",
       "python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md",
       "python3 tests/policy_dsl_check.py ir examples/valid/contributing.policy --check-schema",
+      "python3 tests/policy_dsl_check.py validate examples/hosting/subactor-production-server.policy",
+      "python3 tests/policy_dsl_check.py validate examples/hosting/subactor-rpi5.policy",
+      "python3 tests/policy_dsl_check.py ir examples/hosting/subactor-production-server.policy --check-schema",
+      "python3 tests/policy_dsl_check.py ir examples/hosting/subactor-rpi5.policy --check-schema",
       "python3 tests/policy_dsl_check.py self-test",
       "python3 -m unittest discover -s tests -p 'test_*.py'"
     ],
-    "validExamples": ["examples/valid/contributing.policy", "examples/valid/CONTRIBUTING.md"],
-    "invalidExamples": ["examples/invalid/shell-injection.policy"]
+    "validExamples": [
+      "examples/valid/contributing.policy",
+      "examples/valid/CONTRIBUTING.md",
+      "examples/hosting/subactor-production-server.policy",
+      "examples/hosting/subactor-rpi5.policy"
+    ],
+    "invalidExamples": [
+      "examples/invalid/shell-injection.policy"
+    ]
   },
   "mappings": [
     {
