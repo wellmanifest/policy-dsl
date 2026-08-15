@@ -7,9 +7,10 @@ v1 identity, uniqueness or typed Policy IR contract.
 
 ## Cause
 
-Typical causes are duplicate rule, state or binding names; an unsupported
-scalar type; an invalid default value; or an unknown or missing Policy IR
-field.
+Typical causes are duplicate rule, state, binding, environment or transition
+names; a `NEXT` or `TRANSITION` endpoint that is not a declared `STATE`; an
+unsupported scalar type; an invalid default value; or an unknown or missing
+Policy IR field.
 
 ## Resolution
 

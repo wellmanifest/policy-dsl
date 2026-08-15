@@ -1,0 +1,383 @@
+{
+  "schema": "new-project.remediation-intent/v1",
+  "intentId": "RI-POLICY-IR-VALIDATE-003",
+  "ticket": "ticket-003",
+  "repository": "wellmanifest/policy-dsl",
+  "ownerRoute": "agent:composer",
+  "status": "READY",
+  "source": {
+    "producer": {
+      "name": "policy-ir-gap-audit",
+      "version": "ticket-003"
+    },
+    "observedAt": "2026-08-15T18:37:03Z",
+    "reportDigest": "584abd1fbd96be2585cb6bb3ca885f7f2d115491349d89afd0109941bfc6e8d4"
+  },
+  "objective": {
+    "outcome": "validate_ir enforces unique bindings, environment names and transitions, and rejects NEXT/transition endpoints absent from declared states.",
+    "nonGoals": [
+      "Do not change Policy IR schema major or close domain opcodes.",
+      "Do not publish agent/report or refresh hub governance locks in this ticket."
+    ],
+    "constraints": [
+      "Preserve inert Policy IR boundary.",
+      "Keep existing host hardware policies valid.",
+      "Stay inside ticket-003 allowedPaths."
+    ]
+  },
+  "scope": {
+    "allowedPaths": [
+      "tests/policy_dsl_check.py",
+      "tests/test_policy_dsl.py",
+      "examples/valid/**",
+      "examples/invalid/**",
+      "spec/POLICY_DSL.md",
+      "docs/ERROR/POLICY-SEMANTIC-001.md",
+      "dsl-manifest.json",
+      "project/ticket-003/**"
+    ],
+    "forbiddenPaths": [
+      ".env",
+      "schemas/**",
+      ".governance/**"
+    ],
+    "preservePaths": [
+      "examples/hosting/**"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F-DUP-BINDING-IR",
+      "category": "CONTRACT_DRIFT",
+      "status": "PROPOSED",
+      "priority": "P1",
+      "summary": "validate_ir omits duplicate binding checks that semantic_checks performs on parse.",
+      "diagnostic": {
+        "code": "PLANNED_NOT_IMPLEMENTED",
+        "current": "MISSING",
+        "required": "EMIT"
+      },
+      "evidence": [
+        {
+          "ref": "tests/policy_dsl_check.py#validate_ir",
+          "observation": "Binding loop validates shape only; uniqueness checked solely in PolicyParser.semantic_checks."
+        }
+      ],
+      "applicability": {
+        "requiredSignals": [
+          "Hand-crafted Policy IR JSON validated without parse()"
+        ],
+        "excludedSignals": [],
+        "unknownOutcome": "BLOCK"
+      },
+      "desiredOutcome": "validate_ir raises POLICY-SEMANTIC-001 on duplicate binding names.",
+      "affectedPaths": [
+        "tests/policy_dsl_check.py",
+        "tests/test_policy_dsl.py",
+        "examples/invalid/duplicate-binding.policy"
+      ],
+      "dependsOn": [],
+      "acceptanceCriteria": [
+        "AC-01",
+        "AC-03"
+      ]
+    },
+    {
+      "id": "F-DUP-ENV-TRANSITION",
+      "category": "CONTRACT_DRIFT",
+      "status": "PROPOSED",
+      "priority": "P1",
+      "summary": "Neither path rejects duplicate environment names or duplicate transition edges.",
+      "diagnostic": {
+        "code": "PLANNED_NOT_IMPLEMENTED",
+        "current": "MISSING",
+        "required": "EMIT"
+      },
+      "evidence": [
+        {
+          "ref": "tests/policy_dsl_check.py#validate_ir",
+          "observation": "No uniqueness for environment variable/secret names or transition (from,to) pairs."
+        }
+      ],
+      "applicability": {
+        "requiredSignals": [
+          "Policy IR with repeated VARIABLE/SECRET names or repeated TRANSITION edges"
+        ],
+        "excludedSignals": [],
+        "unknownOutcome": "BLOCK"
+      },
+      "desiredOutcome": "Duplicates reject with POLICY-SEMANTIC-001.",
+      "affectedPaths": [
+        "tests/policy_dsl_check.py",
+        "examples/invalid/duplicate-environment.policy",
+        "examples/invalid/duplicate-transition.policy"
+      ],
+      "dependsOn": [],
+      "acceptanceCriteria": [
+        "AC-01",
+        "AC-03"
+      ]
+    },
+    {
+      "id": "F-UNDECLARED-STATE",
+      "category": "CONTRACT_DRIFT",
+      "status": "PROPOSED",
+      "priority": "P1",
+      "summary": "NEXT and TRANSITION may reference symbols absent from declared STATE set; CONTRIBUTING.md does so today.",
+      "diagnostic": {
+        "code": "AMBIGUOUS_REQUIREMENT",
+        "current": "MISSING",
+        "required": "EMIT"
+      },
+      "evidence": [
+        {
+          "ref": "examples/valid/CONTRIBUTING.md",
+          "observation": "NEXT VALIDATION/PLAN with empty states[]; ALLOWED_STATES binding is not a STATE declaration."
+        }
+      ],
+      "applicability": {
+        "requiredSignals": [
+          "Document uses NEXT or TRANSITION"
+        ],
+        "excludedSignals": [],
+        "unknownOutcome": "BLOCK"
+      },
+      "desiredOutcome": "Undeclared endpoints reject; CONTRIBUTING.md declares matching STATE symbols.",
+      "affectedPaths": [
+        "tests/policy_dsl_check.py",
+        "examples/valid/CONTRIBUTING.md",
+        "examples/invalid/undeclared-next-state.policy",
+        "spec/POLICY_DSL.md",
+        "docs/ERROR/POLICY-SEMANTIC-001.md"
+      ],
+      "dependsOn": [],
+      "acceptanceCriteria": [
+        "AC-02",
+        "AC-03"
+      ]
+    },
+    {
+      "id": "F-FOLLOWUP-DISCOVERY",
+      "category": "OTHER",
+      "status": "PROPOSED",
+      "priority": "P2",
+      "summary": "Capture further standard gaps discovered via todo2code/DSL analysis for later tickets.",
+      "diagnostic": {
+        "code": "AMBIGUOUS_REQUIREMENT",
+        "current": "MISSING",
+        "required": "EMIT"
+      },
+      "evidence": [
+        {
+          "ref": "project/ticket-003/DISCOVERY.md",
+          "observation": "Advisory discovery output only; does not expand this ticket authority."
+        }
+      ],
+      "applicability": {
+        "requiredSignals": [
+          "Remediation analyze-todo2code or conformance audit completed"
+        ],
+        "excludedSignals": [],
+        "unknownOutcome": "REPORT"
+      },
+      "desiredOutcome": "DISCOVERY.md lists out-of-scope follow-ups without implementing them here.",
+      "affectedPaths": [
+        "project/ticket-003/DISCOVERY.md",
+        "project/ticket-003/REMEDIATION.task.md",
+        "project/ticket-003/REMEDIATION.todo.md"
+      ],
+      "dependsOn": [
+        "F-DUP-BINDING-IR",
+        "F-DUP-ENV-TRANSITION",
+        "F-UNDECLARED-STATE"
+      ],
+      "acceptanceCriteria": [
+        "AC-04"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-HARDEN-VALIDATE-IR",
+      "findingIds": [
+        "F-DUP-BINDING-IR",
+        "F-DUP-ENV-TRANSITION",
+        "F-UNDECLARED-STATE"
+      ],
+      "operation": "IMPLEMENT",
+      "description": "Add uniqueness and state-reference checks to validate_ir; update fixtures, tests, docs and digests.",
+      "paths": [
+        "tests/policy_dsl_check.py",
+        "tests/test_policy_dsl.py",
+        "examples/valid/CONTRIBUTING.md",
+        "examples/invalid/duplicate-binding.policy",
+        "examples/invalid/duplicate-environment.policy",
+        "examples/invalid/duplicate-transition.policy",
+        "examples/invalid/undeclared-next-state.policy",
+        "spec/POLICY_DSL.md",
+        "docs/ERROR/POLICY-SEMANTIC-001.md",
+        "dsl-manifest.json"
+      ],
+      "dependsOn": [],
+      "verificationIds": [
+        "V-UNIT",
+        "V-SELF-TEST",
+        "V-INVALID"
+      ],
+      "risk": {
+        "level": "REVERSIBLE_WRITE",
+        "authorization": "SESSION_EXECUTION_AUTHORIZATION",
+        "automation": "ALLOWED",
+        "preservesUserData": true
+      }
+    },
+    {
+      "id": "A-DISCOVERY",
+      "findingIds": [
+        "F-FOLLOWUP-DISCOVERY"
+      ],
+      "operation": "DOCUMENT",
+      "description": "Render todo2code projections and record further gaps in DISCOVERY.md without expanding scope.",
+      "paths": [
+        "project/ticket-003/DISCOVERY.md",
+        "project/ticket-003/REMEDIATION.task.md",
+        "project/ticket-003/REMEDIATION.todo.md"
+      ],
+      "dependsOn": [
+        "A-HARDEN-VALIDATE-IR"
+      ],
+      "verificationIds": [
+        "V-REMEDIATION"
+      ],
+      "risk": {
+        "level": "READ_ONLY",
+        "authorization": "NOT_APPLICABLE",
+        "automation": "ALLOWED",
+        "preservesUserData": true
+      }
+    }
+  ],
+  "verifications": [
+    {
+      "id": "V-UNIT",
+      "type": "COMMAND",
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+      "expected": "exit 0",
+      "deterministic": true,
+      "covers": [
+        "F-DUP-BINDING-IR",
+        "F-DUP-ENV-TRANSITION",
+        "F-UNDECLARED-STATE",
+        "A-HARDEN-VALIDATE-IR"
+      ]
+    },
+    {
+      "id": "V-SELF-TEST",
+      "type": "COMMAND",
+      "command": "python3 tests/policy_dsl_check.py self-test",
+      "expected": "POLICY-CONFORMANCE-PASS",
+      "deterministic": true,
+      "covers": [
+        "F-UNDECLARED-STATE",
+        "A-HARDEN-VALIDATE-IR"
+      ]
+    },
+    {
+      "id": "V-INVALID",
+      "type": "COMMAND",
+      "command": "python3 tests/policy_dsl_check.py validate examples/invalid/duplicate-binding.policy",
+      "expected": "POLICY-SEMANTIC-001 non-zero exit",
+      "deterministic": true,
+      "covers": [
+        "F-DUP-BINDING-IR",
+        "A-HARDEN-VALIDATE-IR"
+      ]
+    },
+    {
+      "id": "V-REMEDIATION",
+      "type": "COMMAND",
+      "command": "python3 .governance/remediation_intent.py verify-todo2code project/ticket-003/remediation-intent.dsl.json",
+      "expected": "projections match byte-for-byte",
+      "deterministic": true,
+      "covers": [
+        "F-FOLLOWUP-DISCOVERY",
+        "A-DISCOVERY"
+      ]
+    }
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-01",
+      "statement": "Unit tests cover and pass uniqueness and state-ref hardening.",
+      "findingIds": [
+        "F-DUP-BINDING-IR",
+        "F-DUP-ENV-TRANSITION",
+        "F-UNDECLARED-STATE"
+      ],
+      "verificationIds": [
+        "V-UNIT"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "statement": "Self-test and CONTRIBUTING.md markdown validation pass with declared states.",
+      "findingIds": [
+        "F-UNDECLARED-STATE"
+      ],
+      "verificationIds": [
+        "V-SELF-TEST"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "statement": "Invalid fixtures reject with POLICY-SEMANTIC-001.",
+      "findingIds": [
+        "F-DUP-BINDING-IR",
+        "F-DUP-ENV-TRANSITION",
+        "F-UNDECLARED-STATE"
+      ],
+      "verificationIds": [
+        "V-INVALID",
+        "V-UNIT"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "statement": "Remediation todo2code projections verified; discovery notes recorded.",
+      "findingIds": [
+        "F-FOLLOWUP-DISCOVERY"
+      ],
+      "verificationIds": [
+        "V-REMEDIATION"
+      ]
+    }
+  ],
+  "llmGuidance": {
+    "role": "Plan bounded Policy IR semantic hardening; do not widen schema or authority.",
+    "mustPreserve": [
+      "Inert Policy IR boundary",
+      "Host hardware policy fixtures",
+      "Open domain opcodes outside candidate profile"
+    ],
+    "forbiddenAssumptions": [
+      "Do not treat todo2code output as authority to expand allowedPaths."
+    ],
+    "planningOrder": [
+      "A-HARDEN-VALIDATE-IR",
+      "A-DISCOVERY"
+    ],
+    "openQuestions": []
+  },
+  "todo2code": {
+    "enabled": true,
+    "taskPath": "project/ticket-003/REMEDIATION.task.md",
+    "todoPath": "project/ticket-003/REMEDIATION.todo.md",
+    "planSchema": "t2c.code-change-plan/v1",
+    "requiredDiagnosticCodes": [
+      "AMBIGUOUS_REQUIREMENT",
+      "HUMAN_AGENT_CONFLICT",
+      "HUMAN_COMMUNICATION_CONFLICT",
+      "PLANNED_NOT_IMPLEMENTED"
+    ]
+  }
+}
