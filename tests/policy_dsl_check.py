@@ -638,6 +638,7 @@ def validate_ir(ir: Any) -> None:
     for name, limit in (("purpose", 1000), ("policy", 320)):
         if document[name] is not None and (not isinstance(document[name], str) or len(document[name]) > limit):
             raise PolicyError("POLICY-SEMANTIC-001", f"invalid document {name}")
+    environment_names: list[str] = []
     for environment in ir["environment"]:
         if not isinstance(environment, dict):
             raise PolicyError("POLICY-SEMANTIC-001", "environment binding must be an object")
@@ -656,14 +657,18 @@ def validate_ir(ir: Any) -> None:
                 raise PolicyError("POLICY-SEMANTIC-001", "invalid VARIABLE requirement")
             if environment["default"] is not None:
                 validate_expression({"node": "literal", "value": environment["default"]})
+            environment_names.append(environment["name"])
         elif kind == "secret":
             keys = {"kind", "name", "value_type", "required", "redact"}
             _keys(environment, keys, keys, "secret")
             _validate_environment_name_type(environment)
             if environment["required"] is not True or environment["redact"] is not True:
                 raise PolicyError("POLICY-SEMANTIC-001", "SECRET must be required and redacted")
+            environment_names.append(environment["name"])
         else:
             raise PolicyError("POLICY-SEMANTIC-001", "unknown environment binding kind")
+    if len(environment_names) != len(set(environment_names)):
+        raise PolicyError("POLICY-SEMANTIC-001", "duplicate environment name")
     for binding in ir["bindings"]:
         _keys(binding, {"name", "operator", "value"}, {"name", "operator", "value"}, "binding")
         if not isinstance(binding["name"], str) or not re.fullmatch(SYMBOL, binding["name"]):
@@ -671,6 +676,9 @@ def validate_ir(ir: Any) -> None:
         if binding["operator"] not in {"=", "IN"}:
             raise PolicyError("POLICY-SEMANTIC-001", "invalid binding operator")
         validate_expression(binding["value"])
+    binding_names = [binding["name"] for binding in ir["bindings"]]
+    if len(binding_names) != len(set(binding_names)):
+        raise PolicyError("POLICY-SEMANTIC-001", "duplicate binding")
     for rule in ir["rules"]:
         rule_keys = {"id", "type", "condition", "actions", "forbidden", "assertions", "next"}
         _keys(rule, rule_keys, rule_keys, "rule")
@@ -711,12 +719,23 @@ def validate_ir(ir: Any) -> None:
         raise PolicyError("POLICY-SEMANTIC-001", "invalid state")
     if len(set(ir["states"])) != len(ir["states"]):
         raise PolicyError("POLICY-SEMANTIC-001", "duplicate state")
+    states = set(ir["states"])
+    for rule in ir["rules"]:
+        for target in rule["next"]:
+            if target["target"] not in states:
+                raise PolicyError("POLICY-SEMANTIC-001", "NEXT target references undeclared state")
+    transition_edges: list[tuple[str, str]] = []
     for transition in ir["transitions"]:
         _keys(transition, {"from", "to", "condition"}, {"from", "to", "condition"}, "transition")
         if any(not isinstance(transition[name], str) or not re.fullmatch(SYMBOL, transition[name]) for name in ("from", "to")):
             raise PolicyError("POLICY-SEMANTIC-001", "invalid transition state")
+        if transition["from"] not in states or transition["to"] not in states:
+            raise PolicyError("POLICY-SEMANTIC-001", "transition references undeclared state")
         if transition["condition"] is not None:
             validate_expression(transition["condition"])
+        transition_edges.append((transition["from"], transition["to"]))
+    if len(transition_edges) != len(set(transition_edges)):
+        raise PolicyError("POLICY-SEMANTIC-001", "duplicate transition")
 
 
 def _validate_environment_name_type(environment: dict[str, Any]) -> None:

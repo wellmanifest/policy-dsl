@@ -60,8 +60,46 @@ class PolicyDslConformanceTest(unittest.TestCase):
         ir = CHECK.parse_markdown(markdown)
         self.assertEqual(["C-CONTRIBUTING-001"], [rule["id"] for rule in ir["rules"]])
         self.assertEqual("binary", ir["rules"][0]["condition"]["node"])
+        self.assertEqual(["PLAN", "PUBLICATION", "VALIDATION"], sorted(ir["states"]))
         self.assertEqual("VALIDATION", ir["rules"][0]["next"][0]["target"])
         self.assertEqual("PLAN", ir["rules"][0]["next"][1]["target"])
+
+    def test_validate_ir_rejects_duplicate_binding(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        ir["bindings"].append(dict(ir["bindings"][0]))
+        with self.assertRaisesRegex(CHECK.PolicyError, "duplicate binding"):
+            CHECK.validate_ir(ir)
+
+    def test_validate_ir_rejects_duplicate_environment_name(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        variable = next(item for item in ir["environment"] if item["kind"] == "variable")
+        ir["environment"].append(dict(variable))
+        with self.assertRaisesRegex(CHECK.PolicyError, "duplicate environment name"):
+            CHECK.validate_ir(ir)
+
+    def test_validate_ir_rejects_duplicate_transition(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        ir["transitions"].append(dict(ir["transitions"][0]))
+        with self.assertRaisesRegex(CHECK.PolicyError, "duplicate transition"):
+            CHECK.validate_ir(ir)
+
+    def test_validate_ir_rejects_undeclared_next_state(self):
+        ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
+        ir["rules"][0]["next"] = [{"target": "MISSING", "condition": None}]
+        with self.assertRaisesRegex(CHECK.PolicyError, "undeclared state"):
+            CHECK.validate_ir(ir)
+
+    def test_invalid_uniqueness_fixtures_reject(self):
+        cases = {
+            "duplicate-binding.policy": "duplicate binding",
+            "duplicate-environment.policy": "duplicate environment name",
+            "duplicate-transition.policy": "duplicate transition",
+            "undeclared-next-state.policy": "undeclared state",
+        }
+        for name, message in cases.items():
+            with self.subTest(name=name):
+                with self.assertRaisesRegex(CHECK.PolicyError, message):
+                    CHECK.parse((ROOT / "examples/invalid" / name).read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

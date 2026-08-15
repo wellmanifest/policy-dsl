@@ -1,0 +1,127 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-003",
+  "summary": "Harden Policy IR validate_ir uniqueness and state refs",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl",
+      "wellmanifest/new-project"
+    ]
+  },
+  "allowedPaths": [
+    "project/ticket-003/**",
+    "project/TICKETS.md",
+    "TODO.md",
+    "tests/policy_dsl_check.py",
+    "tests/test_policy_dsl.py",
+    "examples/valid/**",
+    "examples/invalid/**",
+    "spec/POLICY_DSL.md",
+    "docs/ERROR/POLICY-SEMANTIC-001.md",
+    "dsl-manifest.json",
+    "project/ticket-002/README.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    ".github/**",
+    "schemas/**"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "251448881f63b2f733aebd6b97799081a3a33955",
+    "targetBranch": "main",
+    "outcome": "validate_ir rejects duplicate bindings/environment names/transitions and undeclared NEXT or transition states; fixtures and digests stay green",
+    "nonGoals": [
+      "Change Policy IR schema major or open opcode enum",
+      "Publish wellmanifest.agent/report/v1",
+      "Refresh .governance lock from new-project hub",
+      "Grant execution authority from Policy IR"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 15,
+      "maxAffectedComponents": 5,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Close semantic gaps in validate_ir (hand-crafted IR path) without widening schema; keep opcode open for domain documents; fix CONTRIBUTING.md to declare STATE symbols referenced by NEXT.",
+      "components": [
+        {
+          "name": "policy-checker",
+          "paths": [
+            "tests/policy_dsl_check.py",
+            "tests/test_policy_dsl.py"
+          ]
+        },
+        {
+          "name": "policy-fixtures",
+          "paths": [
+            "examples/valid/**",
+            "examples/invalid/**"
+          ]
+        },
+        {
+          "name": "policy-docs",
+          "paths": [
+            "spec/POLICY_DSL.md",
+            "docs/ERROR/POLICY-SEMANTIC-001.md",
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert checker uniqueness/ref checks and restore prior CONTRIBUTING.md / digests."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "Unit tests pass including new uniqueness and state-ref cases"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 tests/policy_dsl_check.py self-test",
+          "python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md"
+        ],
+        "evidence": "Self-test and markdown fixture pass with declared STATE symbols"
+      },
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "python3 tests/policy_dsl_check.py validate examples/invalid/duplicate-binding.policy",
+          "python3 tests/policy_dsl_check.py validate examples/invalid/undeclared-next-state.policy"
+        ],
+        "evidence": "Invalid fixtures reject with POLICY-SEMANTIC-001"
+      }
+    ]
+  }
+}

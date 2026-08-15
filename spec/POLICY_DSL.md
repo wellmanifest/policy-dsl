@@ -59,7 +59,11 @@ and MUST reject it when no domain binding exists.
 
 `STATE` and `TRANSITION A -> B WHEN ...` describe a state graph. Declaring a
 transition does not authorize the transition. A consumer MUST independently
-verify its input, policy, current state and authority.
+verify its input, policy, current state and authority. `NEXT` targets and
+`TRANSITION` endpoints MUST name a declared `STATE`. Duplicate rule ids,
+binding names, environment variable/secret names, state names and
+`TRANSITION` edges (`from`,`to`) MUST be rejected whether the document was
+parsed from text or validated as Policy IR JSON.
 
 ### 3.1 Markdown carrier
 

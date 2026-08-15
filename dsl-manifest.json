@@ -42,7 +42,7 @@
     {
       "path": "spec/POLICY_DSL.md",
       "role": "normative-source",
-      "digest": "sha256:4d7da4b9ded58e9fa24eec76375f752ad6ae1712c49dd466480ce10fb0f04ba6"
+      "digest": "sha256:1ea6af6454b55a30157f2af9b6a99da64c01d42e63aea44c80c5f89d96d92600"
     },
     {
       "path": "spec/policy-dsl.ebnf",
@@ -62,12 +62,12 @@
     {
       "path": "tests/policy_dsl_check.py",
       "role": "parser-contract",
-      "digest": "sha256:1ebed8ada3f687bf82de235b352ec1ce94b606887ad2a1657d66bd58f04314e8"
+      "digest": "sha256:17697702e435c5f907f3ab400b62b0bce323558b5bdc35dff15cc48e1cde54f8"
     },
     {
       "path": "tests/test_policy_dsl.py",
       "role": "parser-contract",
-      "digest": "sha256:854eff27987b9786a8e1470d072244a0740e6eb5fe2ef8e398108b5b93476afe"
+      "digest": "sha256:3b937eaf85272a550f1a9ea9e454bedcddafec7434800375f38ac91da155ce1f"
     },
     {
       "path": "examples/valid/contributing.policy",
@@ -77,7 +77,7 @@
     {
       "path": "examples/valid/CONTRIBUTING.md",
       "role": "example",
-      "digest": "sha256:0e77dc9725cfda5073d82d3ffc32492c40448cd0c45ed7716834965f0437e69a"
+      "digest": "sha256:a618c1f546b9a930e4f5e3aad55eb4a69858d8e64c9901999b98188c23e9d3eb"
     },
     {
       "path": "examples/invalid/shell-injection.policy",
@@ -102,7 +102,7 @@
     {
       "path": "docs/ERROR/POLICY-SEMANTIC-001.md",
       "role": "documentation",
-      "digest": "sha256:380ad7cc0d1ab8b8c5d5bb03d59fc3b183537f342968df0c4cb327f88328d263"
+      "digest": "sha256:605bab5b1e51392e7880b68880e2e61a20e206dc8c4797bc9b8e01d356b240df"
     },
     {
       "path": "docs/CRITICAL/POLICY-SECURITY-001.md",
@@ -138,6 +138,26 @@
       "path": "tests/test_host_hardware_policy.py",
       "role": "conformance-test",
       "digest": "sha256:2cea57fc6e2f9e08a8c165b69c52aa6488037da04cd47bd227e6c487fd8e28ec"
+    },
+    {
+      "path": "examples/invalid/duplicate-binding.policy",
+      "role": "example",
+      "digest": "sha256:2f84c02654e007c428044e398afbc39060a77c7c6bd7cb2033c45b82c0ee9d12"
+    },
+    {
+      "path": "examples/invalid/duplicate-environment.policy",
+      "role": "example",
+      "digest": "sha256:304cf6e93cfa251519ba0f4cc95973803c1ad7ec9f2e26d1f3b0a33c174e1a53"
+    },
+    {
+      "path": "examples/invalid/duplicate-transition.policy",
+      "role": "example",
+      "digest": "sha256:e490691978d4665b43c086639b868ef1f3fdb9bab81ab9d278532b115306da48"
+    },
+    {
+      "path": "examples/invalid/undeclared-next-state.policy",
+      "role": "example",
+      "digest": "sha256:561d13420fd375fa081e8ecbe9b03b2c292f4e8eadb3d4df868d06526d3c9bcf"
     }
   ],
   "namespaces": [
@@ -230,7 +250,11 @@
       "examples/hosting/subactor-rpi5.policy"
     ],
     "invalidExamples": [
-      "examples/invalid/shell-injection.policy"
+      "examples/invalid/shell-injection.policy",
+      "examples/invalid/duplicate-binding.policy",
+      "examples/invalid/duplicate-environment.policy",
+      "examples/invalid/duplicate-transition.policy",
+      "examples/invalid/undeclared-next-state.policy"
     ]
   },
   "mappings": [
