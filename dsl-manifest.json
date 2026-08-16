@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/wellmanifest/dsl/b7d0595c95e5abbb48ebfdbdae0bc6d43c6f82f4/schemas/dsl-manifest.schema.json",
+  "$schema": "https://raw.githubusercontent.com/wellmanifest/dsl/0e088f9efa06a903d1674f42b8ac6afaa0fdf071/schemas/dsl-manifest.schema.json",
   "schema": "wellmanifest.dsl/manifest/v1",
   "id": "wellmanifest.policy",
   "name": "Wellmanifest Policy DSL",
@@ -183,7 +183,7 @@
     {
       "path": "tests/test_manifest.py",
       "role": "parser-contract",
-      "digest": "sha256:44d9c71b9dd09354c860a4fb7fb528f1f64abdf0b570e87436086983938a81d2"
+      "digest": "sha256:4932d3fd7a314b9ae284eacc3aeb0a78d8e6ba758010be79113992ab3ead9588"
     },
     {
       "path": "profiles/sales/subactor-sales.policy",
@@ -391,7 +391,7 @@
         "standard": "wellmanifest.dsl",
         "version": "0.1.0-dev",
         "repository": "https://github.com/wellmanifest/dsl",
-        "revision": "b7d0595c95e5abbb48ebfdbdae0bc6d43c6f82f4",
+        "revision": "0e088f9efa06a903d1674f42b8ac6afaa0fdf071",
         "contracts": [
           {
             "ref": "https://wellmanifest.dev/schemas/dsl-manifest/v1",

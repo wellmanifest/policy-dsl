@@ -40,6 +40,22 @@ class DslManifestTest(unittest.TestCase):
         self.assertTrue(expected <= paths)
         self.assertIn("profiles/**", manifest["ownedPaths"])
 
+    def test_dsl_standards_lock_contract_digest(self):
+        manifest = json.loads((ROOT / "dsl-manifest.json").read_text(encoding="utf-8"))
+        lock = manifest["standardsLock"]
+        self.assertEqual(lock["schema"], "wellmanifest.standards-lock/v1")
+        by_standard = {entry["standard"]: entry for entry in lock["entries"]}
+        self.assertIn("wellmanifest.dsl", by_standard)
+        self.assertNotIn("wellmanifest.wellm", by_standard)
+        dsl = by_standard["wellmanifest.dsl"]
+        self.assertEqual(dsl["revision"], "0e088f9efa06a903d1674f42b8ac6afaa0fdf071")
+        self.assertEqual(len(dsl["contracts"]), 1)
+        self.assertEqual(
+            dsl["contracts"][0]["digest"],
+            "sha256:34d356b76bbd483372df84bb986e15bb84e9c1f8b11b7dc9e3a6c7276c85ed13",
+        )
+        self.assertIn(dsl["revision"], manifest["$schema"])
+
 
 if __name__ == "__main__":
     unittest.main()
