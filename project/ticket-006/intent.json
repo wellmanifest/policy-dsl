@@ -41,11 +41,11 @@
       "No managed governance package upgrade",
       "No Subactor adapter work"
     ],
-    "complexity": "S",
-    "estimatedMinutes": 15,
+    "complexity": "XS",
+    "estimatedMinutes": 10,
     "budgets": {
-      "maxImplementationFiles": 3,
-      "maxAffectedComponents": 2,
+      "maxImplementationFiles": 1,
+      "maxAffectedComponents": 1,
       "maxPublicInterfaceChanges": 0,
       "maxRuntimeDependencies": 0
     },
@@ -57,18 +57,6 @@
           "name": "governance-manifest",
           "paths": [
             ".governance/manifest.json"
-          ]
-        },
-        {
-          "name": "ticket-004-closure",
-          "paths": [
-            "project/ticket-004/README.md"
-          ]
-        },
-        {
-          "name": "ticket-006-evidence",
-          "paths": [
-            "project/ticket-006/**"
           ]
         }
       ],
