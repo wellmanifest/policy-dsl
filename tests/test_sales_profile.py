@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -78,6 +79,22 @@ class SubactorSalesProfileTest(unittest.TestCase):
         self.assertIn("Actions Plus", operations["legacy_display_names"])
         self.assertEqual("AGENT_OPERATION", catalog["vocabulary"]["unit_code"])
         self.assertNotIn("actions_included", operations)
+        self.assertEqual("2026-08-16", catalog["compatibility"]["write_freeze_date"])
+        self.assertEqual("CANONICAL_ONLY", catalog["compatibility"]["write_policy"])
+
+    def test_legacy_write_freeze_rejects_actions_included_on_plan(self):
+        catalog = json.loads(
+            (ROOT / "profiles/sales/offer-catalog.json").read_text(encoding="utf-8")
+        )
+        catalog["plans"][0]["actions_included"] = 1000
+        with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as handle:
+            json.dump(catalog, handle)
+            path = Path(handle.name)
+        try:
+            with self.assertRaisesRegex(SALES.SalesPolicyError, "legacy write freeze"):
+                SALES.load_catalog(path)
+        finally:
+            path.unlink(missing_ok=True)
         self.assertEqual(
             "agent_operations_included",
             catalog["compatibility"]["read_aliases"]["actions_included"],

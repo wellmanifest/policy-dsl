@@ -109,9 +109,15 @@ def load_catalog(path: Path | None = None) -> dict[str, Any]:
     _require_string(vocabulary["definition_pl"], "catalog vocabulary definition")
 
     compatibility = catalog["compatibility"]
-    _exact_keys(compatibility, {"read_aliases", "write_policy"}, "catalog compatibility")
+    _exact_keys(
+        compatibility,
+        {"read_aliases", "write_policy", "write_freeze_date"},
+        "catalog compatibility",
+    )
     if compatibility["write_policy"] != "CANONICAL_ONLY":
         raise SalesPolicyError("catalog must write canonical names only")
+    if compatibility["write_freeze_date"] != "2026-08-16":
+        raise SalesPolicyError("catalog write_freeze_date must be 2026-08-16")
     if compatibility["read_aliases"] != {
         "actions_included": "agent_operations_included",
         "Actions Plus": "Operations Plus",
@@ -145,6 +151,13 @@ def load_catalog(path: Path | None = None) -> dict[str, Any]:
     plan_ids: set[str] = set()
     public_codes: set[str] = set()
     for index, plan in enumerate(plans):
+        if isinstance(plan, dict) and (
+            "actions_included" in plan or plan.get("display_name") == "Actions Plus"
+        ):
+            raise SalesPolicyError(
+                "legacy write freeze (2026-08-16): plan must not write "
+                "actions_included or display name Actions Plus"
+            )
         _exact_keys(plan, plan_keys, f"plan[{index}]")
         plan_id = plan["plan_id"]
         public_code = plan["public_code"]
