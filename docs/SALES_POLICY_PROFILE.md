@@ -7,17 +7,23 @@ profile documentation is in `profiles/sales/README.md` and
 ## Purpose
 
 The profile replaces three independently maintained promotion conditions with
-one closed decision contract. The catalog owns offer identities, entitlements
-and metering copy; Policy DSL owns qualification, sanitation and presentation
-guards. The evaluator combines them without charging a card, changing a
-subscription or granting a checkout effect.
+one closed decision contract. **List prices and public plan sheets HOME in
+`subactor/offer`.** **Public naming vocabulary HOMEs in `subactor/brand`.**
+This pack's `offer-catalog.json` is a local projection for promo/entitlement
+decisions — not a second price or brand SSOT. Policy DSL owns qualification,
+sanitation and presentation guards. The evaluator combines them without
+charging a card, changing a subscription or granting a checkout effect.
 
 ```text
+subactor/offer (list prices + bindings)     subactor/brand (vocabulary)
+            \                                         /
+             \                                       /
+              v                                     v
 raw plan id + raw promo code
             |
             v
 profiles/sales/subactor-sales.policy
-profiles/sales/offer-catalog.json
+profiles/sales/offer-catalog.json   ← ADOPT projection, not price HOME
             |
             v
 subactor.sales/decision/v1
@@ -37,7 +43,7 @@ same decision, but client-side evaluation never grants promotion eligibility.
 | Public display | Compatibility plan id | Public code | Active twins | Included agent operations | `NOCC100` |
 | --- | --- | --- | ---: | ---: | --- |
 | Basic | `saas-start` | `basic` | 1 | 1,000 | Eligible; card bypass |
-| Operations Plus | `saas-business` | `operations-plus` | 0 | 10,000 | Sanitized and hidden |
+| Operations Plus | `saas-business` | `operations-plus` | 0 | 1,000 | Sanitized and hidden |
 | Twin Plus | `prepaid-actions` | `twin-plus` | 1 | 0 | Sanitized and hidden |
 | On-premise | `on-premise` | `on-premise` | Contract | Contract | Sanitized and hidden |
 
@@ -81,3 +87,13 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 The decision is descriptive data, not payment authorization or approval
 evidence.
+
+## List prices
+
+Cloud list prices HOME in `subactor/offer` (pinned site binding + catalog
+digest). `profiles/sales/offer-catalog.json` may mirror amounts for promo
+evaluation but MUST stay synchronized with the offer pack; it is not the
+authoritative public sheet. Plan display names follow `subactor/brand`
+vocabulary. Use `subactor/offer` pin-check and portal commercial-ssot gates so
+facades cannot diverge silently. On-premise remains contract-priced.
+
