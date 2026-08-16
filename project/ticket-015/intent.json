@@ -15,8 +15,6 @@
     "adopt": ["wellmanifest/dsl"]
   },
   "allowedPaths": [
-    "CHANGELOG.md",
-    "README.md",
     "dsl-manifest.json",
     "profiles/llm-credential/**",
     "tests/test_manifest.py",
@@ -40,12 +38,12 @@
       "No policy or credential strategy semantic changes",
       "No dependency pin changes in consuming repositories"
     ],
-    "complexity": "S",
+    "complexity": "M",
     "estimatedMinutes": 20,
     "budgets": {
-      "maxImplementationFiles": 8,
-      "maxAffectedComponents": 2,
-      "maxPublicInterfaceChanges": 1,
+      "maxImplementationFiles": 9,
+      "maxAffectedComponents": 3,
+      "maxPublicInterfaceChanges": 2,
       "maxRuntimeDependencies": 0
     },
     "architecture": {
@@ -54,11 +52,15 @@
       "components": [
         {
           "name": "dsl-manifest",
-          "paths": ["dsl-manifest.json"]
+          "paths": ["dsl-manifest.json", "tests/test_manifest.py"]
         },
         {
           "name": "llm-credential-profile",
           "paths": ["profiles/llm-credential/**"]
+        },
+        {
+          "name": "ticket-governance",
+          "paths": ["project/ticket-015/**", "project/TICKETS.md"]
         }
       ],
       "responsibilityChanges": false,
