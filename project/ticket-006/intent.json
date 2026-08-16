@@ -18,9 +18,9 @@
   },
   "allowedPaths": [
     ".governance/manifest.json",
-    "project/ticket-006/**",
+    "project/TICKETS.md",
     "project/ticket-004/README.md",
-    "project/TICKETS.md"
+    "project/ticket-006/**"
   ],
   "forbiddenPaths": [
     "project/ticket-*/user-*.md",
@@ -41,11 +41,11 @@
       "No managed governance package upgrade",
       "No Subactor adapter work"
     ],
-    "complexity": "XS",
-    "estimatedMinutes": 10,
+    "complexity": "S",
+    "estimatedMinutes": 15,
     "budgets": {
-      "maxImplementationFiles": 2,
-      "maxAffectedComponents": 1,
+      "maxImplementationFiles": 3,
+      "maxAffectedComponents": 2,
       "maxPublicInterfaceChanges": 0,
       "maxRuntimeDependencies": 0
     },
@@ -63,6 +63,12 @@
           "name": "ticket-004-closure",
           "paths": [
             "project/ticket-004/README.md"
+          ]
+        },
+        {
+          "name": "ticket-006-evidence",
+          "paths": [
+            "project/ticket-006/**"
           ]
         }
       ],
