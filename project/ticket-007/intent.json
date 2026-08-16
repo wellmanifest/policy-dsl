@@ -49,11 +49,11 @@
       "No Subactor runtime adapter",
       "No CHANGELOG/TODO edits in this integration ticket"
     ],
-    "complexity": "S",
-    "estimatedMinutes": 25,
+    "complexity": "L",
+    "estimatedMinutes": 30,
     "budgets": {
       "maxImplementationFiles": 8,
-      "maxAffectedComponents": 3,
+      "maxAffectedComponents": 2,
       "maxPublicInterfaceChanges": 1,
       "maxRuntimeDependencies": 0
     },
