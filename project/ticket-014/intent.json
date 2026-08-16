@@ -1,0 +1,82 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-014",
+  "summary": "Close ticket-013 as DONE after legacy write freeze",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/new-project"
+    ]
+  },
+  "allowedPaths": [
+    "project/TICKETS.md",
+    "project/ticket-013/README.md",
+    "project/ticket-014/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "profiles/**",
+    "tests/**",
+    "examples/**",
+    ".governance/**"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "977dd6aa8279376e47c9d8f981de8f19a15cd504",
+    "targetBranch": "main",
+    "outcome": "ticket-013 marked DONE/DONE after PR #16 merge",
+    "nonGoals": [
+      "No catalog or profile code changes"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 5,
+    "budgets": {
+      "maxImplementationFiles": 1,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Housekeeping-only: close ticket-013 status carriers.",
+      "components": [
+        {
+          "name": "ticket-index",
+          "paths": [
+            "project/TICKETS.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert status markers on ticket-013"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "./project.sh --actor agent --base 977dd6aa8279376e47c9d8f981de8f19a15cd504 --head HEAD"
+        ],
+        "evidence": "GOV-PASS"
+      }
+    ]
+  }
+}
