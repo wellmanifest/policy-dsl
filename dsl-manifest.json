@@ -168,7 +168,7 @@
     {
       "path": "schemas/sales-offer-catalog.schema.json",
       "role": "schema",
-      "digest": "sha256:a3dcf97c90fc32bd1b6837b7e8da2a0cad23df39876feaf812c3943a0db960f0"
+      "digest": "sha256:01f5d049a9146a259de44bc1b23ba8752f954e0fa3a42608440489f9401215b3"
     },
     {
       "path": "schemas/sales-decision.schema.json",
@@ -178,7 +178,7 @@
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:65226147308d63421c972553df9dc2bc680c504a704d8de388975ee8135ce4fe"
+      "digest": "sha256:22e53a547272fdef217542f6364791a774d3d371e2888c49814c5698d02cf834"
     },
     {
       "path": "tests/test_manifest.py",
@@ -193,27 +193,27 @@
     {
       "path": "profiles/sales/offer-catalog.json",
       "role": "example",
-      "digest": "sha256:5c3cd62881c3e1b809ea2ee4ae89c565c0532bdfdaa0cb0bbf2accdba91e4469"
+      "digest": "sha256:596d88e8e37ca076ed1140756b4f29e9a6fd96ce9798b0ce12a84d18ae3180f0"
     },
     {
       "path": "profiles/sales/decision-matrix.json",
       "role": "example",
-      "digest": "sha256:f52ac37187afa954af4060a2903cbbd1763e10e67c2b6fa257b2a0adc88c3da2"
+      "digest": "sha256:a30e906acb8f1d62d35c8294047c4309aa2d6ca46957c430da53940ad048a62f"
     },
     {
       "path": "profiles/sales/reference_engine.py",
       "role": "parser-contract",
-      "digest": "sha256:c4b2e5e1df531473e3a21246d68aed7b307698f4462d79240dba60e100ebab98"
+      "digest": "sha256:dccfff509b2c94a6e36ce58d6dab796c880d9881379e707fe48fb248b2e36256"
     },
     {
       "path": "profiles/sales/README.md",
       "role": "documentation",
-      "digest": "sha256:d19714bb769073a9865c88185a039e1f01e0b2ff32c1bf287ed0777796c5b46b"
+      "digest": "sha256:95a012b65ea4517c09ec8df724b8451df5c2f8c9b527cd9635e79e4dfcf6561c"
     },
     {
       "path": "profiles/sales/ADOPTION_PL.md",
       "role": "documentation",
-      "digest": "sha256:d6daa014fad4d4669c7cd4eb1ab2c862a3a1a2f0173524a8e0546e3e1ab4813e"
+      "digest": "sha256:bba6c60e540efc8740d5c65c376ef75b04ded1497503fa34b85facbcfe06eb89"
     },
     {
       "path": "docs/DOMAIN_VOCABULARY_PL.md",
@@ -228,7 +228,7 @@
     {
       "path": "docs/SALES_POLICY_PROFILE.md",
       "role": "documentation",
-      "digest": "sha256:b62d025ade3fcc1350d7a7f88e912ebe67f72cdb90d72bcee14dd7ae11405127"
+      "digest": "sha256:dc841ca02fbd81ba6ee6a2f9f3a1ff9a8634bcebaa8d480572745d02ba4f327d"
     },
     {
       "path": "examples/sales/README.md",
@@ -238,7 +238,7 @@
     {
       "path": "examples/sales/subactor-pricing-section.html",
       "role": "example",
-      "digest": "sha256:d7bd28987656fb6dde8737964855d91af153e45d6c396ec1ef163001a140cca7"
+      "digest": "sha256:2ef4a99d9ae5832c99219a21ef1a40d1aedaa1668d4964dcf40b7025d44752c6"
     }
   ],
   "namespaces": [
@@ -325,7 +325,8 @@
       "python3 -m unittest discover -s tests -p 'test_*.py'",
       "python3 tests/policy_dsl_check.py validate profiles/sales/subactor-sales.policy",
       "python3 profiles/sales/reference_engine.py validate-catalog",
-      "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json"
+      "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json",
+      "python3 profiles/sales/reference_engine.py compare-www-plans --help"
     ],
     "validExamples": [
       "examples/valid/contributing.policy",

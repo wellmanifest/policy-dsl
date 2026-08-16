@@ -89,11 +89,13 @@ utrzymywany `if ($plan !== 'saas-start')` pozostaje tylko na czas migracji.
 
 ## SSOT i zapobieganie driftowi portalu
 
-Katalog (`offer-catalog.json`) jest kanoniczny dla:
+**List prices HOME w `subactor/offer`.** Katalog (`offer-catalog.json`) jest
+projekcją ADOPT dla:
 
 - `agent_operations_included` / `actions_included`,
 - `active_twins_included`,
-- `amount_monthly_minor` / `amount_annual_minor` / `currency`,
+- lustrzanych `amount_monthly_minor` / `amount_annual_minor` / `currency`
+  (musi być zsynchronizowany z `subactor/offer`, nie jest publicznym arkuszem),
 - nazw kanonicznych i aliasów (`Actions Plus` → `Operations Plus`).
 
 Portal `www-sub-actor` trzyma `src/php_app/config/plans.json` jako fasadę.
@@ -105,9 +107,10 @@ python3 profiles/sales/reference_engine.py compare-www-plans \
   --plans /path/to/www-sub-actor/src/php_app/config/plans.json
 ```
 
-Zmiana cen albo pakietów najpierw w tym katalogu (integration ticket), potem
-projekcja do portalu. FEATURE ticket nie może samodzielnie przepisać
-`plans.json` ani złotych testów oferty bez bumpa katalogu.
+Zmiana cen albo pakietów najpierw w `subactor/offer`, potem synchronizacja
+lustra katalogu i macierzy tutaj, potem fasada portalu. FEATURE ticket nie może
+samodzielnie przepisać `plans.json` ani złotych testów oferty bez bumpa oferty
+i katalogu.
 
 
 ## Relacja do subactor/offer i subactor/brand
