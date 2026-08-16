@@ -178,7 +178,7 @@
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:977668b834c93580b920194b5cf601ecbf69614bf2b0ff4281df6ed1d8720518"
+      "digest": "sha256:8e51c04c7a0f3209f1376abb77598f58c2f86a5d1ef7093ea0b49ae2bfb94e8b"
     },
     {
       "path": "tests/test_manifest.py",
@@ -193,7 +193,7 @@
     {
       "path": "profiles/sales/offer-catalog.json",
       "role": "example",
-      "digest": "sha256:596d88e8e37ca076ed1140756b4f29e9a6fd96ce9798b0ce12a84d18ae3180f0"
+      "digest": "sha256:ea64e73893efe7f00e48c1c7e68ebd80ee82129120f51145844e9e8e50f56ba0"
     },
     {
       "path": "profiles/sales/decision-matrix.json",
@@ -203,7 +203,7 @@
     {
       "path": "profiles/sales/reference_engine.py",
       "role": "parser-contract",
-      "digest": "sha256:53a41bdef90b24bc8520f0ef0ff61dc12ee42e1f9c8741a25a82ec0a1a3e40ce"
+      "digest": "sha256:136f13e59d5d3f3e1befb5dcd0852f5f9a6b2d4e3233b4c2b28c7ff07e1c9191"
     },
     {
       "path": "profiles/sales/README.md",
@@ -213,7 +213,7 @@
     {
       "path": "profiles/sales/ADOPTION_PL.md",
       "role": "documentation",
-      "digest": "sha256:d1ca2bd9995d11593e6c1c1241f4dbb52e802994448cda34456d464e4e67e5af"
+      "digest": "sha256:cd2dc7c0345ac3660ce31ac4a173e134b227703470b300cd4bbaa1ba5f20ae8a"
     },
     {
       "path": "docs/DOMAIN_VOCABULARY_PL.md",

@@ -86,8 +86,9 @@ utrzymywany `if ($plan !== 'saas-start')` pozostaje tylko na czas migracji.
 4. Przełącz frontend i legacy na renderowanie tej samej odpowiedzi.
 5. Usuń statyczny komunikat NOCC100 z Operations Plus i etykietę „Brak” z Twin
    Plus.
-6. Po okresie kompatybilności przestań zapisywać nazwy `Actions Plus` i
-   `actions_included`.
+6. Okres kompatybilności zakończył się **2026-08-16**. Katalog i ewaluator
+   zapisują wyłącznie `agent_operations_included` / `Operations Plus`.
+   Odczyt aliasów `actions_included` i `Actions Plus` pozostaje (facady / pin-check).
 
 
 ## SSOT i zapobieganie driftowi portalu

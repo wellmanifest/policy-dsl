@@ -11,7 +11,8 @@
       "actions_included": "agent_operations_included",
       "Actions Plus": "Operations Plus"
     },
-    "write_policy": "CANONICAL_ONLY"
+    "write_policy": "CANONICAL_ONLY",
+    "write_freeze_date": "2026-08-16"
   },
   "plans": [
     {
