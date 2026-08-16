@@ -1,0 +1,125 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-004",
+  "summary": "Re-adopt new-project v0.18.1 immutable locks",
+  "workstream": "governance",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P1",
+    "origin": "health"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/new-project",
+      "wellmanifest/dsl"
+    ]
+  },
+  "allowedPaths": [
+    ".governance/**",
+    "AGENTS.md",
+    "project/governance-check.sh",
+    "project/governance-check.bat",
+    "project/new-ticket.sh",
+    "project/readme.sh",
+    "scripts/runtime.sh",
+    "project/ticket-004/**",
+    "project/ticket-003/README.md",
+    "project/ticket-003/changelog.md",
+    "TODO.md",
+    "CHANGELOG.md",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "profiles/**",
+    "schemas/**",
+    "tests/**",
+    "examples/**",
+    "spec/**"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "ca611045e0f1d4803b44e1e872d95f775f383890",
+    "targetBranch": "main",
+    "outcome": "policy-dsl uses the exact published new-project 0.18.1 managed governance package and ticket-003 is closed; wellm pin, domainContracts, and dsl-manifest digest repair remain deferred",
+    "nonGoals": [
+      "No hand-edit of a managed artifact or lock digest",
+      "No inventing a wellm standardsLock entry without a published release and declared Policy DSL dependency",
+      "No Subactor sales adapter or legacy Actions Plus removal",
+      "No Policy IR schema major or opcode enum close",
+      "No dsl-manifest digest repair for pre-existing main drift (owned by integration)"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "standardAdoption": {
+      "sourceRepository": "wellmanifest/new-project",
+      "fromRevision": "769183ca27593af1d166acee11bc9e37decf9870",
+      "toRevision": "16f7aea148a7f979e5c5abdfd4bc112224904d36"
+    },
+    "budgets": {
+      "maxImplementationFiles": 4,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Use Goal's published-SHA upgrade so managed bytes and their lock move together; keep local extendable manifest ownership via three-way merge; defer wellm until a final release pins a concrete contract.",
+      "components": [
+        {
+          "name": "governance-adoption",
+          "paths": [
+            ".governance/**",
+            "AGENTS.md",
+            "project/new-ticket.sh"
+          ]
+        },
+        {
+          "name": "ticket-closure",
+          "paths": [
+            "TODO.md",
+            "CHANGELOG.md",
+            "project/ticket-003/README.md",
+            "project/TICKETS.md",
+            "project/ticket-004/**"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the atomic adoption commit; the former 0.18.0 lock and managed bytes remain self-consistent"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "goal governance adopt --source-revision 16f7aea148a7f979e5c5abdfd4bc112224904d36 --target-root . --check"
+        ],
+        "evidence": "Goal reports no drift after the upgrade and the lock records the exact published source"
+      },
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "./project.sh",
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "Governance gate and unit tests pass on the exact implementation head"
+      }
+    ]
+  }
+}
