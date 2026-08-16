@@ -21,6 +21,8 @@ python3 profiles/sales/reference_engine.py compare-www-plans \
   --plans examples/sales/fixtures/www-plans.facade.json
 python3 profiles/sales/reference_engine.py matrix \
   --check profiles/sales/decision-matrix.json
+python3 profiles/sales/reference_engine.py export-decisions \
+  --check examples/sales/decisions/matrix.v1.json
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
@@ -34,3 +36,7 @@ mirrored amounts). It is pinned by `profiles/sales/www-plans.lock.json` and
 aligned to the same `offer://subactor/offer/subactor-cloud/v1` pin. Refresh the
 fixture when the sales catalog or www facade commercial fields change; do not
 treat this pack as a second price HOME.
+
+The `decisions/matrix.v1.json` file is the frozen consumer export of
+`subactor.sales/decision/v1` (`export-decisions --check`). It is not payment
+authorization. Refresh it with `export-decisions --out` when `decide()` changes.

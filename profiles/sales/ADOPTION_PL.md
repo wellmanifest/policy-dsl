@@ -59,7 +59,10 @@ Dla Operations Plus, Twin Plus i on-premise kod NOCC100 wraca jako pusty i
 Preferowana integracja to ten sam endpoint lub ta sama biblioteka decyzyjna.
 Jeżeli legacy nie może jej wywołać, pipeline wydania MAY wygenerować zamknięty
 adapter na podstawie tego samego katalogu i polityki. `decision-matrix.json`
-służy jako fixture regresyjny, a nie jako samodzielny token autoryzacji.
+służy jako fixture regresyjny producenta, a nie jako samodzielny token autoryzacji.
+Konsumenci porównują z zamrożonym eksportem
+`examples/sales/decisions/matrix.v1.json` (`subactor.sales/decision/v1`)
+albo wołają `reference_engine.py decide` / `export-decisions --check`.
 Wygenerowany adapter musi być związany z wersją polityki i digestem; ręcznie
 utrzymywany `if ($plan !== 'saas-start')` pozostaje tylko na czas migracji.
 

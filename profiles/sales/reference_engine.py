@@ -1090,6 +1090,17 @@ def main(argv: Iterable[str] | None = None) -> int:
         help="path to subactor/offer catalogs/.../offer.json (defaults to locked fixture)",
     )
 
+    export_parser = subparsers.add_parser(
+        "export-decisions",
+        help="write or verify the frozen consumer decision/v1 matrix fixture",
+    )
+    export_parser.add_argument("--out", type=Path, help="write matrix() JSON to this path")
+    export_parser.add_argument(
+        "--check",
+        type=Path,
+        help="fail closed when the fixture differs from matrix()",
+    )
+
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     try:
@@ -1105,6 +1116,19 @@ def main(argv: Iterable[str] | None = None) -> int:
         elif args.command == "compare-offer-home":
             result = compare_offer_home(args.catalog)
             print(_json(result), end="")
+        elif args.command == "export-decisions":
+            actual = matrix()
+            if args.check is not None:
+                expected = json.loads(args.check.read_text(encoding="utf-8"))
+                if expected != actual:
+                    raise SalesPolicyError(f"decision fixture differs from {args.check}")
+                print("SALES-DECISIONS-PASS")
+            elif args.out is not None:
+                args.out.parent.mkdir(parents=True, exist_ok=True)
+                args.out.write_text(_json(actual), encoding="utf-8")
+                print(f"SALES-DECISIONS-WROTE {args.out}")
+            else:
+                print(_json(actual), end="")
         else:
             actual = matrix()
             if args.check is not None:
