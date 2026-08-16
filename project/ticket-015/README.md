@@ -2,8 +2,8 @@
 
 - **ID**: ticket-015
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Created**: 2026-08-16
 
 ## Goal and scope
@@ -14,10 +14,10 @@ and artifact roles accepted by `wellmanifest.dsl/manifest/v1` are in scope.
 
 ## Acceptance criteria
 
-- [ ] AC-01: `dsl_check validate dsl-manifest.json` passes.
-- [ ] AC-02: the policy-dsl unit suite passes, including manifest digest tests.
-- [ ] AC-03: no unrelated parser or runtime behavior changes.
-- [ ] AC-04: the intent commit precedes both profile implementation commits.
+- [x] AC-01: `dsl_check validate dsl-manifest.json` passes.
+- [x] AC-02: the policy-dsl unit suite passes, including manifest digest tests.
+- [x] AC-03: no unrelated parser or runtime behavior changes.
+- [x] AC-04: the intent commit precedes both profile implementation commits.
 
 ## Authorization
 
