@@ -1,0 +1,84 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-006",
+  "summary": "Add profiles path ownership to integration workstream",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/new-project"
+    ]
+  },
+  "allowedPaths": [
+    ".governance/manifest.json",
+    "project/TICKETS.md",
+    "project/ticket-004/README.md",
+    "project/ticket-006/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "profiles/**",
+    "tests/**",
+    "examples/**"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "a3f5b9f6cb13d7258497cc5ff263a6e7d4119855",
+    "targetBranch": "main",
+    "outcome": "integration workstream owns profiles/**; ticket-004 closed DONE",
+    "nonGoals": [
+      "No sales catalog pin in this ticket",
+      "No managed governance package upgrade",
+      "No Subactor adapter work"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 10,
+    "budgets": {
+      "maxImplementationFiles": 1,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extend local extendable manifest integration ownedPaths with profiles/** so sales profile tickets can bind ownership.",
+      "components": [
+        {
+          "name": "governance-manifest",
+          "paths": [
+            ".governance/manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the commit; prior ownedPaths remain"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "./project.sh --actor agent --base a3f5b9f6cb13d7258497cc5ff263a6e7d4119855 --head HEAD"
+        ],
+        "evidence": "Governance gate passes"
+      }
+    ]
+  }
+}
