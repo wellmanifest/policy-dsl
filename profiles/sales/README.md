@@ -121,5 +121,12 @@ python3 profiles/sales/reference_engine.py matrix
 python3 profiles/sales/reference_engine.py matrix \
   --check profiles/sales/decision-matrix.json
 python3 profiles/sales/reference_engine.py compare-www-plans \
+  --plans examples/sales/fixtures/www-plans.facade.json
+# or against a live portal checkout:
+python3 profiles/sales/reference_engine.py compare-www-plans \
   --plans /path/to/www-sub-actor/src/php_app/config/plans.json
 ```
+
+CI pins the thin facade at `examples/sales/fixtures/www-plans.facade.json`
+(`profiles/sales/www-plans.lock.json`). Amounts ADOPT `subactor/offer`; this
+profile must not become a second price SSOT.

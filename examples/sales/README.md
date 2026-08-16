@@ -17,6 +17,8 @@ Validate the profile and pricing projection with:
 
 ```bash
 python3 profiles/sales/reference_engine.py compare-offer-home
+python3 profiles/sales/reference_engine.py compare-www-plans \
+  --plans examples/sales/fixtures/www-plans.facade.json
 python3 profiles/sales/reference_engine.py matrix \
   --check profiles/sales/decision-matrix.json
 python3 -m unittest discover -s tests -p 'test_*.py'
@@ -25,3 +27,10 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 The `fixtures/subactor-cloud-v1.offer.json` file is a byte-identical CI copy of
 the pinned `subactor/offer` HOME catalog. Update the lock digest, fixture and
 sales projection together when the product offer changes.
+
+The `fixtures/www-plans.facade.json` file is a thin CI projection of portal
+`plans.json` fields that `compare-www-plans` checks (entitlements, name aliases,
+mirrored amounts). It is pinned by `profiles/sales/www-plans.lock.json` and
+aligned to the same `offer://subactor/offer/subactor-cloud/v1` pin. Refresh the
+fixture when the sales catalog or www facade commercial fields change; do not
+treat this pack as a second price HOME.

@@ -178,7 +178,7 @@
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:d1aeaff24508bd08e55c0a2313e4f3317e979c8089cabb1020ece755763e56db"
+      "digest": "sha256:50c2d23666740820a3a0579ae9d1715fa5b57e377f00c31d3a1654bb1ec57d49"
     },
     {
       "path": "tests/test_manifest.py",
@@ -208,12 +208,12 @@
     {
       "path": "profiles/sales/README.md",
       "role": "documentation",
-      "digest": "sha256:95a012b65ea4517c09ec8df724b8451df5c2f8c9b527cd9635e79e4dfcf6561c"
+      "digest": "sha256:7443b45879b520f33eb06ceb2ce873945946cb160bb1f1ba162cc0c8ef51a797"
     },
     {
       "path": "profiles/sales/ADOPTION_PL.md",
       "role": "documentation",
-      "digest": "sha256:bba6c60e540efc8740d5c65c376ef75b04ded1497503fa34b85facbcfe06eb89"
+      "digest": "sha256:618b6f52f873603822c1808b1ea7306673492ea5186a30b31727a7a28b416306"
     },
     {
       "path": "docs/DOMAIN_VOCABULARY_PL.md",
@@ -233,7 +233,7 @@
     {
       "path": "examples/sales/README.md",
       "role": "documentation",
-      "digest": "sha256:ff4eab0d8183ab32463e7741d54fb334a7cccac8d5518fdc1f011b59c1242985"
+      "digest": "sha256:f2d3c45b54ef8ec66ff98d31a49e8382940b9ead0a5dcb15cb2a09feede1ec5f"
     },
     {
       "path": "examples/sales/subactor-pricing-section.html",
@@ -246,9 +246,19 @@
       "digest": "sha256:5dfec8efc543d13b3285aa8cf4d558f9242ef6d00b8d99b2c120226277366940"
     },
     {
+      "path": "profiles/sales/www-plans.lock.json",
+      "role": "contract",
+      "digest": "sha256:bd1e0a0ac699a6c10a61aff4f97c39ded1cf95e27ddd8d967a99ddb3e1481d63"
+    },
+    {
       "path": "examples/sales/fixtures/subactor-cloud-v1.offer.json",
       "role": "example",
       "digest": "sha256:95c3392d3b677092240eb9b7781c70eb079d30e2c7b84eac337dd3de8a03a2dc"
+    },
+    {
+      "path": "examples/sales/fixtures/www-plans.facade.json",
+      "role": "example",
+      "digest": "sha256:59f8baeb5355b9c7a0517245089a330b034e501486abd4c21db725729fc9e478"
     }
   ],
   "namespaces": [
@@ -336,7 +346,7 @@
       "python3 tests/policy_dsl_check.py validate profiles/sales/subactor-sales.policy",
       "python3 profiles/sales/reference_engine.py validate-catalog",
       "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json",
-      "python3 profiles/sales/reference_engine.py compare-www-plans --help",
+      "python3 profiles/sales/reference_engine.py compare-www-plans --plans examples/sales/fixtures/www-plans.facade.json",
       "python3 profiles/sales/reference_engine.py compare-offer-home"
     ],
     "validExamples": [

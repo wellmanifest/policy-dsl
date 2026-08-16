@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "schema": "wellmanifest.policy/www-plans-facade-fixture/v1",
+    "note": "Thin CI facade for compare-www-plans. Not price HOME; amounts ADOPT subactor/offer via sales catalog pin.",
+    "offer_pin": "offer://subactor/offer/subactor-cloud/v1",
+    "source_plans_path": "src/php_app/config/plans.json",
+    "source_repository": "https://github.com/subactor/www-sub-actor"
+  },
+  "plans": {
+    "saas-start": {
+      "id": "saas-start",
+      "name": "Basic",
+      "actions_included": 1000,
+      "active_twins_included": 1,
+      "amount_monthly_minor": 9700,
+      "amount_annual_minor": 97000,
+      "currency": "PLN"
+    },
+    "saas-business": {
+      "id": "saas-business",
+      "name": "Actions Plus",
+      "actions_included": 1000,
+      "active_twins_included": 0,
+      "amount_monthly_minor": 5900,
+      "amount_annual_minor": 59000,
+      "currency": "PLN"
+    },
+    "prepaid-actions": {
+      "id": "prepaid-actions",
+      "name": "Twin Plus",
+      "actions_included": 0,
+      "active_twins_included": 1,
+      "amount_monthly_minor": 5900,
+      "amount_annual_minor": 59000,
+      "currency": "PLN"
+    },
+    "on-premise": {
+      "id": "on-premise",
+      "name": "On-Premise",
+      "actions_included": null,
+      "active_twins_included": null,
+      "amount_monthly_minor": 290000,
+      "amount_annual_minor": 290000,
+      "currency": "EUR"
+    }
+  }
+}

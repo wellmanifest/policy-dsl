@@ -104,8 +104,14 @@ Przed merge:
 ```bash
 python3 profiles/sales/reference_engine.py validate-catalog
 python3 profiles/sales/reference_engine.py compare-www-plans \
+  --plans examples/sales/fixtures/www-plans.facade.json
+python3 profiles/sales/reference_engine.py compare-www-plans \
   --plans /path/to/www-sub-actor/src/php_app/config/plans.json
 ```
+
+Fixture CI: `examples/sales/fixtures/www-plans.facade.json` +
+`profiles/sales/www-plans.lock.json` (ten sam pin
+`offer://subactor/offer/subactor-cloud/v1`).
 
 Zmiana cen albo pakietów najpierw w `subactor/offer`, potem synchronizacja
 lustra katalogu i macierzy tutaj, potem fasada portalu. FEATURE ticket nie może
