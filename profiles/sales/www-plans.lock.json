@@ -1,0 +1,18 @@
+{
+  "schema": "wellmanifest.policy/www-plans-lock/v1",
+  "facade": {
+    "repository": "https://github.com/subactor/www-sub-actor",
+    "plans_path": "src/php_app/config/plans.json",
+    "offer_pin": "offer://subactor/offer/subactor-cloud/v1",
+    "notes": "CI fixture projects catalog plan ids only. List prices HOME in subactor/offer; sales catalog mirrors amounts; portal plans.json is a runtime facade."
+  },
+  "fixture_path": "examples/sales/fixtures/www-plans.facade.json",
+  "compared_fields": [
+    "actions_included",
+    "active_twins_included",
+    "name",
+    "amount_monthly_minor",
+    "amount_annual_minor",
+    "currency"
+  ]
+}

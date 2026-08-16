@@ -198,19 +198,27 @@ class SubactorSalesProfileTest(unittest.TestCase):
         with self.assertRaisesRegex(SALES.SalesPolicyError, "unknown plan_id"):
             SALES.decide("enterprise-imaginary", "NOCC100")
 
-    def test_compare_www_plans_accepts_current_otp_facade(self):
-        www_plans = Path("/home/tom/github/subactor/www-sub-actor/src/php_app/config/plans.json")
-        if not www_plans.is_file():
-            self.skipTest("www-sub-actor plans.json not available in this checkout")
-        SALES.compare_www_plans(www_plans)
+    def test_compare_www_plans_accepts_locked_fixture(self):
+        lock = json.loads(
+            (ROOT / "profiles/sales/www-plans.lock.json").read_text(encoding="utf-8")
+        )
+        fixture = ROOT / lock["fixture_path"]
+        self.assertTrue(fixture.is_file())
+        self.assertEqual(
+            "examples/sales/fixtures/www-plans.facade.json",
+            lock["fixture_path"],
+        )
+        self.assertEqual(
+            "offer://subactor/offer/subactor-cloud/v1",
+            lock["facade"]["offer_pin"],
+        )
+        SALES.compare_www_plans(fixture)
 
     def test_compare_www_plans_rejects_ops_drift(self):
-        www_plans = Path("/home/tom/github/subactor/www-sub-actor/src/php_app/config/plans.json")
-        if not www_plans.is_file():
-            self.skipTest("www-sub-actor plans.json not available in this checkout")
         import tempfile
 
-        payload = json.loads(www_plans.read_text(encoding="utf-8"))
+        fixture = ROOT / "examples/sales/fixtures/www-plans.facade.json"
+        payload = json.loads(fixture.read_text(encoding="utf-8"))
         payload["plans"]["saas-business"]["actions_included"] = 10000
         with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
             json.dump(payload, handle)
@@ -220,6 +228,12 @@ class SubactorSalesProfileTest(unittest.TestCase):
                 SALES.compare_www_plans(bad)
         finally:
             bad.unlink(missing_ok=True)
+
+    def test_compare_www_plans_accepts_live_www_when_present(self):
+        www_plans = Path("/home/tom/github/subactor/www-sub-actor/src/php_app/config/plans.json")
+        if not www_plans.is_file():
+            self.skipTest("www-sub-actor plans.json not available in this checkout")
+        SALES.compare_www_plans(www_plans)
 
     def test_operations_plus_matches_otp_sheet_quota(self):
         catalog = SALES.load_catalog()

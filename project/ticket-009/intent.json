@@ -1,0 +1,81 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-009",
+  "summary": "LC-031 durable compare-www-plans fixture aligned to offer pin",
+  "workstream": "integration",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "subactor/offer"
+    ]
+  },
+  "allowedPaths": [
+    "project/ticket-009/**",
+    "project/TICKETS.md",
+    "profiles/sales/**",
+    "examples/sales/**",
+    "tests/test_sales_profile.py",
+    "dsl-manifest.json"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    ".github/**",
+    "CHANGELOG.md",
+    "TODO.md"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "418a78f8a5c6abee8b32837f48faec845c5cb39a",
+    "targetBranch": "main",
+    "outcome": "compare-www-plans has a durable CI fixture/lock aligned to offer://subactor/offer/subactor-cloud/v1 without becoming a second price SSOT",
+    "nonGoals": [
+      "No offer catalog edits",
+      "No www plans.json edits in this pack",
+      "No CHANGELOG/TODO edits"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 8,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Thin www-plans facade fixture + lock; unit tests always use fixture; live www compare remains optional.",
+      "components": [
+        {
+          "name": "sales-www-plans-fixture",
+          "paths": [
+            "profiles/sales/**",
+            "examples/sales/**",
+            "tests/test_sales_profile.py",
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [
+        "examples/sales/fixtures/www-plans.facade.json"
+      ],
+      "ui": {
+        "inScope": false
+      }
+    }
+  }
+}
