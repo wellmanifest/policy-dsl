@@ -1,0 +1,84 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-010",
+  "summary": "Close ticket-009 as DONE after LC-031 merge",
+  "workstream": "governance",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/new-project"
+    ]
+  },
+  "allowedPaths": [
+    "project/TICKETS.md",
+    "project/ticket-009/README.md",
+    "project/ticket-010/**",
+    "project/ticket-009/intent.json"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "profiles/**",
+    "tests/**",
+    "examples/**",
+    ".governance/**"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "45c29efd05786f8ec5a0eda02637e2258a9c3ca7",
+    "targetBranch": "main",
+    "outcome": "ticket-009 marked DONE/DONE on default branch after PR #12 merge",
+    "nonGoals": [
+      "No catalog or profile code changes",
+      "No LC feature work"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 5,
+    "budgets": {
+      "maxImplementationFiles": 1,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Housekeeping-only: close completed ticket-009 status carriers.",
+      "components": [
+        {
+          "name": "ticket-index",
+          "paths": [
+            "project/TICKETS.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert status markers on ticket-009"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "./project.sh --actor agent --base 45c29efd05786f8ec5a0eda02637e2258a9c3ca7 --head HEAD"
+        ],
+        "evidence": "GOV-PASS"
+      }
+    ]
+  }
+}

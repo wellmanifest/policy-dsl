@@ -14,4 +14,5 @@ This file indexes governance tickets without taking ownership of
 | **ticket-007** | [`README.md`](./ticket-007/README.md) | [`preprompt.md`](./ticket-007/preprompt.md) | - |  [`ai-composer.md`](./ticket-007/ai-composer.md) |  [`ai-composer-logs.txt`](./ticket-007/ai-composer-logs.txt) | [`changelog.md`](./ticket-007/changelog.md) |
 | **ticket-008** | [`README.md`](./ticket-008/README.md) | [`preprompt.md`](./ticket-008/preprompt.md) | - |  [`ai-composer.md`](./ticket-008/ai-composer.md) |  [`ai-composer-logs.txt`](./ticket-008/ai-composer-logs.txt) | [`changelog.md`](./ticket-008/changelog.md) |
 | **ticket-009** | [`README.md`](./ticket-009/README.md) | [`preprompt.md`](./ticket-009/preprompt.md) | - |  [`ai-composer.md`](./ticket-009/ai-composer.md) |  [`ai-composer-logs.txt`](./ticket-009/ai-composer-logs.txt) | [`changelog.md`](./ticket-009/changelog.md) |
+| **ticket-010** | [`README.md`](./ticket-010/README.md) | [`preprompt.md`](./ticket-010/preprompt.md) | - |  [`ai-composer.md`](./ticket-010/ai-composer.md) |  [`ai-composer-logs.txt`](./ticket-010/ai-composer-logs.txt) | [`changelog.md`](./ticket-010/changelog.md) |
 <!-- AUTO:TICKET_INDEX:END -->
