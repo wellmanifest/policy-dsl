@@ -47,7 +47,7 @@
   "conflictsWith": [],
   "integrationTicket": null,
   "delivery": {
-    "acceptedBaseSha": "5295e5e695f1863401a717c1e474e207fc89273f",
+    "acceptedBaseSha": "ca611045e0f1d4803b44e1e872d95f775f383890",
     "targetBranch": "main",
     "outcome": "policy-dsl uses the exact published new-project 0.18.1 managed governance package and ticket-003 is closed; wellm pin, domainContracts, and dsl-manifest digest repair remain deferred",
     "nonGoals": [
