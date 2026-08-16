@@ -16,7 +16,12 @@ The updated HTML:
 Validate the profile and pricing projection with:
 
 ```bash
+python3 profiles/sales/reference_engine.py compare-offer-home
 python3 profiles/sales/reference_engine.py matrix \
   --check profiles/sales/decision-matrix.json
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
+
+The `fixtures/subactor-cloud-v1.offer.json` file is a byte-identical CI copy of
+the pinned `subactor/offer` HOME catalog. Update the lock digest, fixture and
+sales projection together when the product offer changes.

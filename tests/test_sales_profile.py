@@ -229,6 +229,51 @@ class SubactorSalesProfileTest(unittest.TestCase):
         self.assertEqual(5900, by_id["saas-business"]["amount_monthly_minor"])
         self.assertEqual(5900, by_id["prepaid-actions"]["amount_monthly_minor"])
 
+    def test_compare_offer_home_accepts_locked_fixture(self):
+        result = SALES.compare_offer_home()
+        self.assertTrue(result["ok"])
+        self.assertEqual("subactor-cloud", result["offer_id"])
+        self.assertEqual(1, result["version"])
+        self.assertEqual(
+            "sha256:95c3392d3b677092240eb9b7781c70eb079d30e2c7b84eac337dd3de8a03a2dc",
+            result["digest"],
+        )
+        self.assertEqual(
+            ["saas-start", "saas-business", "prepaid-actions", "on-premise"],
+            result["checked_plan_ids"],
+        )
+
+    def test_compare_offer_home_rejects_digest_drift(self):
+        import tempfile
+
+        lock = SALES.load_offer_home_lock()
+        fixture = ROOT / lock["fixture_path"]
+        payload = json.loads(fixture.read_text(encoding="utf-8"))
+        payload["title"] = "tampered"
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
+            json.dump(payload, handle)
+            bad = Path(handle.name)
+        try:
+            with self.assertRaisesRegex(SALES.SalesPolicyError, "HOME offer digest drift"):
+                SALES.compare_offer_home(bad)
+        finally:
+            bad.unlink(missing_ok=True)
+
+    def test_compare_offer_home_rejects_amount_mirror_drift(self):
+        import tempfile
+        from unittest import mock
+
+        catalog = json.loads((ROOT / "profiles/sales/offer-catalog.json").read_text(encoding="utf-8"))
+        for plan in catalog["plans"]:
+            if plan["plan_id"] == "saas-start":
+                plan["amount_monthly_minor"] = 1
+        with tempfile.TemporaryDirectory() as tmp:
+            bad_catalog = Path(tmp) / "offer-catalog.json"
+            bad_catalog.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
+            with mock.patch.object(SALES, "CATALOG_PATH", bad_catalog):
+                with self.assertRaisesRegex(SALES.SalesPolicyError, "saas-start.amount_monthly_minor"):
+                    SALES.compare_offer_home()
+
 
 if __name__ == "__main__":
     unittest.main()

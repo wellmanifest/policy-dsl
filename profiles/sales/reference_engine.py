@@ -9,6 +9,7 @@ directive. Effectful checkout code remains a separate authorization boundary.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import math
@@ -21,6 +22,7 @@ from typing import Any, Iterable, Mapping
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / "profiles/sales/subactor-sales.policy"
 CATALOG_PATH = ROOT / "profiles/sales/offer-catalog.json"
+OFFER_HOME_LOCK_PATH = ROOT / "profiles/sales/offer-home.lock.json"
 CHECKER_PATH = ROOT / "tests/policy_dsl_check.py"
 
 POLICY_DOCUMENT = "SUBACTOR_SALES"
@@ -79,11 +81,12 @@ def _require_optional_non_negative_integer(value: Any, label: str) -> None:
         raise SalesPolicyError(f"{label} must be a non-negative integer or null")
 
 
-def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
+def load_catalog(path: Path | None = None) -> dict[str, Any]:
     """Load and validate the closed current offer catalog."""
 
+    catalog_path = CATALOG_PATH if path is None else path
     try:
-        catalog = json.loads(path.read_text(encoding="utf-8"))
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise SalesPolicyError(f"catalog is unreadable: {error}") from error
 
@@ -230,9 +233,6 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "INCLUDED",
             "payment_card_required": True,
             "eligible_promo_codes": ["NOCC100"],
-            "amount_monthly_minor": 9700,
-            "amount_annual_minor": 97000,
-            "currency": "PLN",
         },
         "saas-business": {
             "public_code": "operations-plus",
@@ -245,9 +245,6 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "ADD_ON",
             "payment_card_required": True,
             "eligible_promo_codes": [],
-            "amount_monthly_minor": 5900,
-            "amount_annual_minor": 59000,
-            "currency": "PLN",
         },
         "prepaid-actions": {
             "public_code": "twin-plus",
@@ -260,9 +257,6 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "SEPARATE_PACKAGE",
             "payment_card_required": True,
             "eligible_promo_codes": [],
-            "amount_monthly_minor": 5900,
-            "amount_annual_minor": 59000,
-            "currency": "PLN",
         },
         "on-premise": {
             "public_code": "on-premise",
@@ -275,9 +269,6 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "CONTRACT",
             "payment_card_required": None,
             "eligible_promo_codes": [],
-            "amount_monthly_minor": 290000,
-            "amount_annual_minor": 290000,
-            "currency": "EUR",
         },
     }
     for plan_id, fields in expected.items():
@@ -849,6 +840,123 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
             raise SalesPolicyError("only Twin Plus may emit the separate-package report")
 
 
+def load_offer_home_lock() -> dict[str, Any]:
+    try:
+        lock = json.loads(OFFER_HOME_LOCK_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SalesPolicyError(f"offer-home lock is unreadable: {error}") from error
+    if lock.get("schema") != "wellmanifest.policy/offer-home-lock/v1":
+        raise SalesPolicyError("offer-home lock schema mismatch")
+    home = lock.get("home")
+    if not isinstance(home, dict):
+        raise SalesPolicyError("offer-home lock missing home object")
+    for key in ("repository", "catalog_path", "offer_id", "version", "digest"):
+        if key not in home:
+            raise SalesPolicyError(f"offer-home lock missing home.{key}")
+    if not isinstance(home["digest"], str) or not home["digest"].startswith("sha256:"):
+        raise SalesPolicyError("offer-home lock digest must be sha256:<hex>")
+    fields = lock.get("mirrored_fields")
+    if not isinstance(fields, list) or not fields or any(not isinstance(item, str) for item in fields):
+        raise SalesPolicyError("offer-home lock mirrored_fields must be a non-empty string list")
+    fixture = lock.get("fixture_path")
+    if not isinstance(fixture, str) or not fixture:
+        raise SalesPolicyError("offer-home lock fixture_path must be a relative path string")
+    return lock
+
+
+def _file_digest(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _home_operations(plan: Mapping[str, Any]) -> Any:
+    if "agent_operations_included" in plan:
+        return plan["agent_operations_included"]
+    return plan.get("actions_included")
+
+
+def compare_offer_home(home_catalog_path: Path | None = None) -> dict[str, Any]:
+    """Fail closed when the sales ADOPT projection drifts from pinned ``subactor/offer`` HOME.
+
+    The lock digests the HOME catalog bytes. Commercial amount/entitlement fields on
+    ``offer-catalog.json`` must match that HOME document plan-by-plan. This pack must
+    not become a second price SSOT.
+    """
+
+    lock = load_offer_home_lock()
+    home_meta = lock["home"]
+    path = home_catalog_path
+    if path is None:
+        path = ROOT / lock["fixture_path"]
+    if not path.is_file():
+        raise SalesPolicyError(f"HOME offer catalog missing: {path}")
+
+    actual_digest = _file_digest(path)
+    expected_digest = home_meta["digest"]
+    if actual_digest != expected_digest:
+        raise SalesPolicyError(
+            f"HOME offer digest drift: expected {expected_digest}, actual {actual_digest}"
+        )
+
+    try:
+        home_doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SalesPolicyError(f"HOME offer catalog is unreadable: {error}") from error
+
+    if home_doc.get("schema") != "subactor.offer/catalog/v1":
+        raise SalesPolicyError("HOME offer catalog schema mismatch")
+    if home_doc.get("id") != home_meta["offer_id"]:
+        raise SalesPolicyError(
+            f"HOME offer id expected {home_meta['offer_id']!r}, got {home_doc.get('id')!r}"
+        )
+    if home_doc.get("version") != home_meta["version"]:
+        raise SalesPolicyError(
+            f"HOME offer version expected {home_meta['version']!r}, got {home_doc.get('version')!r}"
+        )
+
+    sales = load_catalog()
+    home_plans = home_doc.get("plans")
+    if not isinstance(home_plans, list):
+        raise SalesPolicyError("HOME offer catalog plans must be an array")
+    home_by_id = {}
+    for index, plan in enumerate(home_plans):
+        if not isinstance(plan, dict):
+            raise SalesPolicyError(f"HOME plans[{index}] must be an object")
+        plan_id = plan.get("plan_id")
+        if not isinstance(plan_id, str) or not plan_id:
+            raise SalesPolicyError(f"HOME plans[{index}] lacks plan_id")
+        if plan_id in home_by_id:
+            raise SalesPolicyError(f"duplicate HOME plan_id {plan_id}")
+        home_by_id[plan_id] = plan
+
+    checked: list[str] = []
+    for plan in sales["plans"]:
+        plan_id = plan["plan_id"]
+        if plan_id not in home_by_id:
+            raise SalesPolicyError(f"sales catalog plan {plan_id} absent from HOME offer")
+        home_plan = home_by_id[plan_id]
+        for field in lock["mirrored_fields"]:
+            if field == "agent_operations_included":
+                expected = _home_operations(home_plan)
+                actual = plan.get("agent_operations_included")
+            else:
+                expected = home_plan.get(field)
+                actual = plan.get(field)
+            if actual != expected:
+                raise SalesPolicyError(
+                    f"{plan_id}.{field}: HOME={expected!r} sales={actual!r}"
+                )
+        checked.append(plan_id)
+
+    return {
+        "ok": True,
+        "offer_id": home_meta["offer_id"],
+        "version": home_meta["version"],
+        "digest": expected_digest,
+        "checked_plan_ids": checked,
+        "home_path": str(path),
+    }
+
+
 def compare_www_plans(plans_path: Path) -> None:
     """Fail closed when a portal plans.json facade drifts from the sales catalog.
 
@@ -971,6 +1079,17 @@ def main(argv: Iterable[str] | None = None) -> int:
     )
     compare_parser.add_argument("--plans", type=Path, required=True)
 
+    home_parser = subparsers.add_parser(
+        "compare-offer-home",
+        help="fail closed when sales amounts drift from the pinned subactor/offer HOME catalog",
+    )
+    home_parser.add_argument(
+        "--catalog",
+        type=Path,
+        default=None,
+        help="path to subactor/offer catalogs/.../offer.json (defaults to locked fixture)",
+    )
+
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     try:
@@ -978,10 +1097,14 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(_json(decide(args.plan_id, args.promo_code)), end="")
         elif args.command == "validate-catalog":
             load_catalog()
+            compare_offer_home()
             print("SALES-CATALOG-PASS")
         elif args.command == "compare-www-plans":
             compare_www_plans(args.plans)
             print("SALES-WWW-PLANS-PASS")
+        elif args.command == "compare-offer-home":
+            result = compare_offer_home(args.catalog)
+            print(_json(result), end="")
         else:
             actual = matrix()
             if args.check is not None:
