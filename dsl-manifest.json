@@ -137,7 +137,7 @@
     },
     {
       "path": "tests/test_host_hardware_policy.py",
-      "role": "conformance-test",
+      "role": "parser-contract",
       "digest": "sha256:2cea57fc6e2f9e08a8c165b69c52aa6488037da04cd47bd227e6c487fd8e28ec"
     },
     {
@@ -247,12 +247,12 @@
     },
     {
       "path": "profiles/sales/offer-home.lock.json",
-      "role": "contract",
+      "role": "profile",
       "digest": "sha256:5dfec8efc543d13b3285aa8cf4d558f9242ef6d00b8d99b2c120226277366940"
     },
     {
       "path": "profiles/sales/www-plans.lock.json",
-      "role": "contract",
+      "role": "profile",
       "digest": "sha256:bd1e0a0ac699a6c10a61aff4f97c39ded1cf95e27ddd8d967a99ddb3e1481d63"
     },
     {
@@ -268,12 +268,12 @@
     {
       "path": "profiles/llm-credential/subactor-llm-credential.policy",
       "role": "example",
-      "digest": "sha256:1651074d28edae854bd8ba530c7df9c5af652a62883749fb234ac42222d85c7b"
+      "digest": "sha256:dc6777f73ad60c892b8c1e24ebbf68a5c216616f932b7aa1b833b0fb6ab6c3b4"
     },
     {
       "path": "profiles/llm-credential/strategy-catalog.json",
       "role": "schema",
-      "digest": "sha256:2bfefe6035bc037e905fdce6b3645355dc12880e89882e054205f94fc3f79a75"
+      "digest": "sha256:378bc05f14a866fc2699487a1f494d646016a0ae4ec24d316f90c434ad9a9c1b"
     },
     {
       "path": "profiles/llm-credential/README.md",
@@ -283,7 +283,7 @@
     {
       "path": "profiles/llm-credential/ADOPTION.md",
       "role": "documentation",
-      "digest": "sha256:479cb384a2a0ea085c31ae07497476064dced65b77377de3766fa7a0b7ced9fc"
+      "digest": "sha256:42d7101e998b271ae375e2f365961fd8c4ee60ca9cd3c60f9724a0cf5543d022"
     }
   ],
   "namespaces": [
