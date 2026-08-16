@@ -1,0 +1,97 @@
+{
+  "schema": "subactor.offer/catalog/v1",
+  "id": "subactor-cloud",
+  "version": 1,
+  "status": "current",
+  "product": "subactor",
+  "title": "Subactor Cloud public offer (OTP sheet)",
+  "supersedes": {
+    "id": "subactor-cloud",
+    "version": 0
+  },
+  "vocabulary": {
+    "unit_code": "AGENT_OPERATION",
+    "label_pl_singular": "operacja agenta",
+    "label_pl_plural": "operacje agenta"
+  },
+  "compatibility": {
+    "read_aliases": {
+      "Actions Plus": "Operations Plus",
+      "actions_included": "agent_operations_included"
+    }
+  },
+  "meta": {
+    "billing_model": "active-twin-with-verified-actions/v1",
+    "prices_are": "net",
+    "human_seats_billed": false
+  },
+  "plans": [
+    {
+      "plan_id": "saas-start",
+      "name": "Basic",
+      "canonical_display_name": "Basic",
+      "public": true,
+      "order": 1,
+      "amount_monthly_minor": 9700,
+      "amount_annual_minor": 97000,
+      "currency": "PLN",
+      "unit": "active_twin_monthly",
+      "commercial_type": "usage-subscription",
+      "actions_included": 1000,
+      "active_twins_included": 1,
+      "agent_operations_included": 1000
+    },
+    {
+      "plan_id": "saas-business",
+      "name": "Actions Plus",
+      "canonical_display_name": "Operations Plus",
+      "legacy_display_names": [
+        "Actions Plus"
+      ],
+      "public": true,
+      "order": 2,
+      "featured": true,
+      "amount_monthly_minor": 5900,
+      "amount_annual_minor": 59000,
+      "currency": "PLN",
+      "unit": "actions_monthly",
+      "commercial_type": "usage-subscription",
+      "actions_included": 1000,
+      "active_twins_included": 0,
+      "agent_operations_included": 1000
+    },
+    {
+      "plan_id": "prepaid-actions",
+      "name": "Twin Plus",
+      "canonical_display_name": "Twin Plus",
+      "public": true,
+      "order": 3,
+      "amount_monthly_minor": 5900,
+      "amount_annual_minor": 59000,
+      "currency": "PLN",
+      "unit": "active_twin_monthly",
+      "commercial_type": "usage-subscription",
+      "actions_included": 0,
+      "active_twins_included": 1,
+      "agent_operations_included": 0
+    },
+    {
+      "plan_id": "on-premise",
+      "name": "On-Premise",
+      "canonical_display_name": "On-premise",
+      "legacy_display_names": [
+        "On-Premise"
+      ],
+      "public": false,
+      "order": 4,
+      "amount_monthly_minor": 290000,
+      "amount_annual_minor": 290000,
+      "currency": "EUR",
+      "unit": "self_hosted",
+      "commercial_type": "perpetual-license",
+      "actions_included": null,
+      "active_twins_included": null,
+      "agent_operations_included": null
+    }
+  ]
+}

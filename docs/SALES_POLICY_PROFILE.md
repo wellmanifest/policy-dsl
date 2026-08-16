@@ -24,6 +24,7 @@ raw plan id + raw promo code
             v
 profiles/sales/subactor-sales.policy
 profiles/sales/offer-catalog.json   ← ADOPT projection, not price HOME
+profiles/sales/offer-home.lock.json ← pinned HOME digest (fail closed)
             |
             v
 subactor.sales/decision/v1

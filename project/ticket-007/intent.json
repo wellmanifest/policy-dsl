@@ -1,0 +1,99 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-007",
+  "summary": "Pin sales catalog to subactor/offer HOME digest",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/offer"
+    ]
+  },
+  "allowedPaths": [
+    "project/ticket-007/**",
+    "project/ticket-006/README.md",
+    "project/TICKETS.md",
+    "profiles/sales/**",
+    "examples/sales/**",
+    "tests/test_sales_profile.py",
+    "dsl-manifest.json",
+    "docs/SALES_POLICY_PROFILE.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    ".github/**",
+    "CHANGELOG.md",
+    "TODO.md"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "d0f94246c77f3b6b74a4f82f585f4ac96b698889",
+    "targetBranch": "main",
+    "outcome": "sales offer-catalog commercial fields fail closed against pinned subactor/offer HOME digest",
+    "nonGoals": [
+      "No catalogs under wellmanifest/offer",
+      "No HTML pricing SSOT edits",
+      "No Subactor runtime adapter",
+      "No CHANGELOG/TODO edits in this integration ticket"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 8,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Pin HOME catalog digest in policy-dsl; compare commercial fields plan-by-plan; keep byte-identical fixture for CI.",
+      "components": [
+        {
+          "name": "sales-offer-home-pin",
+          "paths": [
+            "profiles/sales/**",
+            "examples/sales/**",
+            "tests/test_sales_profile.py",
+            "dsl-manifest.json",
+            "docs/SALES_POLICY_PROFILE.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "profiles/sales/reference_engine.py compare-offer-home"
+      ],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket commits"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-04",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'",
+          "python3 profiles/sales/reference_engine.py compare-offer-home"
+        ],
+        "evidence": "Unit tests and HOME compare pass"
+      }
+    ]
+  }
+}

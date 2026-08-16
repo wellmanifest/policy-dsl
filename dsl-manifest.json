@@ -178,7 +178,7 @@
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:22e53a547272fdef217542f6364791a774d3d371e2888c49814c5698d02cf834"
+      "digest": "sha256:d1aeaff24508bd08e55c0a2313e4f3317e979c8089cabb1020ece755763e56db"
     },
     {
       "path": "tests/test_manifest.py",
@@ -203,7 +203,7 @@
     {
       "path": "profiles/sales/reference_engine.py",
       "role": "parser-contract",
-      "digest": "sha256:dccfff509b2c94a6e36ce58d6dab796c880d9881379e707fe48fb248b2e36256"
+      "digest": "sha256:568b4ca6de736ce57dfb4f260ef6088f84853090b92333c3f7435b527c28bcbd"
     },
     {
       "path": "profiles/sales/README.md",
@@ -228,17 +228,27 @@
     {
       "path": "docs/SALES_POLICY_PROFILE.md",
       "role": "documentation",
-      "digest": "sha256:dc841ca02fbd81ba6ee6a2f9f3a1ff9a8634bcebaa8d480572745d02ba4f327d"
+      "digest": "sha256:73fc917d590e0b067a6c4d63bdc4def821f1cc065fb09187a36c74c895c5340c"
     },
     {
       "path": "examples/sales/README.md",
       "role": "documentation",
-      "digest": "sha256:c4e90809be2c913c4ba46077946882ec4f070986438dec83bdf741fecdf0410c"
+      "digest": "sha256:ff4eab0d8183ab32463e7741d54fb334a7cccac8d5518fdc1f011b59c1242985"
     },
     {
       "path": "examples/sales/subactor-pricing-section.html",
       "role": "example",
       "digest": "sha256:2ef4a99d9ae5832c99219a21ef1a40d1aedaa1668d4964dcf40b7025d44752c6"
+    },
+    {
+      "path": "profiles/sales/offer-home.lock.json",
+      "role": "contract",
+      "digest": "sha256:5dfec8efc543d13b3285aa8cf4d558f9242ef6d00b8d99b2c120226277366940"
+    },
+    {
+      "path": "examples/sales/fixtures/subactor-cloud-v1.offer.json",
+      "role": "example",
+      "digest": "sha256:95c3392d3b677092240eb9b7781c70eb079d30e2c7b84eac337dd3de8a03a2dc"
     }
   ],
   "namespaces": [
@@ -326,7 +336,8 @@
       "python3 tests/policy_dsl_check.py validate profiles/sales/subactor-sales.policy",
       "python3 profiles/sales/reference_engine.py validate-catalog",
       "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json",
-      "python3 profiles/sales/reference_engine.py compare-www-plans --help"
+      "python3 profiles/sales/reference_engine.py compare-www-plans --help",
+      "python3 profiles/sales/reference_engine.py compare-offer-home"
     ],
     "validExamples": [
       "examples/valid/contributing.policy",
