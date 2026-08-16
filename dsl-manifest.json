@@ -183,7 +183,7 @@
     {
       "path": "tests/test_manifest.py",
       "role": "parser-contract",
-      "digest": "sha256:4932d3fd7a314b9ae284eacc3aeb0a78d8e6ba758010be79113992ab3ead9588"
+      "digest": "sha256:d99b95528a980e51ec27f74445a7403bd9a702b636710f099e81b5040567cb95"
     },
     {
       "path": "profiles/sales/subactor-sales.policy",
@@ -264,6 +264,26 @@
       "path": "examples/sales/fixtures/www-plans.facade.json",
       "role": "example",
       "digest": "sha256:59f8baeb5355b9c7a0517245089a330b034e501486abd4c21db725729fc9e478"
+    },
+    {
+      "path": "profiles/llm-credential/subactor-llm-credential.policy",
+      "role": "example",
+      "digest": "sha256:1651074d28edae854bd8ba530c7df9c5af652a62883749fb234ac42222d85c7b"
+    },
+    {
+      "path": "profiles/llm-credential/strategy-catalog.json",
+      "role": "schema",
+      "digest": "sha256:2bfefe6035bc037e905fdce6b3645355dc12880e89882e054205f94fc3f79a75"
+    },
+    {
+      "path": "profiles/llm-credential/README.md",
+      "role": "documentation",
+      "digest": "sha256:fcdf39bd5a44dd3e0562ced21d3a2e54d2ad1ea5b50dfd092a366e0d396adc0e"
+    },
+    {
+      "path": "profiles/llm-credential/ADOPTION.md",
+      "role": "documentation",
+      "digest": "sha256:479cb384a2a0ea085c31ae07497476064dced65b77377de3766fa7a0b7ced9fc"
     }
   ],
   "namespaces": [
@@ -352,14 +372,16 @@
       "python3 profiles/sales/reference_engine.py validate-catalog",
       "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json",
       "python3 profiles/sales/reference_engine.py compare-www-plans --plans examples/sales/fixtures/www-plans.facade.json",
-      "python3 profiles/sales/reference_engine.py compare-offer-home"
+      "python3 profiles/sales/reference_engine.py compare-offer-home",
+      "python3 tests/policy_dsl_check.py validate profiles/llm-credential/subactor-llm-credential.policy"
     ],
     "validExamples": [
       "examples/valid/contributing.policy",
       "examples/valid/CONTRIBUTING.md",
       "examples/hosting/subactor-production-server.policy",
       "examples/hosting/subactor-rpi5.policy",
-      "profiles/sales/subactor-sales.policy"
+      "profiles/sales/subactor-sales.policy",
+      "profiles/llm-credential/subactor-llm-credential.policy"
     ],
     "invalidExamples": [
       "examples/invalid/shell-injection.policy",
