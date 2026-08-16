@@ -4,6 +4,9 @@
 
 ### 0.2.0-dev
 
+- Re-adopt published `wellmanifest/new-project` **0.18.1** managed governance
+  with live-host schema ids; defer `dsl` digest repair, `domainContracts`, and
+  a `wellm` pin to later published releases or an integration ticket.
 - Align the sales catalog Operations Plus entitlement with the OTP commercial
   sheet (`1 000` agent operations; list-price mirrors `97/59/59` PLN) and keep
   amounts as an ADOPT projection of `subactor/offer`, not a second price HOME.

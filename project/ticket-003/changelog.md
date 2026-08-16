@@ -1,5 +1,7 @@
 # Changelog — ticket-003
 
+- Closed as `DONE` / `DONE` on the integrated default branch after acceptance
+  criteria landed (governance-only closure in ticket-004).
 - Hardened `validate_ir` for duplicate bindings, environment names, transition
   edges, and undeclared `NEXT`/`TRANSITION` states.
 - Fixed `examples/valid/CONTRIBUTING.md` to declare matching `STATE` symbols.
