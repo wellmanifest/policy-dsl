@@ -108,7 +108,10 @@
         "eligible_promo_codes",
         "seat_summary_pl",
         "operation_label_pl",
-        "promo_hint_pl"
+        "promo_hint_pl",
+        "amount_monthly_minor",
+        "amount_annual_minor",
+        "currency"
       ],
       "properties": {
         "plan_id": {
@@ -206,6 +209,23 @@
             "null"
           ],
           "maxLength": 500
+        },
+        "amount_monthly_minor": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "amount_annual_minor": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     }

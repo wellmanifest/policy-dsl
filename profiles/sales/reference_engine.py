@@ -131,6 +131,9 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
         "seat_summary_pl",
         "operation_label_pl",
         "promo_hint_pl",
+        "amount_monthly_minor",
+        "amount_annual_minor",
+        "currency",
     }
     plans = catalog["plans"]
     if not isinstance(plans, list) or not plans:
@@ -184,6 +187,17 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
         _require_optional_non_negative_integer(
             plan["agent_operations_included"], f"agent_operations_included for {plan_id}"
         )
+        _require_optional_non_negative_integer(
+            plan["amount_monthly_minor"], f"amount_monthly_minor for {plan_id}"
+        )
+        _require_optional_non_negative_integer(
+            plan["amount_annual_minor"], f"amount_annual_minor for {plan_id}"
+        )
+        currency = plan["currency"]
+        if currency is not None and (
+            not isinstance(currency, str) or not re.fullmatch(r"[A-Z]{3}", currency)
+        ):
+            raise SalesPolicyError(f"invalid currency for {plan_id}")
         card_required = plan["payment_card_required"]
         if card_required is not None and not isinstance(card_required, bool):
             raise SalesPolicyError(f"invalid payment_card_required for {plan_id}")
@@ -216,6 +230,9 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "INCLUDED",
             "payment_card_required": True,
             "eligible_promo_codes": ["NOCC100"],
+            "amount_monthly_minor": 9700,
+            "amount_annual_minor": 97000,
+            "currency": "PLN",
         },
         "saas-business": {
             "public_code": "operations-plus",
@@ -223,11 +240,14 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "entitlement_kind": "AGENT_OPERATIONS",
             "display_name": "Operations Plus",
             "active_twins_included": 0,
-            "agent_operations_included": 10000,
+            "agent_operations_included": 1000,
             "operation_scope": "ACCOUNT_MONTH",
             "operations_source": "ADD_ON",
             "payment_card_required": True,
             "eligible_promo_codes": [],
+            "amount_monthly_minor": 5900,
+            "amount_annual_minor": 59000,
+            "currency": "PLN",
         },
         "prepaid-actions": {
             "public_code": "twin-plus",
@@ -240,6 +260,9 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "SEPARATE_PACKAGE",
             "payment_card_required": True,
             "eligible_promo_codes": [],
+            "amount_monthly_minor": 5900,
+            "amount_annual_minor": 59000,
+            "currency": "PLN",
         },
         "on-premise": {
             "public_code": "on-premise",
@@ -252,6 +275,9 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
             "operations_source": "CONTRACT",
             "payment_card_required": None,
             "eligible_promo_codes": [],
+            "amount_monthly_minor": 290000,
+            "amount_annual_minor": 290000,
+            "currency": "EUR",
         },
     }
     for plan_id, fields in expected.items():
@@ -264,6 +290,8 @@ def load_catalog(path: Path = CATALOG_PATH) -> dict[str, Any]:
 
     if "Actions Plus" not in by_id["saas-business"]["legacy_display_names"]:
         raise SalesPolicyError("Actions Plus must remain an explicit read-only migration alias")
+    if "On-Premise" not in by_id["on-premise"]["legacy_display_names"]:
+        raise SalesPolicyError("On-Premise must remain an explicit read-only migration alias")
     twin = by_id["prepaid-actions"]
     if "Brak" in twin["operation_label_pl"] or "Operations Plus" not in twin["operation_label_pl"]:
         raise SalesPolicyError("Twin Plus must explain its separate Operations Plus package")
@@ -821,6 +849,86 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
             raise SalesPolicyError("only Twin Plus may emit the separate-package report")
 
 
+def compare_www_plans(plans_path: Path) -> None:
+    """Fail closed when a portal plans.json facade drifts from the sales catalog.
+
+    List prices HOME in ``subactor/offer``; this catalog mirrors amounts for
+    entitlement/promo parity checks. The portal facade must match mirrored
+    entitlements, names (including legacy aliases) and amount mirrors.
+    """
+
+    catalog = load_catalog()
+    try:
+        payload = json.loads(plans_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SalesPolicyError(f"www plans are unreadable: {error}") from error
+
+    if not isinstance(payload, dict) or "plans" not in payload:
+        raise SalesPolicyError("www plans must be an object with a plans field")
+
+    raw_plans = payload["plans"]
+    if isinstance(raw_plans, dict):
+        by_id = raw_plans
+    elif isinstance(raw_plans, list):
+        by_id = {}
+        for index, item in enumerate(raw_plans):
+            if not isinstance(item, dict):
+                raise SalesPolicyError(f"www plans[{index}] must be an object")
+            plan_id = item.get("id") or item.get("plan_id")
+            if not isinstance(plan_id, str) or not plan_id:
+                raise SalesPolicyError(f"www plans[{index}] lacks id")
+            if plan_id in by_id:
+                raise SalesPolicyError(f"duplicate www plan id {plan_id}")
+            by_id[plan_id] = item
+    else:
+        raise SalesPolicyError("www plans must be an object map or array")
+
+    for plan in catalog["plans"]:
+        plan_id = plan["plan_id"]
+        if plan_id not in by_id:
+            raise SalesPolicyError(f"www plans missing catalog plan {plan_id}")
+        facade = by_id[plan_id]
+        if not isinstance(facade, dict):
+            raise SalesPolicyError(f"www plan {plan_id} must be an object")
+
+        actions = facade.get("actions_included", facade.get("agent_operations_included"))
+        if actions != plan["agent_operations_included"]:
+            raise SalesPolicyError(
+                f"{plan_id} actions_included expected {plan['agent_operations_included']!r}, "
+                f"got {actions!r}"
+            )
+
+        twins = facade.get("active_twins_included")
+        if twins != plan["active_twins_included"]:
+            raise SalesPolicyError(
+                f"{plan_id} active_twins_included expected {plan['active_twins_included']!r}, "
+                f"got {twins!r}"
+            )
+
+        allowed_names = {plan["display_name"], *plan["legacy_display_names"]}
+        name = facade.get("name") or facade.get("display_name")
+        if name not in allowed_names:
+            raise SalesPolicyError(
+                f"{plan_id} name {name!r} not in {sorted(allowed_names)}"
+            )
+
+        if facade.get("amount_monthly_minor") != plan["amount_monthly_minor"]:
+            raise SalesPolicyError(
+                f"{plan_id} amount_monthly_minor expected {plan['amount_monthly_minor']!r}, "
+                f"got {facade.get('amount_monthly_minor')!r}"
+            )
+        if facade.get("amount_annual_minor") != plan["amount_annual_minor"]:
+            raise SalesPolicyError(
+                f"{plan_id} amount_annual_minor expected {plan['amount_annual_minor']!r}, "
+                f"got {facade.get('amount_annual_minor')!r}"
+            )
+        if facade.get("currency") != plan["currency"]:
+            raise SalesPolicyError(
+                f"{plan_id} currency expected {plan['currency']!r}, "
+                f"got {facade.get('currency')!r}"
+            )
+
+
 def matrix() -> dict[str, Any]:
     cases = [
         ("NOCC100_BASIC", "saas-start", "NOCC100"),
@@ -856,6 +964,13 @@ def main(argv: Iterable[str] | None = None) -> int:
     matrix_parser.add_argument("--check", type=Path)
 
     subparsers.add_parser("validate-catalog", help="validate the closed current catalog")
+
+    compare_parser = subparsers.add_parser(
+        "compare-www-plans",
+        help="fail closed when a portal plans.json facade drifts from the sales catalog",
+    )
+    compare_parser.add_argument("--plans", type=Path, required=True)
+
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     try:
@@ -864,6 +979,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         elif args.command == "validate-catalog":
             load_catalog()
             print("SALES-CATALOG-PASS")
+        elif args.command == "compare-www-plans":
+            compare_www_plans(args.plans)
+            print("SALES-WWW-PLANS-PASS")
         else:
             actual = matrix()
             if args.check is not None:

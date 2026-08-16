@@ -31,7 +31,10 @@
       ],
       "seat_summary_pl": "1 aktywny bliźniak • 1 000 operacji / miesiąc",
       "operation_label_pl": "1 000 operacji agenta / miesiąc",
-      "promo_hint_pl": "Z kodem NOCC100 zakładasz konto bez opłaty i bez podawania karty płatniczej."
+      "promo_hint_pl": "Z kodem NOCC100 zakładasz konto bez opłaty i bez podawania karty płatniczej.",
+      "amount_monthly_minor": 9700,
+      "amount_annual_minor": 97000,
+      "currency": "PLN"
     },
     {
       "plan_id": "saas-business",
@@ -43,14 +46,17 @@
         "Actions Plus"
       ],
       "active_twins_included": 0,
-      "agent_operations_included": 10000,
+      "agent_operations_included": 1000,
       "operation_scope": "ACCOUNT_MONTH",
       "operations_source": "ADD_ON",
       "payment_card_required": true,
       "eligible_promo_codes": [],
-      "seat_summary_pl": "Nie dodaje bliźniaka • 10 000 operacji / miesiąc",
-      "operation_label_pl": "10 000 operacji agenta / miesiąc",
-      "promo_hint_pl": null
+      "seat_summary_pl": "Nie dodaje bliźniaka • 1 000 operacji / miesiąc",
+      "operation_label_pl": "1 000 operacji agenta / miesiąc",
+      "promo_hint_pl": null,
+      "amount_monthly_minor": 5900,
+      "amount_annual_minor": 59000,
+      "currency": "PLN"
     },
     {
       "plan_id": "prepaid-actions",
@@ -67,7 +73,10 @@
       "eligible_promo_codes": [],
       "seat_summary_pl": "1 aktywny bliźniak • 0 operacji w pakiecie",
       "operation_label_pl": "0 operacji w pakiecie — dokupujesz przez Operations Plus",
-      "promo_hint_pl": null
+      "promo_hint_pl": null,
+      "amount_monthly_minor": 5900,
+      "amount_annual_minor": 59000,
+      "currency": "PLN"
     },
     {
       "plan_id": "on-premise",
@@ -75,7 +84,9 @@
       "kind": "OFFLINE_OFFER",
       "entitlement_kind": "CONTRACT",
       "display_name": "On-premise",
-      "legacy_display_names": [],
+      "legacy_display_names": [
+        "On-Premise"
+      ],
       "active_twins_included": null,
       "agent_operations_included": null,
       "operation_scope": "CONTRACT",
@@ -84,7 +95,10 @@
       "eligible_promo_codes": [],
       "seat_summary_pl": "Zakres zgodny z umową",
       "operation_label_pl": "Limity operacji zgodne z umową",
-      "promo_hint_pl": null
+      "promo_hint_pl": null,
+      "amount_monthly_minor": 290000,
+      "amount_annual_minor": 290000,
+      "currency": "EUR"
     }
   ]
 }

@@ -198,6 +198,37 @@ class SubactorSalesProfileTest(unittest.TestCase):
         with self.assertRaisesRegex(SALES.SalesPolicyError, "unknown plan_id"):
             SALES.decide("enterprise-imaginary", "NOCC100")
 
+    def test_compare_www_plans_accepts_current_otp_facade(self):
+        www_plans = Path("/home/tom/github/subactor/www-sub-actor/src/php_app/config/plans.json")
+        if not www_plans.is_file():
+            self.skipTest("www-sub-actor plans.json not available in this checkout")
+        SALES.compare_www_plans(www_plans)
+
+    def test_compare_www_plans_rejects_ops_drift(self):
+        www_plans = Path("/home/tom/github/subactor/www-sub-actor/src/php_app/config/plans.json")
+        if not www_plans.is_file():
+            self.skipTest("www-sub-actor plans.json not available in this checkout")
+        import tempfile
+
+        payload = json.loads(www_plans.read_text(encoding="utf-8"))
+        payload["plans"]["saas-business"]["actions_included"] = 10000
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
+            json.dump(payload, handle)
+            bad = Path(handle.name)
+        try:
+            with self.assertRaisesRegex(SALES.SalesPolicyError, "saas-business actions_included"):
+                SALES.compare_www_plans(bad)
+        finally:
+            bad.unlink(missing_ok=True)
+
+    def test_operations_plus_matches_otp_sheet_quota(self):
+        catalog = SALES.load_catalog()
+        by_id = {plan["plan_id"]: plan for plan in catalog["plans"]}
+        self.assertEqual(1000, by_id["saas-business"]["agent_operations_included"])
+        self.assertEqual(9700, by_id["saas-start"]["amount_monthly_minor"])
+        self.assertEqual(5900, by_id["saas-business"]["amount_monthly_minor"])
+        self.assertEqual(5900, by_id["prepaid-actions"]["amount_monthly_minor"])
+
 
 if __name__ == "__main__":
     unittest.main()
