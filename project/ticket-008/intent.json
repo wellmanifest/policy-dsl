@@ -43,15 +43,22 @@
     "complexity": "XS",
     "estimatedMinutes": 5,
     "budgets": {
-      "maxImplementationFiles": 0,
-      "maxAffectedComponents": 0,
+      "maxImplementationFiles": 1,
+      "maxAffectedComponents": 1,
       "maxPublicInterfaceChanges": 0,
       "maxRuntimeDependencies": 0
     },
     "architecture": {
       "status": "accepted",
-      "decision": "Housekeeping-only: close completed ticket-007 status carriers; no product paths.",
-      "components": [],
+      "decision": "Housekeeping: close ticket-007 status; touch TICKETS index and ticket carriers only.",
+      "components": [
+        {
+          "name": "ticket-index",
+          "paths": [
+            "project/TICKETS.md"
+          ]
+        }
+      ],
       "responsibilityChanges": false,
       "interfaceChanges": [],
       "dataChanges": [],
