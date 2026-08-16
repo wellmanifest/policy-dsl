@@ -19,7 +19,8 @@
   "allowedPaths": [
     "project/TICKETS.md",
     "project/ticket-009/README.md",
-    "project/ticket-010/**"
+    "project/ticket-010/**",
+    "project/ticket-009/intent.json"
   ],
   "forbiddenPaths": [
     "project/ticket-*/user-*.md",

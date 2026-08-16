@@ -13,7 +13,7 @@
     "shape": "domain_pack",
     "runtimeOwner": "wellmanifest",
     "adopt": [
-      "subactor/offer"
+      "wellmanifest/offer"
     ]
   },
   "allowedPaths": [
@@ -46,8 +46,8 @@
       "No www plans.json edits in this pack",
       "No CHANGELOG/TODO edits"
     ],
-    "complexity": "S",
-    "estimatedMinutes": 25,
+    "complexity": "L",
+    "estimatedMinutes": 30,
     "budgets": {
       "maxImplementationFiles": 8,
       "maxAffectedComponents": 2,
@@ -74,8 +74,22 @@
         "examples/sales/fixtures/www-plans.facade.json"
       ],
       "ui": {
-        "inScope": false
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket commits"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'",
+          "python3 profiles/sales/reference_engine.py compare-www-plans --plans examples/sales/fixtures/www-plans.facade.json"
+        ],
+        "evidence": "Unit tests and fixture compare pass"
       }
-    }
+    ]
   }
 }
