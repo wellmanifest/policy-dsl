@@ -74,7 +74,8 @@
           "schemas/**",
           "examples/**",
           "tests/**",
-          "dsl-manifest.json"
+          "dsl-manifest.json",
+          "profiles/**"
         ]
       },
       "interfaces": {
