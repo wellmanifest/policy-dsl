@@ -48,7 +48,7 @@
       "No sales catalog or adapter work"
     ],
     "complexity": "XS",
-    "estimatedMinutes": 15,
+    "estimatedMinutes": 10,
     "budgets": {
       "maxImplementationFiles": 2,
       "maxAffectedComponents": 1,
