@@ -4,3 +4,4 @@
 
 - Initial governance scaffold created.
 - No human participant identity or content was generated.
+- Exported frozen consumer decision/v1 matrix and export-decisions CLI.

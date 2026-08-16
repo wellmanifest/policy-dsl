@@ -16,8 +16,8 @@ To be completed after reading human-owned input and the ticket preprompt.
 
 ## Actual changes
 
-- Initialized the bounded ticket and recorded SESSION_EXECUTION_AUTHORIZATION
-  from the request to execute this work.
+- Added `export-decisions` and `examples/sales/decisions/matrix.v1.json`.
+- Tests and docs pin consumers to `decide()` / the frozen matrix.
 
 ## Blockers
 

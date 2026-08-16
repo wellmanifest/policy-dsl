@@ -184,6 +184,26 @@ class SubactorSalesProfileTest(unittest.TestCase):
         )
         self.assertEqual(expected, SALES.matrix())
 
+    def test_consumer_decision_fixture_matches_decide(self):
+        fixture_path = ROOT / "examples/sales/decisions/matrix.v1.json"
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        self.assertEqual("subactor.sales/decision-matrix/v1", fixture["schema"])
+        self.assertEqual(fixture, SALES.matrix())
+        required = {"schema", "input", "offer", "promotion", "payment", "metering", "policy"}
+        for case in fixture["cases"]:
+            with self.subTest(name=case["name"]):
+                decision = case["decision"]
+                self.assertEqual("subactor.sales/decision/v1", decision["schema"])
+                self.assertTrue(required <= set(decision))
+                self.assertEqual(
+                    decision,
+                    SALES.decide(decision["input"]["plan_id"], decision["input"]["promo_code"]),
+                )
+        self.assertEqual(
+            0,
+            SALES.main(["export-decisions", "--check", str(fixture_path)]),
+        )
+
     def test_sales_schemas_are_closed(self):
         for path in (
             ROOT / "schemas/sales-request.schema.json",

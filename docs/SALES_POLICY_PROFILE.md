@@ -61,6 +61,7 @@ read aliases `actions_included` and `Actions Plus` exist only for migration.
 - `schemas/sales-decision.schema.json` — closed inert decision contract;
 - `profiles/sales/reference_engine.py` — dependency-free evaluator;
 - `profiles/sales/decision-matrix.json` — golden regression matrix;
+- `examples/sales/decisions/matrix.v1.json` — frozen consumer `decision/v1` export;
 - `examples/sales/subactor-pricing-section.html` — corrected UI projection.
 
 ## Adapter rules
@@ -83,6 +84,9 @@ python3 tests/policy_dsl_check.py validate profiles/sales/subactor-sales.policy
 python3 profiles/sales/reference_engine.py validate-catalog
 python3 profiles/sales/reference_engine.py matrix \
   --check profiles/sales/decision-matrix.json
+python3 profiles/sales/reference_engine.py export-decisions \
+  --check examples/sales/decisions/matrix.v1.json
+python3 profiles/sales/reference_engine.py decide --plan-id saas-start --promo-code NOCC100
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
