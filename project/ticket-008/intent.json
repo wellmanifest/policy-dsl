@@ -8,10 +8,69 @@
     "priority": "P2",
     "origin": "requested"
   },
-  "allowedPaths": ["project/ticket-008/**", "TODO.md", "project/TICKETS.md"],
-  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/new-project"
+    ]
+  },
+  "allowedPaths": [
+    "project/TICKETS.md",
+    "project/ticket-007/README.md",
+    "project/ticket-008/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "profiles/**",
+    "tests/**",
+    "examples/**",
+    ".governance/**"
+  ],
   "stacks": [],
   "dependsOn": [],
   "conflictsWith": [],
-  "integrationTicket": null
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "62dfd6357d5d9ff42d0d80be2854fb81732c2a69",
+    "targetBranch": "main",
+    "outcome": "ticket-007 marked DONE/DONE on default branch after PR #10 merge",
+    "nonGoals": [
+      "No catalog or profile code changes",
+      "No new offer pin work"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 5,
+    "budgets": {
+      "maxImplementationFiles": 0,
+      "maxAffectedComponents": 0,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Housekeeping-only: close completed ticket-007 status carriers; no product paths.",
+      "components": [],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert status markers on ticket-007"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "./project.sh --actor agent --base 62dfd6357d5d9ff42d0d80be2854fb81732c2a69 --head HEAD"
+        ],
+        "evidence": "GOV-PASS"
+      }
+    ]
+  }
 }
