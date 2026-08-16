@@ -1,0 +1,91 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-011",
+  "summary": "Align dsl standardsLock revision and digest guard",
+  "workstream": "integration",
+  "classification": {
+    "kind": "FEATURE",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl"
+    ]
+  },
+  "allowedPaths": [
+    "project/ticket-011/**",
+    "project/TICKETS.md",
+    "dsl-manifest.json",
+    "tests/test_manifest.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    ".github/**",
+    "CHANGELOG.md",
+    "TODO.md",
+    "profiles/**",
+    "examples/**"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "3fa381832af07cf9ad50489e99075c80be22195f",
+    "targetBranch": "main",
+    "outcome": "dsl standardsLock revision matches current wellmanifest/dsl HEAD; artifact and contract digests fail closed; no wellm pin invented",
+    "nonGoals": [
+      "No wellm standardsLock entry",
+      "No domainContracts invention",
+      "No CHANGELOG/TODO edits",
+      "No sales catalog or adapter work"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 15,
+    "budgets": {
+      "maxImplementationFiles": 2,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Bump wellmanifest.dsl lock revision to current dsl HEAD; keep contract digest; extend manifest tests to guard artifact and lock contract digests.",
+      "components": [
+        {
+          "name": "dsl-standards-lock",
+          "paths": [
+            "dsl-manifest.json",
+            "tests/test_manifest.py"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket commits"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "Unit tests pass including digest guards"
+      }
+    ]
+  }
+}
