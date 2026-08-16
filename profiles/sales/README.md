@@ -12,8 +12,8 @@ warstwa legacy nie powinny implementować osobnych wariantów tej samej reguły.
 
 - `subactor-sales.policy` — deklaratywne reguły kwalifikacji, sanitizacji i
   niejednoznacznej prezentacji;
-- `offer-catalog.json` — kanoniczny katalog planów, uprawnień i słownik operacji
-  agenta;
+- `offer-catalog.json` — lokalna projekcja uprawnień/promo; **ceny publiczne HOME w `subactor/offer`**;
+  nazwy planów wg słownika `subactor/brand`;
 - `reference_engine.py` — inertny evaluator decyzji, bez płatności i bez efektów;
 - `decision-matrix.json` — oczekiwane wyniki dla aktualnych planów;
 - `ADOPTION_PL.md` — migracja backendu, frontendu i legacy PHP.
@@ -120,4 +120,6 @@ python3 profiles/sales/reference_engine.py decide \
 python3 profiles/sales/reference_engine.py matrix
 python3 profiles/sales/reference_engine.py matrix \
   --check profiles/sales/decision-matrix.json
+python3 profiles/sales/reference_engine.py compare-www-plans \
+  --plans /path/to/www-sub-actor/src/php_app/config/plans.json
 ```

@@ -69,7 +69,7 @@ utrzymywany `if ($plan !== 'saas-start')` pozostaje tylko na czas migracji.
 | --- | --- |
 | Nazwa dodatku `saas-business` | `Operations Plus` |
 | Basic | `1 000 operacji agenta odnawianych co miesiąc` |
-| Operations Plus | `10 000 operacji agenta odnawianych co miesiąc` |
+| Operations Plus | `1 000 operacji agenta odnawianych co miesiąc` |
 | Twin Plus — podsumowanie | `1 aktywny bliźniak • 0 operacji w pakiecie` |
 | Twin Plus — szczegół | `0 operacji w pakiecie — dokupujesz przez Operations Plus` |
 | Pole kompatybilności | odczyt `actions_included`, zapis `agent_operations_included` |
@@ -85,3 +85,38 @@ utrzymywany `if ($plan !== 'saas-start')` pozostaje tylko na czas migracji.
    Plus.
 6. Po okresie kompatybilności przestań zapisywać nazwy `Actions Plus` i
    `actions_included`.
+
+
+## SSOT i zapobieganie driftowi portalu
+
+Katalog (`offer-catalog.json`) jest kanoniczny dla:
+
+- `agent_operations_included` / `actions_included`,
+- `active_twins_included`,
+- `amount_monthly_minor` / `amount_annual_minor` / `currency`,
+- nazw kanonicznych i aliasów (`Actions Plus` → `Operations Plus`).
+
+Portal `www-sub-actor` trzyma `src/php_app/config/plans.json` jako fasadę.
+Przed merge:
+
+```bash
+python3 profiles/sales/reference_engine.py validate-catalog
+python3 profiles/sales/reference_engine.py compare-www-plans \
+  --plans /path/to/www-sub-actor/src/php_app/config/plans.json
+```
+
+Zmiana cen albo pakietów najpierw w tym katalogu (integration ticket), potem
+projekcja do portalu. FEATURE ticket nie może samodzielnie przepisać
+`plans.json` ani złotych testów oferty bez bumpa katalogu.
+
+
+## Relacja do subactor/offer i subactor/brand
+
+List prices i publiczne arkusze planów HOME w `subactor/offer`
+(`subactor.offer/catalog/v1`). Słownik nazw i tokenów marki HOME w
+`subactor/brand`. Ten profil **ADOPT** identyfikatory planów i reguły
+promo/kwalifikacji. Nie twórz drugiej kanonicznej tabeli cen ani słownika
+marki tutaj — przy zmianie oferty najpierw bump katalogu w `offer` (i słownika
+w `brand` jeśli zmieniają się nazwy), potem zsynchronizuj
+`offer-catalog.json` / macierz, potem fasadę portalu.
+
