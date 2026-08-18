@@ -1,0 +1,88 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-015",
+  "summary": "Integrate llm-credential profile and repair its DSL manifest bindings",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "regression"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": ["wellmanifest/dsl"]
+  },
+  "allowedPaths": [
+    "dsl-manifest.json",
+    "profiles/llm-credential/**",
+    "tests/test_manifest.py",
+    "project/ticket-015/**",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "examples/**",
+    ".governance/**"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "b88878d01d442ae44e153a75a88607270946ec6f",
+    "targetBranch": "main",
+    "outcome": "The llm-credential profile is integrated and bound by current digests while every artifact role conforms to wellmanifest/dsl.",
+    "nonGoals": [
+      "No policy or credential strategy semantic changes",
+      "No dependency pin changes in consuming repositories"
+    ],
+    "complexity": "M",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 9,
+      "maxAffectedComponents": 3,
+      "maxPublicInterfaceChanges": 2,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Integrate the two existing local profile commits and repair only the manifest metadata and digest bindings they left stale.",
+      "components": [
+        {
+          "name": "dsl-manifest",
+          "paths": ["dsl-manifest.json", "tests/test_manifest.py"]
+        },
+        {
+          "name": "llm-credential-profile",
+          "paths": ["profiles/llm-credential/**"]
+        },
+        {
+          "name": "ticket-governance",
+          "paths": ["project/ticket-015/**", "project/TICKETS.md"]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the manifest metadata repair."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 ../dsl/src/dsl_check.py validate dsl-manifest.json --root .",
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "DSL-PASS and all policy-dsl tests pass."
+      }
+    ]
+  }
+}

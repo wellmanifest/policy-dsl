@@ -40,6 +40,21 @@ class DslManifestTest(unittest.TestCase):
         self.assertTrue(expected <= paths)
         self.assertIn("profiles/**", manifest["ownedPaths"])
 
+    def test_llm_credential_profile_is_published_by_the_manifest(self):
+        manifest = json.loads((ROOT / "dsl-manifest.json").read_text(encoding="utf-8"))
+        paths = {artifact["path"] for artifact in manifest["artifacts"]}
+        expected = {
+            "profiles/llm-credential/README.md",
+            "profiles/llm-credential/ADOPTION.md",
+            "profiles/llm-credential/subactor-llm-credential.policy",
+            "profiles/llm-credential/strategy-catalog.json",
+        }
+        self.assertTrue(expected <= paths)
+        self.assertIn(
+            "profiles/llm-credential/subactor-llm-credential.policy",
+            manifest["conformance"]["validExamples"],
+        )
+
     def test_dsl_standards_lock_contract_digest(self):
         manifest = json.loads((ROOT / "dsl-manifest.json").read_text(encoding="utf-8"))
         lock = manifest["standardsLock"]

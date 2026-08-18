@@ -137,7 +137,7 @@
     },
     {
       "path": "tests/test_host_hardware_policy.py",
-      "role": "conformance-test",
+      "role": "parser-contract",
       "digest": "sha256:2cea57fc6e2f9e08a8c165b69c52aa6488037da04cd47bd227e6c487fd8e28ec"
     },
     {
@@ -183,7 +183,7 @@
     {
       "path": "tests/test_manifest.py",
       "role": "parser-contract",
-      "digest": "sha256:4932d3fd7a314b9ae284eacc3aeb0a78d8e6ba758010be79113992ab3ead9588"
+      "digest": "sha256:d99b95528a980e51ec27f74445a7403bd9a702b636710f099e81b5040567cb95"
     },
     {
       "path": "profiles/sales/subactor-sales.policy",
@@ -247,12 +247,12 @@
     },
     {
       "path": "profiles/sales/offer-home.lock.json",
-      "role": "contract",
+      "role": "profile",
       "digest": "sha256:5dfec8efc543d13b3285aa8cf4d558f9242ef6d00b8d99b2c120226277366940"
     },
     {
       "path": "profiles/sales/www-plans.lock.json",
-      "role": "contract",
+      "role": "profile",
       "digest": "sha256:bd1e0a0ac699a6c10a61aff4f97c39ded1cf95e27ddd8d967a99ddb3e1481d63"
     },
     {
@@ -264,6 +264,26 @@
       "path": "examples/sales/fixtures/www-plans.facade.json",
       "role": "example",
       "digest": "sha256:59f8baeb5355b9c7a0517245089a330b034e501486abd4c21db725729fc9e478"
+    },
+    {
+      "path": "profiles/llm-credential/subactor-llm-credential.policy",
+      "role": "example",
+      "digest": "sha256:dc6777f73ad60c892b8c1e24ebbf68a5c216616f932b7aa1b833b0fb6ab6c3b4"
+    },
+    {
+      "path": "profiles/llm-credential/strategy-catalog.json",
+      "role": "schema",
+      "digest": "sha256:378bc05f14a866fc2699487a1f494d646016a0ae4ec24d316f90c434ad9a9c1b"
+    },
+    {
+      "path": "profiles/llm-credential/README.md",
+      "role": "documentation",
+      "digest": "sha256:fcdf39bd5a44dd3e0562ced21d3a2e54d2ad1ea5b50dfd092a366e0d396adc0e"
+    },
+    {
+      "path": "profiles/llm-credential/ADOPTION.md",
+      "role": "documentation",
+      "digest": "sha256:42d7101e998b271ae375e2f365961fd8c4ee60ca9cd3c60f9724a0cf5543d022"
     }
   ],
   "namespaces": [
@@ -352,14 +372,16 @@
       "python3 profiles/sales/reference_engine.py validate-catalog",
       "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json",
       "python3 profiles/sales/reference_engine.py compare-www-plans --plans examples/sales/fixtures/www-plans.facade.json",
-      "python3 profiles/sales/reference_engine.py compare-offer-home"
+      "python3 profiles/sales/reference_engine.py compare-offer-home",
+      "python3 tests/policy_dsl_check.py validate profiles/llm-credential/subactor-llm-credential.policy"
     ],
     "validExamples": [
       "examples/valid/contributing.policy",
       "examples/valid/CONTRIBUTING.md",
       "examples/hosting/subactor-production-server.policy",
       "examples/hosting/subactor-rpi5.policy",
-      "profiles/sales/subactor-sales.policy"
+      "profiles/sales/subactor-sales.policy",
+      "profiles/llm-credential/subactor-llm-credential.policy"
     ],
     "invalidExamples": [
       "examples/invalid/shell-injection.policy",
