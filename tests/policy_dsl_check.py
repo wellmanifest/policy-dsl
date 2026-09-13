@@ -136,36 +136,66 @@ def statements(source: str) -> list[Statement]:
     return result
 
 
+POLICY_SCHEMA_IDS = {"wellmanifest.policy/v1", "policy-sh@1"}
+# Closed registry of independent record kinds that Markdown carriers may embed
+# in `dsl` fences next to a Policy DSL document. Extending it is a spec change.
+EMBEDDED_RECORD_STARTS = ("DECISION ",)
+
+
 def extract_markdown(source: str) -> str:
-    """Extract the canonical distributed Policy DSL document from Markdown."""
-    blocks: list[str] = []
+    """Extract the canonical distributed Policy DSL document from Markdown.
+
+    Every `dsl` fence is classified. Unclassifiable fences fail closed so that
+    normative-looking text is never dropped silently.
+    """
+    blocks: list[tuple[str, int]] = []
     current: list[str] | None = None
-    for raw in source.splitlines():
+    opened = 0
+    for number, raw in enumerate(source.splitlines(), 1):
         if current is None:
             if raw.strip() == "```dsl":
                 current = []
+                opened = number
         elif raw.strip() == "```":
-            blocks.append("\n".join(current) + "\n")
+            blocks.append(("\n".join(current) + "\n", opened))
             current = None
         else:
             current.append(raw)
     if current is not None:
-        raise PolicyError("POLICY-SYNTAX-001", "unterminated dsl fence")
+        raise PolicyError("POLICY-SYNTAX-001", "unterminated dsl fence", opened)
 
     header: str | None = None
     selected: list[str] = []
     binding_start = re.compile(r"^" + SYMBOL + r"\s+(?:=|IN)\s+")
+    schema_line = re.compile(r'^SCHEMA\s+"([^"]*)"$')
     policy_starts = ("RULE ", "STATE ", "TRANSITION ", "ENV_FILE ", "VARIABLE ", "SECRET ", "ASSERT ")
-    for block in blocks:
-        significant = [line.strip() for line in block.splitlines() if _strip_comment(line).strip()]
+    for block, opened in blocks:
+        significant = [_strip_comment(line).strip() for line in block.splitlines()]
+        significant = [line for line in significant if line]
         if not significant:
             continue
-        first = _strip_comment(significant[0]).strip()
-        if header is None and re.fullmatch(r"DOCUMENT " + SYMBOL, first):
+        first = significant[0]
+        if re.fullmatch(r"DOCUMENT <[^>]+>", first):
+            continue  # illustrative placeholder metadata
+        if re.fullmatch(r"DOCUMENT " + SYMBOL, first):
+            schemas = {match.group(1) for line in significant if (match := schema_line.match(line))}
+            if schemas - POLICY_SCHEMA_IDS or header is not None:
+                continue  # independent embedded document
             header = block
             continue
-        if header is not None and (first.startswith(policy_starts) or binding_start.match(first)):
+        if first.startswith(EMBEDDED_RECORD_STARTS):
+            continue  # registered independent record kind
+        if first.startswith(policy_starts) or binding_start.match(first):
+            if header is None:
+                raise PolicyError("POLICY-SYNTAX-001", "Policy DSL fence precedes the DOCUMENT header", opened)
             selected.append(block)
+            continue
+        raise PolicyError(
+            "POLICY-SYNTAX-001",
+            "dsl fence is neither Policy DSL, placeholder metadata, an independent DOCUMENT nor a registered record; "
+            "express normative text as Policy DSL or use a non-dsl fence",
+            opened,
+        )
     if header is None:
         raise PolicyError("POLICY-SYNTAX-001", "Markdown has no concrete Policy DSL DOCUMENT fence")
     return header + "".join(selected)
@@ -785,6 +815,12 @@ def self_test() -> None:
         raise AssertionError("invalid fixture was accepted")
     markdown = "before\n```dsl\n" + valid_path.read_text(encoding="utf-8") + "```\n```bash\nDO RUN evil\n```\n"
     assert parse_markdown(markdown)["document"]["name"] == "CONTRIBUTING"
+    try:
+        parse_markdown(markdown + "```dsl\nDONE WHEN\n  TESTS_PASSED\n```\n")
+    except PolicyError as error:
+        assert error.code == "POLICY-SYNTAX-001"
+    else:
+        raise AssertionError("unclassified dsl fence was silently ignored")
     print("POLICY-CONFORMANCE-PASS")
 
 
