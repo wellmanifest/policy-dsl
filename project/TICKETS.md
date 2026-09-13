@@ -20,4 +20,5 @@ This file indexes governance tickets without taking ownership of
 | **ticket-013** | [`README.md`](./ticket-013/README.md) | [`preprompt.md`](./ticket-013/preprompt.md) | - |  [`ai-composer.md`](./ticket-013/ai-composer.md) |  [`ai-composer-logs.txt`](./ticket-013/ai-composer-logs.txt) | [`changelog.md`](./ticket-013/changelog.md) |
 | **ticket-014** | [`README.md`](./ticket-014/README.md) | [`preprompt.md`](./ticket-014/preprompt.md) | - |  [`ai-composer.md`](./ticket-014/ai-composer.md) |  [`ai-composer-logs.txt`](./ticket-014/ai-composer-logs.txt) | [`changelog.md`](./ticket-014/changelog.md) |
 | **ticket-015** | [`README.md`](./ticket-015/README.md) | [`preprompt.md`](./ticket-015/preprompt.md) | - |  [`ai-cursor.md`](./ticket-015/ai-cursor.md) |  [`ai-cursor-logs.txt`](./ticket-015/ai-cursor-logs.txt) | [`changelog.md`](./ticket-015/changelog.md) |
+| **ticket-016** | [`README.md`](./ticket-016/README.md) | [`preprompt.md`](./ticket-016/preprompt.md) | - |  [`ai-gemini.md`](./ticket-016/ai-gemini.md) |  [`ai-gemini-logs.txt`](./ticket-016/ai-gemini-logs.txt) | [`changelog.md`](./ticket-016/changelog.md) |
 <!-- AUTO:TICKET_INDEX:END -->

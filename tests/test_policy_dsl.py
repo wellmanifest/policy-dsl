@@ -64,6 +64,28 @@ class PolicyDslConformanceTest(unittest.TestCase):
         self.assertEqual("VALIDATION", ir["rules"][0]["next"][0]["target"])
         self.assertEqual("PLAN", ir["rules"][0]["next"][1]["target"])
 
+    def test_markdown_rejects_unclassified_dsl_fence(self):
+        markdown = (ROOT / "examples/invalid/unclassified-dsl-fence.md").read_text(encoding="utf-8")
+        with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SYNTAX-001: line 19: dsl fence is neither"):
+            CHECK.parse_markdown(markdown)
+
+    def test_markdown_skips_independent_documents_and_registered_records(self):
+        markdown = (ROOT / "examples/valid/mixed-carrier.md").read_text(encoding="utf-8")
+        ir = CHECK.parse_markdown(markdown)
+        self.assertEqual("CONTRIBUTING", ir["document"]["name"])
+        self.assertEqual(["C-DONE-001"], [rule["id"] for rule in ir["rules"]])
+        self.assertEqual(["DONE", "EDIT"], sorted(ir["states"]))
+
+    def test_markdown_rejects_policy_fence_before_header(self):
+        markdown = "```dsl\nSTATE EDIT\n```\n\n```dsl\nDOCUMENT X\nVERSION 1\nMODE STRICT\n```\n"
+        with self.assertRaisesRegex(CHECK.PolicyError, "precedes the DOCUMENT header"):
+            CHECK.parse_markdown(markdown)
+
+    def test_markdown_with_only_independent_schema_documents_has_no_policy(self):
+        markdown = '```dsl\nDOCUMENT MERGE_DECISION\nVERSION 1\nMODE STRICT\nSCHEMA "wellmanifest.merge-decision/v1"\n```\n'
+        with self.assertRaisesRegex(CHECK.PolicyError, "no concrete Policy DSL DOCUMENT fence"):
+            CHECK.parse_markdown(markdown)
+
     def test_validate_ir_rejects_duplicate_binding(self):
         ir = CHECK.parse((ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8"))
         ir["bindings"].append(dict(ir["bindings"][0]))

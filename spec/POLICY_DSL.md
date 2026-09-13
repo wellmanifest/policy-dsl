@@ -87,20 +87,33 @@ both a Policy IR directive and an `AGENT_OPERATION` usage counter.
 ### 3.2 Markdown carrier
 
 A Markdown carrier such as `CONTRIBUTING.md` MAY distribute one policy
-document across fenced code blocks. The selector is deterministic:
+document across fenced code blocks. The selector is deterministic and
+classifies every fence whose info string is exactly `dsl`, in source order:
 
-1. select the first `dsl` fence whose first statement is a concrete
-   `DOCUMENT <symbol>` header;
-2. ignore illustrative fences containing placeholder metadata and independent
-   embedded document types;
-3. after the header, select a `dsl` fence only when its first statement begins
-   with `RULE`, `STATE`, `TRANSITION`, `ENV_FILE`, `VARIABLE`, `SECRET` or
-   `ASSERT`, or is a top-level `symbol = expression` / `symbol IN list` binding;
-4. concatenate selected fences in source order and parse the complete result.
+1. a fence whose first statement is `DOCUMENT <...>` with angle-bracket
+   placeholder metadata is an illustration and is ignored;
+2. a fence whose first statement is a concrete `DOCUMENT <symbol>` header is:
+   - an independent embedded document when it declares a `SCHEMA` other than
+     `wellmanifest.policy/v1` or `policy-sh@1`, or when the Policy DSL header
+     was already selected; it is ignored;
+   - otherwise the Policy DSL header, which is selected;
+3. a fence whose first statement starts a registered independent record kind is
+   ignored. The closed registry for Policy DSL 1 contains `DECISION`
+   (`new-project` decision records); extending it is a specification change;
+4. a fence whose first statement begins with `RULE`, `STATE`, `TRANSITION`,
+   `ENV_FILE`, `VARIABLE`, `SECRET` or `ASSERT`, or is a top-level
+   `symbol = expression` / `symbol IN list` binding, is selected after the
+   header. The same fence before the header MUST be rejected;
+5. any other non-empty `dsl` fence MUST be rejected with `POLICY-SYNTAX-001`;
+6. selected fences are concatenated in source order and the complete result is
+   parsed.
 
 Other Markdown, `bash` fences and independent DSL documents MUST NOT be
 interpreted as Policy DSL. Once a fence is selected, every statement in it is
-normative and a parse failure MUST NOT be silently skipped.
+normative and a parse failure MUST NOT be silently skipped. A consumer MUST NOT
+silently drop a `dsl` fence that it cannot classify: normative-looking text
+that is not Policy DSL either becomes a Policy DSL rule or moves to a non-`dsl`
+fence such as `text`.
 
 ## 4. Expressions
 

@@ -43,7 +43,7 @@
     {
       "path": "spec/POLICY_DSL.md",
       "role": "normative-source",
-      "digest": "sha256:a4c7e89ba462a157cfaff510904422b91c60e1e6048ebfe6c35a0fe301ab1d1e"
+      "digest": "sha256:8c258ff5c5bc7993459971765c74bf24f3249c472e2f4c85d231c84b30fc7791"
     },
     {
       "path": "spec/policy-dsl.ebnf",
@@ -63,12 +63,12 @@
     {
       "path": "tests/policy_dsl_check.py",
       "role": "parser-contract",
-      "digest": "sha256:17697702e435c5f907f3ab400b62b0bce323558b5bdc35dff15cc48e1cde54f8"
+      "digest": "sha256:9688481337292397f4453c4f22954832cb4fff4ed6976e5c0f51924a6bd20d70"
     },
     {
       "path": "tests/test_policy_dsl.py",
       "role": "parser-contract",
-      "digest": "sha256:3b937eaf85272a550f1a9ea9e454bedcddafec7434800375f38ac91da155ce1f"
+      "digest": "sha256:3f3e93c13113f86f51689269d4bb1e6d7cf52e100914ccd908a7e01e78776176"
     },
     {
       "path": "examples/valid/contributing.policy",
@@ -98,7 +98,7 @@
     {
       "path": "docs/ERROR/POLICY-SYNTAX-001.md",
       "role": "documentation",
-      "digest": "sha256:c5eee1208d42e185c4e09c50d076a32edf8a260410d1bdf59a78aba3fafa0995"
+      "digest": "sha256:6151a333c0cb58c3876f97ac409a3aad38230d4ac984de1abb7860539c4fa670"
     },
     {
       "path": "docs/ERROR/POLICY-SEMANTIC-001.md",
@@ -284,6 +284,16 @@
       "path": "profiles/llm-credential/ADOPTION.md",
       "role": "documentation",
       "digest": "sha256:42d7101e998b271ae375e2f365961fd8c4ee60ca9cd3c60f9724a0cf5543d022"
+    },
+    {
+      "path": "examples/valid/mixed-carrier.md",
+      "role": "example",
+      "digest": "sha256:074f712803ebbeda3a58fdb3f85ef1dce550c0c9f42573be2ce34d2cf7e7b6da"
+    },
+    {
+      "path": "examples/invalid/unclassified-dsl-fence.md",
+      "role": "example",
+      "digest": "sha256:408b46b25165fd5fa0fb56920b39599135473fc2a710b020c444291c3a0048d8"
     }
   ],
   "namespaces": [
@@ -361,6 +371,7 @@
     "commands": [
       "python3 tests/policy_dsl_check.py validate examples/valid/contributing.policy",
       "python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md",
+      "python3 tests/policy_dsl_check.py validate-markdown examples/valid/mixed-carrier.md",
       "python3 tests/policy_dsl_check.py ir examples/valid/contributing.policy --check-schema",
       "python3 tests/policy_dsl_check.py validate examples/hosting/subactor-production-server.policy",
       "python3 tests/policy_dsl_check.py validate examples/hosting/subactor-rpi5.policy",
@@ -378,6 +389,7 @@
     "validExamples": [
       "examples/valid/contributing.policy",
       "examples/valid/CONTRIBUTING.md",
+      "examples/valid/mixed-carrier.md",
       "examples/hosting/subactor-production-server.policy",
       "examples/hosting/subactor-rpi5.policy",
       "profiles/sales/subactor-sales.policy",
@@ -388,7 +400,8 @@
       "examples/invalid/duplicate-binding.policy",
       "examples/invalid/duplicate-environment.policy",
       "examples/invalid/duplicate-transition.policy",
-      "examples/invalid/undeclared-next-state.policy"
+      "examples/invalid/undeclared-next-state.policy",
+      "examples/invalid/unclassified-dsl-fence.md"
     ]
   },
   "mappings": [
