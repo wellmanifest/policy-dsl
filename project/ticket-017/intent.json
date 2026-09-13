@@ -1,0 +1,124 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-017",
+  "summary": "Fail closed on unselected dsl fences in Markdown carriers",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl"
+    ]
+  },
+  "allowedPaths": [
+    "spec/POLICY_DSL.md",
+    "docs/ERROR/POLICY-SYNTAX-001.md",
+    "tests/policy_dsl_check.py",
+    "tests/test_policy_dsl.py",
+    "examples/valid/mixed-carrier.md",
+    "examples/invalid/unclassified-dsl-fence.md",
+    "dsl-manifest.json",
+    "project/ticket-017/**",
+    "project/TICKETS.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    "profiles/**"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "48e95c83e64c966904e89fb77752008c25c4ce37",
+    "targetBranch": "main",
+    "outcome": "The Markdown carrier selector classifies every dsl fence and rejects unclassifiable ones instead of silently dropping normative-looking text.",
+    "nonGoals": [
+      "No Policy DSL grammar, Policy IR or candidate GBNF change",
+      "No LLM boundary or decisionProtocol redesign of this manifest",
+      "No change to consuming repositories or their vendored checkers"
+    ],
+    "complexity": "M",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 7,
+      "maxAffectedComponents": 3,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Classify each dsl fence in extract_markdown as placeholder illustration, Policy DSL header, independent DOCUMENT (second header or foreign SCHEMA), registered record kind (DECISION) or selectable fragment; raise POLICY-SYNTAX-001 for anything else and for fragments before the header.",
+      "components": [
+        {
+          "name": "reference-checker",
+          "paths": [
+            "tests/policy_dsl_check.py",
+            "tests/test_policy_dsl.py"
+          ]
+        },
+        {
+          "name": "carrier-contract",
+          "paths": [
+            "spec/POLICY_DSL.md",
+            "docs/ERROR/POLICY-SYNTAX-001.md",
+            "examples/valid/mixed-carrier.md",
+            "examples/invalid/unclassified-dsl-fence.md",
+            "dsl-manifest.json"
+          ]
+        },
+        {
+          "name": "ticket-governance",
+          "paths": [
+            "project/ticket-017/**",
+            "project/TICKETS.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "validate-markdown rejects unclassified dsl fences and policy fragments before the DOCUMENT header"
+      ],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the selector classification, fixtures, specification text and manifest bindings."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 tests/policy_dsl_check.py self-test",
+          "python3 tests/policy_dsl_check.py validate-markdown examples/valid/CONTRIBUTING.md",
+          "python3 tests/policy_dsl_check.py validate-markdown examples/valid/mixed-carrier.md"
+        ],
+        "evidence": "POLICY-CONFORMANCE-PASS and POLICY-MARKDOWN-PASS for both valid carriers."
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 tests/policy_dsl_check.py validate-markdown examples/invalid/unclassified-dsl-fence.md"
+        ],
+        "evidence": "Exit 1 with POLICY-SYNTAX-001 at the DONE WHEN fence."
+      },
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "All tests pass except the pre-existing host-dependent test_compare_www_plans_accepts_live_www_when_present, which fails identically on the accepted base."
+      }
+    ]
+  }
+}
