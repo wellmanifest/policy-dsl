@@ -6,3 +6,4 @@
 - No human participant identity or content was generated.
 - Bounded intent: adopt subactor-cloud v2 and fail closed on non-current HOME pins (#23).
 - Implemented v2 adoption; 51 tests pass; live portal and live HOME checks pass.
+- Closed after publication: PR #25 merged as 5551a57 (head 9263c54).

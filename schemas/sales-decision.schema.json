@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-decision.schema.json",
-  "title": "Subactor Sales Decision v1",
-  "description": "Closed, inert sales decision. It never applies a promotion, performs payment, or grants checkout authority.",
+  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-decision.v2.schema.json",
+  "title": "Subactor Sales Decision v2",
+  "description": "Closed, inert sales decision bound to the locked HOME offer. It never applies a promotion, performs payment, or grants checkout authority.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,11 +12,12 @@
     "promotion",
     "payment",
     "metering",
+    "home",
     "policy"
   ],
   "properties": {
     "schema": {
-      "const": "subactor.sales/decision/v1"
+      "const": "subactor.sales/decision/v2"
     },
     "input": {
       "type": "object",
@@ -33,6 +34,8 @@
             "prepaid-actions",
             "on-premise",
             "basic",
+            "pro",
+            "max",
             "operations-plus",
             "twin-plus"
           ]
@@ -49,10 +52,8 @@
       "required": [
         "plan_id",
         "public_code",
-        "kind",
-        "entitlement_kind",
         "display_name",
-        "active_twins_included"
+        "commercial_type"
       ],
       "properties": {
         "plan_id": {
@@ -66,25 +67,9 @@
         "public_code": {
           "enum": [
             "basic",
-            "operations-plus",
-            "twin-plus",
+            "pro",
+            "max",
             "on-premise"
-          ]
-        },
-        "kind": {
-          "enum": [
-            "BASE_PLAN",
-            "OPERATIONS_ADDON",
-            "TWIN_ADDON",
-            "OFFLINE_OFFER"
-          ]
-        },
-        "entitlement_kind": {
-          "enum": [
-            "DIGITAL_TWIN_WITH_OPERATIONS",
-            "AGENT_OPERATIONS",
-            "DIGITAL_TWIN",
-            "CONTRACT"
           ]
         },
         "display_name": {
@@ -92,8 +77,10 @@
           "minLength": 1,
           "maxLength": 160
         },
-        "active_twins_included": {
-          "$ref": "#/$defs/nullableNonNegativeInteger"
+        "commercial_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
         }
       }
     },
@@ -157,9 +144,7 @@
       "required": [
         "unit",
         "included",
-        "scope",
-        "source",
-        "label_pl"
+        "period"
       ],
       "properties": {
         "unit": {
@@ -168,26 +153,28 @@
         "included": {
           "$ref": "#/$defs/nullableNonNegativeInteger"
         },
-        "scope": {
-          "enum": [
-            "PER_TWIN_MONTH",
-            "ACCOUNT_MONTH",
-            "NONE",
-            "CONTRACT"
-          ]
-        },
-        "source": {
-          "enum": [
-            "INCLUDED",
-            "ADD_ON",
-            "SEPARATE_PACKAGE",
-            "CONTRACT"
-          ]
-        },
-        "label_pl": {
+        "period": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 320
+          "maxLength": 64
+        }
+      }
+    },
+    "home": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offer_ref",
+        "digest"
+      ],
+      "properties": {
+        "offer_ref": {
+          "type": "string",
+          "pattern": "^offer://subactor/offer/[a-z0-9-]+/v[1-9][0-9]*$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
         }
       }
     },
@@ -208,12 +195,12 @@
           "const": "SUBACTOR_SALES"
         },
         "version": {
-          "const": 1
+          "const": 2
         },
         "matched_rules": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 2,
+          "maxItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -239,15 +226,11 @@
         },
         "reports": {
           "type": "array",
-          "maxItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "const": "OPERATIONS_PURCHASED_SEPARATELY"
-          }
+          "maxItems": 0
         },
         "forbidden": {
           "type": "array",
-          "maxItems": 3,
+          "maxItems": 2,
           "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/forbiddenDirective"
@@ -280,8 +263,7 @@
         "opcode": {
           "enum": [
             "APPLY_PROMOTION",
-            "DISPLAY_PROMOTION",
-            "DISPLAY_OPERATION_LABEL"
+            "DISPLAY_PROMOTION"
           ]
         },
         "payload": {

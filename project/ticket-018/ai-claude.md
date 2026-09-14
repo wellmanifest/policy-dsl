@@ -29,6 +29,10 @@ entitlements or copy.
 - Removed the v1 fixture, `matrix.v1.json` and the v1 pricing HTML example.
 - Tests rewritten for v2; manifest digests refreshed.
 
+## Publication
+
+- Merged through PR #25 as `5551a57` after Validator approval of head `9263c54`.
+
 ## Blockers
 
 - None.

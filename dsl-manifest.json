@@ -163,22 +163,22 @@
     {
       "path": "schemas/sales-request.schema.json",
       "role": "schema",
-      "digest": "sha256:37279f00115db7421db57822abf49f580be538fef50304b966df8319d6c37c97"
+      "digest": "sha256:f55087d714dc9812bee7bf0d234b29ca27bc04a818fe45635cba6958e513a929"
     },
     {
       "path": "schemas/sales-offer-catalog.schema.json",
       "role": "schema",
-      "digest": "sha256:01f5d049a9146a259de44bc1b23ba8752f954e0fa3a42608440489f9401215b3"
+      "digest": "sha256:760cb00dbc68ece48ba1cc334ae2076a1b56a2dc437ebfd679c9b6f3f279216d"
     },
     {
       "path": "schemas/sales-decision.schema.json",
       "role": "schema",
-      "digest": "sha256:bce105260e11eba1fbbee5e76392edb71546fdc66e2f87730a9e171775bdefc4"
+      "digest": "sha256:8878187cff80e371be04a4dda0827c0de359e1e25880b1895aa181b747db83a0"
     },
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:424fcc7f403fa192df5f18211f7f007b4e9b7a3ae010421de4bf9e04daf05770"
+      "digest": "sha256:4acaf53937b46b9867a5314135cd69247c4450d086fc494fe1516ae8695f788b"
     },
     {
       "path": "tests/test_manifest.py",
