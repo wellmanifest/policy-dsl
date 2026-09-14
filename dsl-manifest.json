@@ -208,32 +208,32 @@
     {
       "path": "profiles/sales/README.md",
       "role": "documentation",
-      "digest": "sha256:7443b45879b520f33eb06ceb2ce873945946cb160bb1f1ba162cc0c8ef51a797"
+      "digest": "sha256:d2ace280704733375ba22553a38b630b6e1dcdf010bfef23d8a8107391faaf50"
     },
     {
       "path": "profiles/sales/ADOPTION_PL.md",
       "role": "documentation",
-      "digest": "sha256:cd2dc7c0345ac3660ce31ac4a173e134b227703470b300cd4bbaa1ba5f20ae8a"
+      "digest": "sha256:2266ce55b693beaf43df8732b7e91d66156a121583995af6c648bd912909fcda"
     },
     {
       "path": "docs/DOMAIN_VOCABULARY_PL.md",
       "role": "documentation",
-      "digest": "sha256:b321ca2e28694b7a673a53fd964f370d62aac72e2959550fb893336126f084dc"
+      "digest": "sha256:d5d44e1dff37182ed8cad7346428018d4cb70ea6aaa400c605325c8a0feb0f6e"
     },
     {
       "path": "docs/DOMAIN_VOCABULARY.md",
       "role": "documentation",
-      "digest": "sha256:1f215f347e405a35a5aba33dffa0e43f608f1079ef6b8f920cae6a1a784a8bc5"
+      "digest": "sha256:043abab58d3270864e6160c1f3a3dc997003d0a0589143ece14bfd6a2b6c93f6"
     },
     {
       "path": "docs/SALES_POLICY_PROFILE.md",
       "role": "documentation",
-      "digest": "sha256:8e621b79e46548d1ef3470b7c3094d6c6e9e3d3a860d490b5383c5ca97ff2304"
+      "digest": "sha256:d68b8419e5273e95d3ea8a6961b700c4f0037900e868d92cb57df2eaa172bcf2"
     },
     {
       "path": "examples/sales/README.md",
       "role": "documentation",
-      "digest": "sha256:e95bde3a6284e9ead0437014e478b8d53a37e87562cb30807a23c12c05104461"
+      "digest": "sha256:46ded00f239d5722b39d6594a52a26fc5daf17d5687550be8474fcc1c9b0c466"
     },
     {
       "path": "examples/sales/decisions/matrix.v2.json",
