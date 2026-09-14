@@ -2,8 +2,8 @@
 
 - **ID**: ticket-018
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Session execution authorization**: user requested implementation of wellmanifest/policy-dsl#23 and recorded the product decisions below (2026-09-14)
 - **Created**: 2026-09-14
 - **Issue**: wellmanifest/policy-dsl#23
@@ -34,7 +34,7 @@ v1 `PER_TWIN_MONTH`/`ACCOUNT_MONTH` scope.
 - [x] AC-01: full unit suite passes, including live portal facade and live HOME checks (51 tests).
 - [x] AC-02: `compare-offer-home --home-root` passes for the v2 pin and rejects a superseded pin.
 - [x] AC-03: decision matrix and consumer export are regenerated as v2.
-- [ ] AC-04: `./project/governance-check.sh` passes on the published head.
+- [x] AC-04: `./project/governance-check.sh` passes on the published head.
 
 ## Publication evidence
 
@@ -46,6 +46,10 @@ v1 `PER_TWIN_MONTH`/`ACCOUNT_MONTH` scope.
 - The following real dispatch was refused with `BLOCKED_DIRECT_PR_DUPLICATE_EPOCH`
   because the dry run consumed the dispatch epoch for that head; this record moves
   the head so the protected validator can run once without dry run.
+
+- Approved and merged head: `9263c5437404ee90070ccf3cca7bafa83133df47`
+  (review `5194996501` by `ifuri-validator-agent[bot]`, validator run `34817881627`).
+- Merge commit: `5551a57b6ef1ff7ce9a33798262e8e9af6aae4c1`.
 
 ## Known limitation
 
