@@ -25,6 +25,10 @@ needs a closed, deterministic classification for every `dsl` fence.
 - `spec/POLICY_DSL.md` section 3.2 and `docs/ERROR/POLICY-SYNTAX-001.md`.
 - `dsl-manifest.json`: new artifacts, conformance entries, refreshed digests.
 
+## Publication
+
+- Merged through PR #22 as `d723271` after Validator approval of head `90558cb`.
+
 ## Blockers
 
-- None for this ticket. The manifest's LLM boundary gap is recorded as a follow-up.
+- None. Follow-ups: the manifest's LLM boundary gap; stale offer pin (#23).
