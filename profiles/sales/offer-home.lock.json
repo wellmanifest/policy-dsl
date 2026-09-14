@@ -1,19 +1,12 @@
 {
-  "schema": "wellmanifest.policy/offer-home-lock/v1",
+  "schema": "wellmanifest.policy/offer-home-lock/v2",
   "home": {
     "repository": "https://github.com/subactor/offer",
-    "catalog_path": "catalogs/subactor-cloud/v1/offer.json",
+    "catalog_path": "catalogs/subactor-cloud/v2/offer.json",
     "offer_id": "subactor-cloud",
-    "version": 1,
-    "sourceRevision": "f918497f7585b4f7263205e22d73dd3d7f62e6bf",
-    "digest": "sha256:95c3392d3b677092240eb9b7781c70eb079d30e2c7b84eac337dd3de8a03a2dc"
+    "version": 2,
+    "sourceRevision": "6f38fbe4421ea9794e6887de8c88d252b6833af2",
+    "digest": "sha256:d32984e08d545646d1504040e96787c19cb8ec02a4416eaafad03ccc193a6775"
   },
-  "fixture_path": "examples/sales/fixtures/subactor-cloud-v1.offer.json",
-  "mirrored_fields": [
-    "amount_monthly_minor",
-    "amount_annual_minor",
-    "currency",
-    "agent_operations_included",
-    "active_twins_included"
-  ]
+  "fixture_path": "examples/sales/fixtures/subactor-cloud-v2.offer.json"
 }

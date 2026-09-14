@@ -2,8 +2,8 @@
 
 - **ID**: ticket-017
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Session execution authorization**: user requested correcting wellmanifest standards that contain errors or do not express logic in DSL (2026-09-13)
 - **Created**: 2026-09-13
 
@@ -40,7 +40,20 @@ This ticket makes the selector classify every `dsl` fence:
   (`test_compare_www_plans_accepts_live_www_when_present`, also failing on the
   accepted base `48e95c8` because it reads the live `www` checkout).
 - [x] AC-04: manifest digest test passes with the new artifacts bound.
-- [ ] AC-05: `./project/governance-check.sh` passes on the published head.
+- [x] AC-05: `./project/governance-check.sh` passes on the published head.
+
+## Publication evidence
+
+- Pull request: `wellmanifest/policy-dsl#22`
+- Approved and merged head: `90558cbdd9442596359e52f7c580cd978de551b4`
+  (intent commit `285cf36` precedes implementation commit `90558cb`)
+- Merge commit: `d723271`
+- Validator approval: review `5191533907` by `ifuri-validator-agent[bot]`,
+  `governance / enforce` run `34771522839`.
+
+The host-dependent error listed in AC-03 is not an independent pre-existing
+failure: the sales profile pins the archived `subactor-cloud` v1 offer while
+the HOME and the live portal use v2. It is tracked in `wellmanifest/policy-dsl#23`.
 
 ## Compatibility and follow-ups
 
