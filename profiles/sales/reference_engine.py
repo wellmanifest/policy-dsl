@@ -26,16 +26,19 @@ OFFER_HOME_LOCK_PATH = ROOT / "profiles/sales/offer-home.lock.json"
 CHECKER_PATH = ROOT / "tests/policy_dsl_check.py"
 
 POLICY_DOCUMENT = "SUBACTOR_SALES"
-POLICY_VERSION = 1
+POLICY_VERSION = 2
 METERING_UNIT = "AGENT_OPERATION"
+CATALOG_SCHEMA = "subactor.sales/catalog/v2"
+DECISION_SCHEMA = "subactor.sales/decision/v2"
+DECISION_MATRIX_SCHEMA = "subactor.sales/decision-matrix/v2"
+OFFER_HOME_LOCK_SCHEMA = "wellmanifest.policy/offer-home-lock/v2"
 
 ALLOW_VALUES = {"APPLY_PROMOTION"}
 REQUIRE_VALUES = {"PROMOTION_SANITIZED"}
-REPORT_VALUES = {"OPERATIONS_PURCHASED_SEPARATELY"}
+REPORT_VALUES: set[str] = set()
 FORBIDDEN_OPCODES = {
     "APPLY_PROMOTION",
     "DISPLAY_PROMOTION",
-    "DISPLAY_OPERATION_LABEL",
 }
 
 
@@ -82,7 +85,12 @@ def _require_optional_non_negative_integer(value: Any, label: str) -> None:
 
 
 def load_catalog(path: Path | None = None) -> dict[str, Any]:
-    """Load and validate the closed current offer catalog."""
+    """Load and validate the closed sales catalog.
+
+    The catalog holds only what this pack owns: plan identifiers, public codes,
+    card requirements and promotion eligibility. Names, amounts, currencies,
+    operation entitlements and copy are read from the locked HOME offer.
+    """
 
     catalog_path = CATALOG_PATH if path is None else path
     try:
@@ -90,219 +98,57 @@ def load_catalog(path: Path | None = None) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError) as error:
         raise SalesPolicyError(f"catalog is unreadable: {error}") from error
 
-    _exact_keys(catalog, {"schema", "vocabulary", "compatibility", "plans"}, "catalog")
-    if catalog["schema"] != "subactor.sales/catalog/v1":
+    _exact_keys(catalog, {"schema", "plans"}, "catalog")
+    if catalog["schema"] != CATALOG_SCHEMA:
         raise SalesPolicyError("incompatible sales catalog schema")
 
-    vocabulary = catalog["vocabulary"]
-    _exact_keys(
-        vocabulary,
-        {"unit_code", "label_pl_singular", "label_pl_plural", "definition_pl"},
-        "catalog vocabulary",
-    )
-    if vocabulary["unit_code"] != METERING_UNIT:
-        raise SalesPolicyError(f"sales catalog must use {METERING_UNIT}")
-    if vocabulary["label_pl_singular"] != "operacja agenta":
-        raise SalesPolicyError("catalog singular label must be 'operacja agenta'")
-    if vocabulary["label_pl_plural"] != "operacje agenta":
-        raise SalesPolicyError("catalog plural label must be 'operacje agenta'")
-    _require_string(vocabulary["definition_pl"], "catalog vocabulary definition")
-
-    compatibility = catalog["compatibility"]
-    _exact_keys(
-        compatibility,
-        {"read_aliases", "write_policy", "write_freeze_date"},
-        "catalog compatibility",
-    )
-    if compatibility["write_policy"] != "CANONICAL_ONLY":
-        raise SalesPolicyError("catalog must write canonical names only")
-    if compatibility["write_freeze_date"] != "2026-08-16":
-        raise SalesPolicyError("catalog write_freeze_date must be 2026-08-16")
-    if compatibility["read_aliases"] != {
-        "actions_included": "agent_operations_included",
-        "Actions Plus": "Operations Plus",
-    }:
-        raise SalesPolicyError("catalog compatibility aliases are incomplete")
-
-    plan_keys = {
-        "plan_id",
-        "public_code",
-        "kind",
-        "entitlement_kind",
-        "display_name",
-        "legacy_display_names",
-        "active_twins_included",
-        "agent_operations_included",
-        "operation_scope",
-        "operations_source",
-        "payment_card_required",
-        "eligible_promo_codes",
-        "seat_summary_pl",
-        "operation_label_pl",
-        "promo_hint_pl",
-        "amount_monthly_minor",
-        "amount_annual_minor",
-        "currency",
-    }
     plans = catalog["plans"]
     if not isinstance(plans, list) or not plans:
         raise SalesPolicyError("catalog plans must be a non-empty array")
 
-    plan_ids: set[str] = set()
-    public_codes: set[str] = set()
+    plan_keys = {"plan_id", "public_code", "legacy_public_codes", "payment_card_required", "eligible_promo_codes"}
+    seen_ids: set[str] = set()
+    seen_codes: set[str] = set()
+    code_pattern = r"[a-z][a-z0-9-]*"
     for index, plan in enumerate(plans):
-        if isinstance(plan, dict) and (
-            "actions_included" in plan or plan.get("display_name") == "Actions Plus"
-        ):
-            raise SalesPolicyError(
-                "legacy write freeze (2026-08-16): plan must not write "
-                "actions_included or display name Actions Plus"
-            )
         _exact_keys(plan, plan_keys, f"plan[{index}]")
         plan_id = plan["plan_id"]
-        public_code = plan["public_code"]
-        if not isinstance(plan_id, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", plan_id):
+        if not isinstance(plan_id, str) or not re.fullmatch(code_pattern, plan_id):
             raise SalesPolicyError(f"invalid plan_id at plan[{index}]")
-        if not isinstance(public_code, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", public_code):
-            raise SalesPolicyError(f"invalid public_code at plan[{index}]")
-        if plan_id in plan_ids or public_code in public_codes:
-            raise SalesPolicyError("duplicate plan_id or public_code")
-        plan_ids.add(plan_id)
-        public_codes.add(public_code)
+        codes = [plan["public_code"], *plan["legacy_public_codes"]] if isinstance(plan["legacy_public_codes"], list) else None
+        if codes is None or any(not isinstance(code, str) or not re.fullmatch(code_pattern, code) for code in codes):
+            raise SalesPolicyError(f"invalid public or legacy code for {plan_id}")
+        identifiers = {plan_id, *codes}
+        if plan_id in seen_ids or identifiers & seen_codes or len(codes) != len(set(codes)):
+            raise SalesPolicyError("duplicate plan_id, public_code or legacy public code")
+        seen_ids.add(plan_id)
+        seen_codes.update(identifiers)
 
-        if plan["kind"] not in {"BASE_PLAN", "OPERATIONS_ADDON", "TWIN_ADDON", "OFFLINE_OFFER"}:
-            raise SalesPolicyError(f"invalid plan kind for {plan_id}")
-        if plan["entitlement_kind"] not in {
-            "DIGITAL_TWIN_WITH_OPERATIONS",
-            "AGENT_OPERATIONS",
-            "DIGITAL_TWIN",
-            "CONTRACT",
-        }:
-            raise SalesPolicyError(f"invalid entitlement kind for {plan_id}")
-        if plan["operation_scope"] not in {"PER_TWIN_MONTH", "ACCOUNT_MONTH", "NONE", "CONTRACT"}:
-            raise SalesPolicyError(f"invalid operation scope for {plan_id}")
-        if plan["operations_source"] not in {"INCLUDED", "ADD_ON", "SEPARATE_PACKAGE", "CONTRACT"}:
-            raise SalesPolicyError(f"invalid operations source for {plan_id}")
-
-        _require_string(plan["display_name"], f"display_name for {plan_id}")
-        _require_string(plan["seat_summary_pl"], f"seat_summary_pl for {plan_id}")
-        _require_string(plan["operation_label_pl"], f"operation_label_pl for {plan_id}")
-        _require_string(plan["promo_hint_pl"], f"promo_hint_pl for {plan_id}", nullable=True)
-
-        legacy_names = plan["legacy_display_names"]
-        if (
-            not isinstance(legacy_names, list)
-            or len(legacy_names) != len(set(legacy_names))
-            or any(not isinstance(name, str) or not name for name in legacy_names)
-        ):
-            raise SalesPolicyError(f"invalid legacy_display_names for {plan_id}")
-
-        _require_optional_non_negative_integer(
-            plan["active_twins_included"], f"active_twins_included for {plan_id}"
-        )
-        _require_optional_non_negative_integer(
-            plan["agent_operations_included"], f"agent_operations_included for {plan_id}"
-        )
-        _require_optional_non_negative_integer(
-            plan["amount_monthly_minor"], f"amount_monthly_minor for {plan_id}"
-        )
-        _require_optional_non_negative_integer(
-            plan["amount_annual_minor"], f"amount_annual_minor for {plan_id}"
-        )
-        currency = plan["currency"]
-        if currency is not None and (
-            not isinstance(currency, str) or not re.fullmatch(r"[A-Z]{3}", currency)
-        ):
-            raise SalesPolicyError(f"invalid currency for {plan_id}")
         card_required = plan["payment_card_required"]
         if card_required is not None and not isinstance(card_required, bool):
             raise SalesPolicyError(f"invalid payment_card_required for {plan_id}")
-
         promo_codes = plan["eligible_promo_codes"]
-        if not isinstance(promo_codes, list) or len(promo_codes) != len(set(promo_codes)):
-            raise SalesPolicyError(f"invalid eligible_promo_codes for {plan_id}")
-        if any(
-            not isinstance(code, str)
-            or not re.fullmatch(r"[A-Z0-9_-]+", code)
-            or len(code) > 64
-            for code in promo_codes
+        if (
+            not isinstance(promo_codes, list)
+            or len(promo_codes) != len(set(promo_codes))
+            or any(not isinstance(code, str) or not re.fullmatch(r"[A-Z0-9_-]{1,64}", code) for code in promo_codes)
         ):
-            raise SalesPolicyError(f"invalid promo code for {plan_id}")
+            raise SalesPolicyError(f"invalid eligible_promo_codes for {plan_id}")
 
     by_id = {plan["plan_id"]: plan for plan in plans}
-    required_ids = {"saas-start", "saas-business", "prepaid-actions", "on-premise"}
-    if set(by_id) != required_ids:
-        raise SalesPolicyError(f"current profile requires plans {sorted(required_ids)}")
-
     expected = {
-        "saas-start": {
-            "public_code": "basic",
-            "kind": "BASE_PLAN",
-            "entitlement_kind": "DIGITAL_TWIN_WITH_OPERATIONS",
-            "display_name": "Basic",
-            "active_twins_included": 1,
-            "agent_operations_included": 1000,
-            "operation_scope": "PER_TWIN_MONTH",
-            "operations_source": "INCLUDED",
-            "payment_card_required": True,
-            "eligible_promo_codes": ["NOCC100"],
-        },
-        "saas-business": {
-            "public_code": "operations-plus",
-            "kind": "OPERATIONS_ADDON",
-            "entitlement_kind": "AGENT_OPERATIONS",
-            "display_name": "Operations Plus",
-            "active_twins_included": 0,
-            "agent_operations_included": 1000,
-            "operation_scope": "ACCOUNT_MONTH",
-            "operations_source": "ADD_ON",
-            "payment_card_required": True,
-            "eligible_promo_codes": [],
-        },
-        "prepaid-actions": {
-            "public_code": "twin-plus",
-            "kind": "TWIN_ADDON",
-            "entitlement_kind": "DIGITAL_TWIN",
-            "display_name": "Twin Plus",
-            "active_twins_included": 1,
-            "agent_operations_included": 0,
-            "operation_scope": "NONE",
-            "operations_source": "SEPARATE_PACKAGE",
-            "payment_card_required": True,
-            "eligible_promo_codes": [],
-        },
-        "on-premise": {
-            "public_code": "on-premise",
-            "kind": "OFFLINE_OFFER",
-            "entitlement_kind": "CONTRACT",
-            "display_name": "On-premise",
-            "active_twins_included": None,
-            "agent_operations_included": None,
-            "operation_scope": "CONTRACT",
-            "operations_source": "CONTRACT",
-            "payment_card_required": None,
-            "eligible_promo_codes": [],
-        },
+        "saas-start": ("basic", [], True, ["NOCC100"]),
+        "saas-business": ("pro", ["operations-plus"], True, []),
+        "prepaid-actions": ("max", ["twin-plus"], True, []),
+        "on-premise": ("on-premise", [], None, []),
     }
-    for plan_id, fields in expected.items():
-        for key, expected_value in fields.items():
-            if by_id[plan_id][key] != expected_value:
-                raise SalesPolicyError(
-                    f"current catalog drift for {plan_id}.{key}: "
-                    f"expected={expected_value!r}, actual={by_id[plan_id][key]!r}"
-                )
-
-    if "Actions Plus" not in by_id["saas-business"]["legacy_display_names"]:
-        raise SalesPolicyError("Actions Plus must remain an explicit read-only migration alias")
-    if "On-Premise" not in by_id["on-premise"]["legacy_display_names"]:
-        raise SalesPolicyError("On-Premise must remain an explicit read-only migration alias")
-    twin = by_id["prepaid-actions"]
-    if "Brak" in twin["operation_label_pl"] or "Operations Plus" not in twin["operation_label_pl"]:
-        raise SalesPolicyError("Twin Plus must explain its separate Operations Plus package")
-    if "0 operacji" not in twin["seat_summary_pl"]:
-        raise SalesPolicyError("Twin Plus summary must expose the exact zero-operation entitlement")
-    if by_id["saas-business"]["promo_hint_pl"] is not None:
-        raise SalesPolicyError("Operations Plus must not advertise NOCC100")
+    if set(by_id) != set(expected):
+        raise SalesPolicyError(f"current profile requires plans {sorted(expected)}")
+    for plan_id, (public_code, legacy_codes, card_required, promo_codes) in expected.items():
+        plan = by_id[plan_id]
+        actual = (plan["public_code"], plan["legacy_public_codes"], plan["payment_card_required"], plan["eligible_promo_codes"])
+        if actual != (public_code, legacy_codes, card_required, promo_codes):
+            raise SalesPolicyError(f"current catalog drift for {plan_id}: expected={(public_code, legacy_codes, card_required, promo_codes)!r}, actual={actual!r}")
     return catalog
 
 
@@ -441,7 +287,7 @@ def _resolve_plan(catalog: Mapping[str, Any], identifier: str) -> Mapping[str, A
     if not isinstance(identifier, str) or not identifier:
         raise SalesPolicyError("plan_id must be a non-empty string")
     for plan in catalog["plans"]:
-        if identifier in {plan["plan_id"], plan["public_code"]}:
+        if identifier in {plan["plan_id"], plan["public_code"], *plan["legacy_public_codes"]}:
             return plan
     raise SalesPolicyError(f"unknown plan_id: {identifier}")
 
@@ -592,10 +438,12 @@ def _verify_policy_records(records: Mapping[str, Any]) -> None:
 
 
 def decide(plan_id: str, promo_code: str | None = "") -> dict[str, Any]:
-    """Evaluate one inert sales decision for a legacy or public plan code."""
+    """Evaluate one inert sales decision for a plan id, public code or legacy code."""
 
     catalog = load_catalog()
+    home = load_home_offer()
     plan = _resolve_plan(catalog, plan_id)
+    home_plan = home["plans"][plan["plan_id"]]
     normalized, normalization_error, raw_code = _normalize_promo_code(promo_code)
 
     try:
@@ -617,15 +465,13 @@ def decide(plan_id: str, promo_code: str | None = "") -> dict[str, Any]:
     _verify_policy_records(records)
 
     decision: dict[str, Any] = {
-        "schema": "subactor.sales/decision/v1",
+        "schema": DECISION_SCHEMA,
         "input": {"plan_id": plan_id, "promo_code": raw_code},
         "offer": {
             "plan_id": plan["plan_id"],
             "public_code": plan["public_code"],
-            "kind": plan["kind"],
-            "entitlement_kind": plan["entitlement_kind"],
-            "display_name": plan["display_name"],
-            "active_twins_included": plan["active_twins_included"],
+            "display_name": home_plan["canonical_display_name"],
+            "commercial_type": home_plan["commercial_type"],
         },
         "promotion": {
             "normalized_code": records["EFFECTIVE_PROMO"],
@@ -638,11 +484,10 @@ def decide(plan_id: str, promo_code: str | None = "") -> dict[str, Any]:
         },
         "metering": {
             "unit": records["METERING_UNIT"],
-            "included": plan["agent_operations_included"],
-            "scope": plan["operation_scope"],
-            "source": plan["operations_source"],
-            "label_pl": plan["operation_label_pl"],
+            "included": home_plan["agent_operations_included"],
+            "period": home_plan["unit"],
         },
+        "home": {"offer_ref": home["offer_ref"], "digest": home["digest"]},
         "policy": {
             "document": ir["document"]["name"],
             "version": ir["document"]["version"],
@@ -663,7 +508,7 @@ def decide(plan_id: str, promo_code: str | None = "") -> dict[str, Any]:
                 "reason": normalization_error,
             }
         )
-    validate_decision(decision, catalog)
+    validate_decision(decision, catalog, home)
     return decision
 
 
@@ -676,34 +521,32 @@ def _validate_string_list(value: Any, allowed: set[str], label: str) -> None:
         raise SalesPolicyError(f"invalid {label}")
 
 
-def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | None = None) -> None:
+def validate_decision(
+    decision: Mapping[str, Any],
+    catalog: Mapping[str, Any] | None = None,
+    home: Mapping[str, Any] | None = None,
+) -> None:
     """Validate a decision structurally and against current sales invariants."""
 
     catalog = catalog or load_catalog()
+    home = home or load_home_offer()
     _exact_keys(
         decision,
-        {"schema", "input", "offer", "promotion", "payment", "metering", "policy"},
+        {"schema", "input", "offer", "promotion", "payment", "metering", "home", "policy"},
         "sales decision",
     )
-    if decision["schema"] != "subactor.sales/decision/v1":
+    if decision["schema"] != DECISION_SCHEMA:
         raise SalesPolicyError("incompatible sales decision schema")
     _exact_keys(decision["input"], {"plan_id", "promo_code"}, "decision input")
-    _exact_keys(
-        decision["offer"],
-        {"plan_id", "public_code", "kind", "entitlement_kind", "display_name", "active_twins_included"},
-        "decision offer",
-    )
+    _exact_keys(decision["offer"], {"plan_id", "public_code", "display_name", "commercial_type"}, "decision offer")
     _exact_keys(
         decision["promotion"],
         {"normalized_code", "eligibility", "presentation", "reason"},
         "decision promotion",
     )
     _exact_keys(decision["payment"], {"card_required"}, "decision payment")
-    _exact_keys(
-        decision["metering"],
-        {"unit", "included", "scope", "source", "label_pl"},
-        "decision metering",
-    )
+    _exact_keys(decision["metering"], {"unit", "included", "period"}, "decision metering")
+    _exact_keys(decision["home"], {"offer_ref", "digest"}, "decision home")
     _exact_keys(
         decision["policy"],
         {"document", "version", "matched_rules", "allowed", "required", "reports", "forbidden"},
@@ -711,7 +554,7 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
     )
 
     if decision["policy"]["document"] != POLICY_DOCUMENT or decision["policy"]["version"] != POLICY_VERSION:
-        raise SalesPolicyError("decision is not bound to SUBACTOR_SALES version 1")
+        raise SalesPolicyError(f"decision is not bound to {POLICY_DOCUMENT} version {POLICY_VERSION}")
     if decision["metering"]["unit"] != METERING_UNIT:
         raise SalesPolicyError("decision uses an incompatible metering unit")
 
@@ -723,27 +566,24 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
         raise SalesPolicyError("decision input promo_code must be a string up to 128 characters")
 
     plan = _resolve_plan(catalog, input_plan)
-    offer = decision["offer"]
+    home_plan = home["plans"][plan["plan_id"]]
     expected_offer = {
         "plan_id": plan["plan_id"],
         "public_code": plan["public_code"],
-        "kind": plan["kind"],
-        "entitlement_kind": plan["entitlement_kind"],
-        "display_name": plan["display_name"],
-        "active_twins_included": plan["active_twins_included"],
+        "display_name": home_plan["canonical_display_name"],
+        "commercial_type": home_plan["commercial_type"],
     }
-    if dict(offer) != expected_offer:
-        raise SalesPolicyError("decision offer does not match the current catalog")
-
+    if dict(decision["offer"]) != expected_offer:
+        raise SalesPolicyError("decision offer does not match the catalog and HOME offer")
     expected_metering = {
         "unit": METERING_UNIT,
-        "included": plan["agent_operations_included"],
-        "scope": plan["operation_scope"],
-        "source": plan["operations_source"],
-        "label_pl": plan["operation_label_pl"],
+        "included": home_plan["agent_operations_included"],
+        "period": home_plan["unit"],
     }
     if dict(decision["metering"]) != expected_metering:
-        raise SalesPolicyError("decision metering does not match the current catalog")
+        raise SalesPolicyError("decision metering does not match the HOME offer")
+    if dict(decision["home"]) != {"offer_ref": home["offer_ref"], "digest": home["digest"]}:
+        raise SalesPolicyError("decision is not bound to the locked HOME offer")
 
     policy = decision["policy"]
     matched_rules = policy["matched_rules"]
@@ -755,7 +595,8 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
         raise SalesPolicyError("invalid matched_rules")
     _validate_string_list(policy["allowed"], ALLOW_VALUES, "allowed policy descriptors")
     _validate_string_list(policy["required"], REQUIRE_VALUES, "required policy descriptors")
-    _validate_string_list(policy["reports"], REPORT_VALUES, "policy reports")
+    if policy["reports"] != []:
+        raise SalesPolicyError("the sales profile emits no reports")
 
     forbidden = policy["forbidden"]
     if not isinstance(forbidden, list):
@@ -782,7 +623,7 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
         expected_allowed: set[str] = set()
         expected_required: set[str] = set()
         promo_forbidden: set[str] = set()
-    elif normalized_input == "NOCC100" and plan["plan_id"] == "saas-start":
+    elif normalized_input == "NOCC100" and "NOCC100" in plan["eligible_promo_codes"]:
         expected_promotion = {
             "normalized_code": "NOCC100",
             "eligibility": "ELIGIBLE",
@@ -827,30 +668,12 @@ def validate_decision(decision: Mapping[str, Any], catalog: Mapping[str, Any] | 
     if decision["payment"]["card_required"] is not expected_card:
         raise SalesPolicyError("card requirement does not match the promotion decision")
 
-    expected_rules = {promo_rule}
-    if plan["plan_id"] == "prepaid-actions":
-        expected_rules.add("SALES-TWIN-PLUS-PRESENTATION")
-    if set(matched_rules) != expected_rules:
-        raise SalesPolicyError("matched rules do not match promotion and plan-presentation concerns")
+    if set(matched_rules) != {promo_rule}:
+        raise SalesPolicyError("matched rules do not match the promotion concern")
 
     forbidden_opcodes = {item["opcode"] for item in forbidden}
-    if not promo_forbidden.issubset(forbidden_opcodes):
-        raise SalesPolicyError("promotion sanitization directives are incomplete")
-    if not promo_forbidden and forbidden_opcodes & {"APPLY_PROMOTION", "DISPLAY_PROMOTION"}:
-        raise SalesPolicyError("eligible or empty promotion must not be forbidden")
-
-    if plan["plan_id"] == "prepaid-actions":
-        if "DISPLAY_OPERATION_LABEL" not in forbidden_opcodes:
-            raise SalesPolicyError("Twin Plus must forbid the ambiguous 'Brak' label")
-        if policy["reports"] != ["OPERATIONS_PURCHASED_SEPARATELY"]:
-            raise SalesPolicyError("Twin Plus must report its separate operation package")
-        if "Brak" in decision["metering"]["label_pl"] or "Operations Plus" not in decision["metering"]["label_pl"]:
-            raise SalesPolicyError("Twin Plus label must explain the separate operation package")
-    else:
-        if "DISPLAY_OPERATION_LABEL" in forbidden_opcodes:
-            raise SalesPolicyError("non-Twin plans must not carry the Twin label guard")
-        if policy["reports"]:
-            raise SalesPolicyError("only Twin Plus may emit the separate-package report")
+    if forbidden_opcodes != promo_forbidden:
+        raise SalesPolicyError("promotion sanitization directives do not match eligibility")
 
 
 def load_offer_home_lock() -> dict[str, Any]:
@@ -858,21 +681,21 @@ def load_offer_home_lock() -> dict[str, Any]:
         lock = json.loads(OFFER_HOME_LOCK_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise SalesPolicyError(f"offer-home lock is unreadable: {error}") from error
-    if lock.get("schema") != "wellmanifest.policy/offer-home-lock/v1":
+    _exact_keys(lock, {"schema", "home", "fixture_path"}, "offer-home lock")
+    if lock["schema"] != OFFER_HOME_LOCK_SCHEMA:
         raise SalesPolicyError("offer-home lock schema mismatch")
-    home = lock.get("home")
-    if not isinstance(home, dict):
-        raise SalesPolicyError("offer-home lock missing home object")
-    for key in ("repository", "catalog_path", "offer_id", "version", "digest"):
-        if key not in home:
-            raise SalesPolicyError(f"offer-home lock missing home.{key}")
-    if not isinstance(home["digest"], str) or not home["digest"].startswith("sha256:"):
+    home = lock["home"]
+    _exact_keys(
+        home,
+        {"repository", "catalog_path", "offer_id", "version", "sourceRevision", "digest"},
+        "offer-home lock home",
+    )
+    if not isinstance(home["digest"], str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", home["digest"]):
         raise SalesPolicyError("offer-home lock digest must be sha256:<hex>")
-    fields = lock.get("mirrored_fields")
-    if not isinstance(fields, list) or not fields or any(not isinstance(item, str) for item in fields):
-        raise SalesPolicyError("offer-home lock mirrored_fields must be a non-empty string list")
-    fixture = lock.get("fixture_path")
-    if not isinstance(fixture, str) or not fixture:
+    if not isinstance(home["sourceRevision"], str) or not re.fullmatch(r"[0-9a-f]{40}", home["sourceRevision"]):
+        raise SalesPolicyError("offer-home lock sourceRevision must be a full Git SHA")
+    fixture = lock["fixture_path"]
+    if not isinstance(fixture, str) or not fixture or fixture.startswith("/") or ".." in Path(fixture).parts:
         raise SalesPolicyError("offer-home lock fixture_path must be a relative path string")
     return lock
 
@@ -881,104 +704,149 @@ def _file_digest(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _home_operations(plan: Mapping[str, Any]) -> Any:
-    if "agent_operations_included" in plan:
-        return plan["agent_operations_included"]
-    return plan.get("actions_included")
+def load_home_offer(home_catalog_path: Path | None = None) -> dict[str, Any]:
+    """Load the HOME offer catalog bound by the lock and index its plans.
 
-
-def compare_offer_home(home_catalog_path: Path | None = None) -> dict[str, Any]:
-    """Fail closed when the sales ADOPT projection drifts from pinned ``subactor/offer`` HOME.
-
-    The lock digests the HOME catalog bytes. Commercial amount/entitlement fields on
-    ``offer-catalog.json`` must match that HOME document plan-by-plan. This pack must
-    not become a second price SSOT.
+    The catalog must match the locked digest, identity and version, and it must
+    still be ``current`` in HOME. Every sales plan must exist in HOME.
     """
 
     lock = load_offer_home_lock()
     home_meta = lock["home"]
-    path = home_catalog_path
-    if path is None:
-        path = ROOT / lock["fixture_path"]
+    path = ROOT / lock["fixture_path"] if home_catalog_path is None else home_catalog_path
     if not path.is_file():
         raise SalesPolicyError(f"HOME offer catalog missing: {path}")
-
     actual_digest = _file_digest(path)
-    expected_digest = home_meta["digest"]
-    if actual_digest != expected_digest:
-        raise SalesPolicyError(
-            f"HOME offer digest drift: expected {expected_digest}, actual {actual_digest}"
-        )
-
+    if actual_digest != home_meta["digest"]:
+        raise SalesPolicyError(f"HOME offer digest drift: expected {home_meta['digest']}, actual {actual_digest}")
     try:
-        home_doc = json.loads(path.read_text(encoding="utf-8"))
+        document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise SalesPolicyError(f"HOME offer catalog is unreadable: {error}") from error
-
-    if home_doc.get("schema") != "subactor.offer/catalog/v1":
+    if document.get("schema") != "subactor.offer/catalog/v1":
         raise SalesPolicyError("HOME offer catalog schema mismatch")
-    if home_doc.get("id") != home_meta["offer_id"]:
+    if document.get("id") != home_meta["offer_id"]:
+        raise SalesPolicyError(f"HOME offer id expected {home_meta['offer_id']!r}, got {document.get('id')!r}")
+    if document.get("version") != home_meta["version"]:
         raise SalesPolicyError(
-            f"HOME offer id expected {home_meta['offer_id']!r}, got {home_doc.get('id')!r}"
+            f"HOME offer version expected {home_meta['version']!r}, got {document.get('version')!r}"
         )
-    if home_doc.get("version") != home_meta["version"]:
+    if document.get("status") != "current":
         raise SalesPolicyError(
-            f"HOME offer version expected {home_meta['version']!r}, got {home_doc.get('version')!r}"
+            f"HOME offer {home_meta['offer_id']} v{home_meta['version']} is {document.get('status')!r}, not 'current'"
         )
+    vocabulary = document.get("vocabulary")
+    if not isinstance(vocabulary, dict) or vocabulary.get("unit_code") != METERING_UNIT:
+        raise SalesPolicyError(f"HOME offer must meter {METERING_UNIT}")
 
-    sales = load_catalog()
-    home_plans = home_doc.get("plans")
-    if not isinstance(home_plans, list):
+    plans = document.get("plans")
+    if not isinstance(plans, list):
         raise SalesPolicyError("HOME offer catalog plans must be an array")
-    home_by_id = {}
-    for index, plan in enumerate(home_plans):
-        if not isinstance(plan, dict):
-            raise SalesPolicyError(f"HOME plans[{index}] must be an object")
-        plan_id = plan.get("plan_id")
-        if not isinstance(plan_id, str) or not plan_id:
+    by_id: dict[str, Mapping[str, Any]] = {}
+    for index, plan in enumerate(plans):
+        if not isinstance(plan, dict) or not isinstance(plan.get("plan_id"), str) or not plan["plan_id"]:
             raise SalesPolicyError(f"HOME plans[{index}] lacks plan_id")
-        if plan_id in home_by_id:
-            raise SalesPolicyError(f"duplicate HOME plan_id {plan_id}")
-        home_by_id[plan_id] = plan
-
-    checked: list[str] = []
-    for plan in sales["plans"]:
-        plan_id = plan["plan_id"]
-        if plan_id not in home_by_id:
-            raise SalesPolicyError(f"sales catalog plan {plan_id} absent from HOME offer")
-        home_plan = home_by_id[plan_id]
-        for field in lock["mirrored_fields"]:
-            if field == "agent_operations_included":
-                expected = _home_operations(home_plan)
-                actual = plan.get("agent_operations_included")
-            else:
-                expected = home_plan.get(field)
-                actual = plan.get(field)
-            if actual != expected:
-                raise SalesPolicyError(
-                    f"{plan_id}.{field}: HOME={expected!r} sales={actual!r}"
-                )
-        checked.append(plan_id)
-
+        if plan["plan_id"] in by_id:
+            raise SalesPolicyError(f"duplicate HOME plan_id {plan['plan_id']}")
+        for field in ("canonical_display_name", "commercial_type", "unit", "currency"):
+            _require_string(plan.get(field), f"HOME {plan['plan_id']}.{field}")
+        _require_optional_non_negative_integer(
+            plan.get("agent_operations_included"), f"HOME {plan['plan_id']}.agent_operations_included"
+        )
+        by_id[plan["plan_id"]] = plan
     return {
-        "ok": True,
+        "offer_ref": f"offer://subactor/offer/{home_meta['offer_id']}/v{home_meta['version']}",
         "offer_id": home_meta["offer_id"],
         "version": home_meta["version"],
-        "digest": expected_digest,
-        "checked_plan_ids": checked,
-        "home_path": str(path),
+        "digest": actual_digest,
+        "document": document,
+        "plans": by_id,
+        "path": path,
+    }
+
+
+def _require_current_home_version(home_root: Path, home_meta: Mapping[str, Any]) -> str:
+    """Return the HOME catalog path of the pinned version when it is the current one.
+
+    A ``subactor/offer`` checkout holds every catalog version of an offer under
+    ``catalogs/<offer_id>/``. Exactly one of them may be ``current``; the lock
+    must pin that version, otherwise the projection adopts a superseded offer.
+    """
+
+    offer_id = home_meta["offer_id"]
+    catalogs = home_root / "catalogs" / offer_id
+    if not catalogs.is_dir():
+        raise SalesPolicyError(f"HOME offer root lacks catalogs/{offer_id}: {home_root}")
+    current: list[tuple[Any, str]] = []
+    for candidate in sorted(catalogs.glob("*/offer.json")):
+        try:
+            document = json.loads(candidate.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise SalesPolicyError(f"HOME offer catalog is unreadable: {candidate}: {error}") from error
+        if document.get("id") == offer_id and document.get("status") == "current":
+            current.append((document.get("version"), candidate.relative_to(home_root).as_posix()))
+    if len(current) != 1:
+        raise SalesPolicyError(
+            f"HOME offer {offer_id} must have exactly one current catalog, found {len(current)}"
+        )
+    version, relative = current[0]
+    if version != home_meta["version"] or relative != home_meta["catalog_path"]:
+        raise SalesPolicyError(
+            f"HOME offer {offer_id} v{home_meta['version']} ({home_meta['catalog_path']}) is superseded: "
+            f"current is v{version} ({relative})"
+        )
+    return relative
+
+
+def compare_offer_home(
+    home_catalog_path: Path | None = None,
+    home_root: Path | None = None,
+) -> dict[str, Any]:
+    """Fail closed when the sales catalog drifts from the pinned ``subactor/offer`` HOME.
+
+    This pack holds no prices, names or entitlements; it binds plan identifiers
+    to one locked, current HOME catalog. With a HOME checkout (``home_root``) the
+    lock must also pin the offer's only current version, so an archived or
+    superseded catalog cannot pass.
+    """
+
+    lock = load_offer_home_lock()
+    path = home_catalog_path
+    if home_root is not None:
+        relative = _require_current_home_version(home_root, lock["home"])
+        if path is None:
+            path = home_root / relative
+    home = load_home_offer(path)
+    sales = load_catalog()
+    sales_ids = [plan["plan_id"] for plan in sales["plans"]]
+    missing = [plan_id for plan_id in sales_ids if plan_id not in home["plans"]]
+    if missing:
+        raise SalesPolicyError(f"sales catalog plans absent from HOME offer: {missing}")
+    uncovered = [
+        plan_id for plan_id, plan in home["plans"].items() if plan.get("public") is not False and plan_id not in sales_ids
+    ]
+    if uncovered:
+        raise SalesPolicyError(f"public HOME plans lack a sales catalog entry: {uncovered}")
+    return {
+        "ok": True,
+        "offer_id": home["offer_id"],
+        "version": home["version"],
+        "digest": home["digest"],
+        "checked_plan_ids": sales_ids,
+        "home_path": str(home["path"]),
     }
 
 
 def compare_www_plans(plans_path: Path) -> None:
-    """Fail closed when a portal plans.json facade drifts from the sales catalog.
+    """Fail closed when a portal plans.json facade drifts from the locked HOME offer.
 
-    List prices HOME in ``subactor/offer``; this catalog mirrors amounts for
-    entitlement/promo parity checks. The portal facade must match mirrored
-    entitlements, names (including legacy aliases) and amount mirrors.
+    Prices, names and operation entitlements HOME in ``subactor/offer``; this pack
+    compares the facade with that locked HOME catalog and holds no copy of them.
     """
 
     catalog = load_catalog()
+    home = load_home_offer()
+    aliases = home["document"].get("compatibility", {}).get("read_aliases", {})
     try:
         payload = json.loads(plans_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -1011,57 +879,40 @@ def compare_www_plans(plans_path: Path) -> None:
         facade = by_id[plan_id]
         if not isinstance(facade, dict):
             raise SalesPolicyError(f"www plan {plan_id} must be an object")
+        home_plan = home["plans"][plan_id]
 
         actions = facade.get("actions_included", facade.get("agent_operations_included"))
-        if actions != plan["agent_operations_included"]:
+        if actions != home_plan["agent_operations_included"]:
             raise SalesPolicyError(
-                f"{plan_id} actions_included expected {plan['agent_operations_included']!r}, "
-                f"got {actions!r}"
+                f"{plan_id} actions_included expected {home_plan['agent_operations_included']!r}, got {actions!r}"
             )
 
-        twins = facade.get("active_twins_included")
-        if twins != plan["active_twins_included"]:
-            raise SalesPolicyError(
-                f"{plan_id} active_twins_included expected {plan['active_twins_included']!r}, "
-                f"got {twins!r}"
-            )
-
-        allowed_names = {plan["display_name"], *plan["legacy_display_names"]}
+        canonical = home_plan["canonical_display_name"]
+        allowed_names = {canonical, home_plan.get("name"), *(home_plan.get("legacy_display_names") or [])}
+        allowed_names |= {alias for alias, target in aliases.items() if target == canonical}
         name = facade.get("name") or facade.get("display_name")
         if name not in allowed_names:
-            raise SalesPolicyError(
-                f"{plan_id} name {name!r} not in {sorted(allowed_names)}"
-            )
+            raise SalesPolicyError(f"{plan_id} name {name!r} not in {sorted(item for item in allowed_names if item)}")
 
-        if facade.get("amount_monthly_minor") != plan["amount_monthly_minor"]:
-            raise SalesPolicyError(
-                f"{plan_id} amount_monthly_minor expected {plan['amount_monthly_minor']!r}, "
-                f"got {facade.get('amount_monthly_minor')!r}"
-            )
-        if facade.get("amount_annual_minor") != plan["amount_annual_minor"]:
-            raise SalesPolicyError(
-                f"{plan_id} amount_annual_minor expected {plan['amount_annual_minor']!r}, "
-                f"got {facade.get('amount_annual_minor')!r}"
-            )
-        if facade.get("currency") != plan["currency"]:
-            raise SalesPolicyError(
-                f"{plan_id} currency expected {plan['currency']!r}, "
-                f"got {facade.get('currency')!r}"
-            )
+        for field in ("amount_monthly_minor", "amount_annual_minor", "currency"):
+            if facade.get(field) != home_plan.get(field):
+                raise SalesPolicyError(
+                    f"{plan_id} {field} expected {home_plan.get(field)!r}, got {facade.get(field)!r}"
+                )
 
 
 def matrix() -> dict[str, Any]:
     cases = [
         ("NOCC100_BASIC", "saas-start", "NOCC100"),
-        ("NOCC100_OPERATIONS_PLUS", "saas-business", "NOCC100"),
-        ("NOCC100_TWIN_PLUS", "prepaid-actions", "NOCC100"),
+        ("NOCC100_PRO", "saas-business", "NOCC100"),
+        ("NOCC100_MAX", "prepaid-actions", "NOCC100"),
         ("NOCC100_ON_PREMISE", "on-premise", "NOCC100"),
         ("NO_PROMO_BASIC", "saas-start", ""),
         ("UNKNOWN_PROMO_BASIC", "saas-start", "OTHER100"),
         ("INVALID_PROMO_BASIC", "saas-start", "NOCC 100"),
     ]
     return {
-        "schema": "subactor.sales/decision-matrix/v1",
+        "schema": DECISION_MATRIX_SCHEMA,
         "cases": [
             {"name": name, "decision": decide(current_plan, current_promo)}
             for name, current_plan, current_promo in cases
@@ -1094,13 +945,19 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     home_parser = subparsers.add_parser(
         "compare-offer-home",
-        help="fail closed when sales amounts drift from the pinned subactor/offer HOME catalog",
+        help="fail closed when the sales catalog drifts from the pinned, current subactor/offer HOME catalog",
     )
     home_parser.add_argument(
         "--catalog",
         type=Path,
         default=None,
         help="path to subactor/offer catalogs/.../offer.json (defaults to locked fixture)",
+    )
+    home_parser.add_argument(
+        "--home-root",
+        type=Path,
+        default=None,
+        help="subactor/offer checkout; the lock must pin its only current catalog version",
     )
 
     export_parser = subparsers.add_parser(
@@ -1127,7 +984,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             compare_www_plans(args.plans)
             print("SALES-WWW-PLANS-PASS")
         elif args.command == "compare-offer-home":
-            result = compare_offer_home(args.catalog)
+            result = compare_offer_home(args.catalog, args.home_root)
             print(_json(result), end="")
         elif args.command == "export-decisions":
             actual = matrix()

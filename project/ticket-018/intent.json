@@ -1,0 +1,143 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-018",
+  "summary": "Adopt subactor-cloud v2 in the sales profile and fail closed on non-current HOME pins",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "regression"
+  },
+  "allowedPaths": [
+    "project/ticket-018/**",
+    "project/TICKETS.md",
+    "project/ticket-017/**",
+    "profiles/sales/reference_engine.py",
+    "profiles/sales/subactor-sales.policy",
+    "profiles/sales/offer-catalog.json",
+    "profiles/sales/offer-home.lock.json",
+    "profiles/sales/www-plans.lock.json",
+    "profiles/sales/decision-matrix.json",
+    "examples/sales/fixtures/subactor-cloud-v2.offer.json",
+    "examples/sales/fixtures/subactor-cloud-v1.offer.json",
+    "examples/sales/fixtures/www-plans.facade.json",
+    "examples/sales/decisions/matrix.v2.json",
+    "examples/sales/decisions/matrix.v1.json",
+    "examples/sales/subactor-pricing-section.html",
+    "tests/test_sales_profile.py",
+    "dsl-manifest.json"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    "schemas/**",
+    "docs/**"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl"
+    ]
+  },
+  "delivery": {
+    "acceptedBaseSha": "d723271eb2e45b931ad118d9345cc6ad5b4a0fc5",
+    "targetBranch": "main",
+    "outcome": "The sales profile adopts the current subactor/offer subactor-cloud v2 catalog, holds no HOME-owned prices, names, entitlements, twin data or copy, and fails closed when the pinned HOME catalog is not current.",
+    "nonGoals": [
+      "No JSON Schema update (follow-up ticket for schemas/sales-*.schema.json)",
+      "No documentation update (follow-up ticket for README, ADOPTION_PL, SALES_POLICY_PROFILE, DOMAIN_VOCABULARY)",
+      "No change in subactor/offer, subactor/www-sub-actor or checkout code",
+      "No Policy DSL grammar change"
+    ],
+    "complexity": "L",
+    "estimatedMinutes": 30,
+    "budgets": {
+      "maxImplementationFiles": 14,
+      "maxAffectedComponents": 3,
+      "maxPublicInterfaceChanges": 3,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Keep plan ids, public codes, legacy public codes, card requirement and promotion eligibility in the sales catalog; read names, commercial type, operation entitlements, amounts and currency from the digest-locked HOME v2 catalog; remove the Twin Plus presentation rule; version catalog, decision, matrix, policy and offer-home lock as v2; add a HOME-root check that the pin is the offer's only current catalog.",
+      "components": [
+        {
+          "name": "sales-engine",
+          "paths": [
+            "profiles/sales/reference_engine.py",
+            "profiles/sales/subactor-sales.policy",
+            "tests/test_sales_profile.py"
+          ]
+        },
+        {
+          "name": "sales-data",
+          "paths": [
+            "profiles/sales/offer-catalog.json",
+            "profiles/sales/offer-home.lock.json",
+            "profiles/sales/www-plans.lock.json",
+            "profiles/sales/decision-matrix.json",
+            "examples/sales/fixtures/subactor-cloud-v2.offer.json",
+            "examples/sales/fixtures/subactor-cloud-v1.offer.json",
+            "examples/sales/fixtures/www-plans.facade.json",
+            "examples/sales/decisions/matrix.v2.json",
+            "examples/sales/decisions/matrix.v1.json",
+            "examples/sales/subactor-pricing-section.html"
+          ]
+        },
+        {
+          "name": "dsl-manifest",
+          "paths": [
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": true,
+      "interfaceChanges": [
+        "subactor.sales/decision/v2 replaces decision/v1 (no twin fields, no label_pl, HOME binding added)",
+        "subactor.sales/catalog/v2 replaces catalog/v1 (sales-owned fields only)",
+        "compare-offer-home --home-root fails when the pin is not the only current HOME catalog"
+      ],
+      "dataChanges": [
+        "offer-home lock v2 pins subactor/offer 6f38fbe catalogs/subactor-cloud/v2/offer.json",
+        "public codes pro and max with read-only legacy codes operations-plus and twin-plus"
+      ],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket commits; the v1 fixture, matrix and pricing example return with them."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "All tests pass, including the live portal facade and live HOME checks on this host."
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 profiles/sales/reference_engine.py compare-offer-home --home-root <subactor/offer checkout>"
+        ],
+        "evidence": "Passes for the v2 pin; fails for the previous v1 pin with 'is superseded: current is v2'."
+      },
+      {
+        "criterion": "AC-03",
+        "commands": [
+          "python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json",
+          "python3 profiles/sales/reference_engine.py export-decisions --check examples/sales/decisions/matrix.v2.json"
+        ],
+        "evidence": "SALES-MATRIX-PASS and SALES-DECISIONS-PASS."
+      }
+    ]
+  }
+}
