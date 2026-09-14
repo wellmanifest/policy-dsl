@@ -1,0 +1,36 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-019",
+  "summary": "Adopt external ticket completion receipts and published governance",
+  "workstream": "governance",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "allowedPaths": ["project/ticket-019/**", "TODO.md", "project/TICKETS.md", ".governance/**", ".githooks/pre-commit", ".github/workflows/new-project-governance.yml", ".gitignore", ".subactor/.gitignore", ".subactor/manifest.json", "AGENTS.md", "GEMINI.md", "project/governance-check.sh", "project/new-ticket.sh", "scripts/install-agent-hosts.sh", "scripts/runtime.sh", "wellmanifest_governance.py", "worktree-guard.yaml"],
+  "forbiddenPaths": ["project/ticket-*/user-*.md"],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "d723271eb2e45b931ad118d9345cc6ad5b4a0fc5",
+    "targetBranch": "main",
+    "standardAdoption": {"sourceRepository": "wellmanifest/new-project", "fromRevision": "01397097ac53a01b2dd544f0b5908d22d1b526d5", "toRevision": "c5b2581c16a4cd1ba7987f22c63116710d41a8d6"},
+    "outcome": "Adopt published governance 0.20.28 and protected external ticket completion instead of carrier-only closure commits.",
+    "nonGoals": ["No Policy DSL source or sales profile changes", "No deletion of unmerged work", "No fabricated approval or merge receipt"],
+    "complexity": "L", "estimatedMinutes": 90,
+    "budgets": {"maxImplementationFiles": 15, "maxAffectedComponents": 5, "maxPublicInterfaceChanges": 3, "maxRuntimeDependencies": 0},
+    "architecture": {
+      "status": "accepted",
+      "decision": "Use Goal immutable atomic adoption. Retain repository-specific ownership and checks. Protected Validator records independently verified merge evidence externally; historical ticket Markdown is not rewritten.",
+      "components": [{"name": "governance-instance", "paths": [".governance/**", "project/**", "TODO.md"]}, {"name": "managed-runtime", "paths": [".githooks/**", ".github/**", ".gitignore", ".subactor/**", "AGENTS.md", "GEMINI.md", "scripts/**", "wellmanifest_governance.py", "worktree-guard.yaml"]}],
+      "responsibilityChanges": false, "interfaceChanges": [], "dataChanges": [],
+      "ui": {"impact": "none", "states": [], "evidence": []},
+      "rollback": "Revert adoption commit; preserve external receipts and original PR history."
+    },
+    "runtimeDependencies": [],
+    "validation": [{"criterion": "AC-01", "commands": ["goal governance adopt --source-revision c5b2581c16a4cd1ba7987f22c63116710d41a8d6 --check", "./project/governance-check.sh --base origin/main --head HEAD --actor ci", "python3 tests/policy_dsl_check.py self-test", "python3 -m unittest discover -s tests -p 'test_*.py'"], "evidence": "Pending; sales failure separately tracked in #23/#25."}]
+  }
+}
