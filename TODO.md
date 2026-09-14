@@ -1,5 +1,7 @@
 # Project roadmap
 
+- [ ] ticket-019: adopt published governance and protected external ticket completion.
+
 - [x] [`ticket-001`](project/ticket-001/README.md) — establish the governed
   repository and define Policy DSL v1, its closed Policy IR, constrained LLM
   grammar, reference parser and cross-implementation conformance suite.
