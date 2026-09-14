@@ -15,7 +15,7 @@
   "conflictsWith": [],
   "integrationTicket": null,
   "delivery": {
-    "acceptedBaseSha": "5551a57b6ef1ff7ce9a33798262e8e9af6aae4c1",
+    "acceptedBaseSha": "4213a3979096bd84a09dd5c842a79aa95fb1a519",
     "targetBranch": "main",
     "standardAdoption": {"sourceRepository": "wellmanifest/new-project", "fromRevision": "01397097ac53a01b2dd544f0b5908d22d1b526d5", "toRevision": "c5b2581c16a4cd1ba7987f22c63116710d41a8d6"},
     "outcome": "Adopt published governance 0.20.28 and protected external ticket completion instead of carrier-only closure commits.",

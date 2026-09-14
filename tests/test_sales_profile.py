@@ -17,6 +17,59 @@ sys.modules[SPEC.name] = SALES
 SPEC.loader.exec_module(SALES)
 
 
+def _schema_errors(value, schema, root, path="$"):
+    """Validate the JSON Schema subset used by the sales schemas, without dependencies."""
+    if "$ref" in schema:
+        target = root
+        for part in schema["$ref"].removeprefix("#/").split("/"):
+            target = target[part]
+        return _schema_errors(value, target, root, path)
+    if "anyOf" in schema:
+        return [] if any(not _schema_errors(value, item, root, path) for item in schema["anyOf"]) else [f"{path}: anyOf"]
+    errors = []
+    types = schema.get("type")
+    if types is not None:
+        names = types if isinstance(types, list) else [types]
+        checks = {"object": dict, "array": list, "string": str, "boolean": bool, "null": type(None)}
+        ok = any(
+            (name == "integer" and isinstance(value, int) and not isinstance(value, bool))
+            or (name in checks and isinstance(value, checks[name]))
+            for name in names
+        )
+        if not ok:
+            return [f"{path}: type {names}"]
+    if "const" in schema and value != schema["const"]:
+        errors.append(f"{path}: const")
+    if "enum" in schema and value not in schema["enum"]:
+        errors.append(f"{path}: enum {value!r}")
+    if isinstance(value, str):
+        if "pattern" in schema and not __import__("re").search(schema["pattern"], value):
+            errors.append(f"{path}: pattern")
+        if len(value) > schema.get("maxLength", len(value)) or len(value) < schema.get("minLength", 0):
+            errors.append(f"{path}: length")
+    if isinstance(value, int) and not isinstance(value, bool) and value < schema.get("minimum", value):
+        errors.append(f"{path}: minimum")
+    if isinstance(value, list):
+        if len(value) > schema.get("maxItems", len(value)) or len(value) < schema.get("minItems", 0):
+            errors.append(f"{path}: items count")
+        if schema.get("uniqueItems") and len({json.dumps(item, sort_keys=True) for item in value}) != len(value):
+            errors.append(f"{path}: uniqueItems")
+        for index, item in enumerate(value):
+            if "items" in schema:
+                errors += _schema_errors(item, schema["items"], root, f"{path}[{index}]")
+    if isinstance(value, dict):
+        for key in schema.get("required", []):
+            if key not in value:
+                errors.append(f"{path}: missing {key}")
+        properties = schema.get("properties", {})
+        if schema.get("additionalProperties") is False:
+            errors += [f"{path}: unknown {key}" for key in value if key not in properties]
+        for key, item in value.items():
+            if key in properties:
+                errors += _schema_errors(item, properties[key], root, f"{path}.{key}")
+    return errors
+
+
 class SubactorSalesProfileTest(unittest.TestCase):
     def test_policy_is_valid_and_uses_profile_safe_directives(self):
         ir = SALES.CHECK.parse(
@@ -220,6 +273,24 @@ class SubactorSalesProfileTest(unittest.TestCase):
             with self.subTest(path=path.name):
                 schema = json.loads(path.read_text(encoding="utf-8"))
                 self.assertTrue(SALES.CHECK.schema_is_closed(schema))
+
+    def test_catalog_requests_and_decisions_conform_to_v2_schemas(self):
+        schemas = {
+            name: json.loads((ROOT / f"schemas/sales-{name}.schema.json").read_text(encoding="utf-8"))
+            for name in ("offer-catalog", "request", "decision")
+        }
+        catalog = json.loads((ROOT / "profiles/sales/offer-catalog.json").read_text(encoding="utf-8"))
+        self.assertEqual([], _schema_errors(catalog, schemas["offer-catalog"], schemas["offer-catalog"]))
+        for identifier in ("saas-start", "basic", "pro", "max", "operations-plus", "twin-plus", "on-premise"):
+            request = {"schema": "subactor.sales/request/v2", "plan_id": identifier, "promo_code": None}
+            with self.subTest(request=identifier):
+                self.assertEqual([], _schema_errors(request, schemas["request"], schemas["request"]))
+        for case in SALES.matrix()["cases"]:
+            with self.subTest(decision=case["name"]):
+                self.assertEqual([], _schema_errors(case["decision"], schemas["decision"], schemas["decision"]))
+        stale = json.loads(json.dumps(SALES.decide("prepaid-actions", "")))
+        stale["offer"]["active_twins_included"] = 0
+        self.assertIn("$.offer: unknown active_twins_included", _schema_errors(stale, schemas["decision"], schemas["decision"]))
 
     def test_unknown_plan_is_rejected(self):
         with self.assertRaisesRegex(SALES.SalesPolicyError, "unknown plan_id"):
