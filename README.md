@@ -19,9 +19,9 @@ See [`docs/DOMAIN_VOCABULARY.md`](docs/DOMAIN_VOCABULARY.md).
 
 ## Subactor sales profile
 
-The reference sales profile centralizes `NOCC100` eligibility and the current
-Basic, Operations Plus and Twin Plus entitlement model without changing legacy
-plan identifiers:
+The reference sales profile centralizes `NOCC100` eligibility for the current
+`subactor/offer` catalog (Basic, Pro, Max). Names, prices and operation
+entitlements are read from the locked HOME catalog, not held here:
 
 ```bash
 python3 profiles/sales/reference_engine.py decide --plan-id saas-start --promo-code NOCC100
