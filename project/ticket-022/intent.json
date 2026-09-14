@@ -1,0 +1,81 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-022",
+  "summary": "Align the README sales profile summary with the v2 model",
+  "workstream": "governance",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P3",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "project/ticket-022/**",
+    "project/TICKETS.md",
+    "README.md"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**"
+  ],
+  "stacks": [],
+  "dependsOn": [
+    "ticket-021"
+  ],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl"
+    ]
+  },
+  "delivery": {
+    "acceptedBaseSha": "06284fd9e33dc8f61f07baca04fda2c0e7a547e0",
+    "targetBranch": "main",
+    "outcome": "The README sales profile summary names the current Basic/Pro/Max model and states that HOME data is read from the locked subactor/offer catalog.",
+    "nonGoals": [
+      "No code, schema, data or other documentation change"
+    ],
+    "complexity": "XS",
+    "estimatedMinutes": 5,
+    "budgets": {
+      "maxImplementationFiles": 1,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Replace the stale v1 sentence in the governance-owned README.",
+      "components": [
+        {
+          "name": "readme",
+          "paths": [
+            "README.md"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the README sentence."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "All tests pass."
+      }
+    ]
+  }
+}
