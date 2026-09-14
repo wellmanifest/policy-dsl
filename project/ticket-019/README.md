@@ -20,7 +20,7 @@ Adopt published wellmanifest/new-project 0.20.28 through Goal. Preserve DSL sour
 
 ## Validation and boundary
 
-Goal check: no drift against published 0.20.28. Policy conformance: PASS. Initial unit suite: 44/45, matching main. After independent PR #25 merged, the branch was refreshed to base 5551a57b6ef1ff7ce9a33798262e8e9af6aae4c1 and all 51 tests pass. Preserve the repository's original WIP limit (1), checkpoint interval (25 minutes) and active-time budget (30 minutes), rather than implicitly raising them to the new generator defaults. No application data is migrated; historical changes from #25 are inherited, not authored by this adoption. Fresh exact-head publication remains pending.
+Goal check: no drift against published 0.20.28. Policy conformance: PASS. Initial unit suite: 44/45, matching main. After independent PR #25 merged, the branch was refreshed to base 5551a57b6ef1ff7ce9a33798262e8e9af6aae4c1 and all 51 tests pass. The published managed base owns WIP and timing defaults (4 active tickets per workstream, 30-minute checkpoint interval, 120-minute active budget); the validator rejects overriding those standard-owned fields. No application data is migrated; historical changes from #25 are inherited, not authored by this adoption. Fresh exact-head publication remains pending.
 
 ## Participants
 
