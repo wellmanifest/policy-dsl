@@ -3,7 +3,7 @@
 - **ID**: ticket-020
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: VALIDATION
 - **Session execution authorization**: user requested implementation of wellmanifest/policy-dsl#23 follow-ups and autonomous execution (2026-09-14)
 - **Created**: 2026-09-14
 - **Depends on**: ticket-018 (PR #25, merged as `5551a57`)
@@ -22,7 +22,7 @@ PR is rejected with `GOV-MATERIAL-001`.
 
 ## Acceptance criteria
 
-- [ ] AC-01: full unit suite passes, including schema conformance.
+- [x] AC-01: full unit suite passes, including schema conformance (52 tests).
 - [ ] AC-02: `./project/governance-check.sh` passes on the published head.
 
 ## Participants

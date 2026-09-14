@@ -18,7 +18,9 @@ The v2 contracts exist in code and fixtures but not in the published schemas.
 
 ## Actual changes
 
-- Pending the implementation commit.
+- `schemas/sales-offer-catalog.schema.json`, `sales-request.schema.json`, `sales-decision.schema.json`: v2 contracts with versioned `$id`.
+- `tests/test_sales_profile.py`: dependency-free schema subset validator and conformance test.
+- `dsl-manifest.json`: refreshed digests.
 
 ## Blockers
 

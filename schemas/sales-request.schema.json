@@ -1,14 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-request.schema.json",
-  "title": "Subactor Sales Decision Request v1",
-  "description": "Closed input for an inert sales decision. Legacy plan identifiers and public plan codes are accepted during migration.",
+  "$id": "https://wellmanifest.dev/schemas/sales/subactor-sales-request.v2.schema.json",
+  "title": "Subactor Sales Decision Request v2",
+  "description": "Closed input for an inert sales decision. Plan ids, public codes and read-only legacy public codes are accepted.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "plan_id", "promo_code"],
+  "required": [
+    "schema",
+    "plan_id",
+    "promo_code"
+  ],
   "properties": {
     "schema": {
-      "const": "subactor.sales/request/v1"
+      "const": "subactor.sales/request/v2"
     },
     "plan_id": {
       "enum": [
@@ -17,12 +21,17 @@
         "prepaid-actions",
         "on-premise",
         "basic",
+        "pro",
+        "max",
         "operations-plus",
         "twin-plus"
       ]
     },
     "promo_code": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 128
     }
   }
