@@ -36,6 +36,17 @@ v1 `PER_TWIN_MONTH`/`ACCOUNT_MONTH` scope.
 - [x] AC-03: decision matrix and consumer export are regenerated as v2.
 - [ ] AC-04: `./project/governance-check.sh` passes on the published head.
 
+## Publication evidence
+
+- Pull request: `wellmanifest/policy-dsl#25`; required checks `governance / enforce`
+  and `governance / remote lifecycle` pass (the latter after removing the contained
+  orphan branch `ticket/017-close`).
+- Validator dry run `subactor/validator-agent` run `34817387553` on head `08e65d2`:
+  `DRY RUN: would explicitly merge`.
+- The following real dispatch was refused with `BLOCKED_DIRECT_PR_DUPLICATE_EPOCH`
+  because the dry run consumed the dispatch epoch for that head; this record moves
+  the head so the protected validator can run once without dry run.
+
 ## Known limitation
 
 `dsl-manifest.json` still fails the current `wellmanifest/dsl` gate on
