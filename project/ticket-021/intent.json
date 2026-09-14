@@ -1,0 +1,105 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-021",
+  "summary": "Document the sales profile v2 model and HOME offer adoption",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "project/ticket-021/**",
+    "project/TICKETS.md",
+    "profiles/sales/README.md",
+    "profiles/sales/ADOPTION_PL.md",
+    "docs/SALES_POLICY_PROFILE.md",
+    "docs/DOMAIN_VOCABULARY.md",
+    "docs/DOMAIN_VOCABULARY_PL.md",
+    "examples/sales/README.md",
+    "dsl-manifest.json"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    "schemas/**",
+    "tests/**",
+    "profiles/sales/*.json",
+    "profiles/sales/*.py",
+    "profiles/sales/*.policy"
+  ],
+  "stacks": [],
+  "dependsOn": [
+    "ticket-018",
+    "ticket-020"
+  ],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl"
+    ]
+  },
+  "delivery": {
+    "acceptedBaseSha": "9bbd39fad94368ac444ddb050e834c7ad495577c",
+    "targetBranch": "main",
+    "outcome": "Sales profile documentation describes the v2 model: HOME-owned names, prices and entitlements from the locked subactor/offer catalog, Basic/Pro/Max public codes with read-only legacy codes, Basic-only NOCC100, no twin information and no held copy.",
+    "nonGoals": [
+      "No evaluator, schema, data or test change",
+      "No subactor/offer or portal change"
+    ],
+    "complexity": "M",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 7,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Rewrite the sales profile, adoption and example guides for v2 and trim the vocabulary sections that prescribed Operations Plus/Twin Plus labels; bind the changed documentation artifacts in the DSL manifest.",
+      "components": [
+        {
+          "name": "sales-documentation",
+          "paths": [
+            "profiles/sales/README.md",
+            "profiles/sales/ADOPTION_PL.md",
+            "docs/SALES_POLICY_PROFILE.md",
+            "docs/DOMAIN_VOCABULARY.md",
+            "docs/DOMAIN_VOCABULARY_PL.md",
+            "examples/sales/README.md"
+          ]
+        },
+        {
+          "name": "dsl-manifest",
+          "paths": [
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the documentation and manifest digest changes."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "All tests pass, including manifest digest bindings of the documentation artifacts."
+      }
+    ]
+  }
+}

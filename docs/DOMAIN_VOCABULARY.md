@@ -69,16 +69,11 @@ one-to-one, because credits hide the underlying measurement.
 
 ## Product naming
 
-Recommended display names:
+Plan display names, operation counts and prices HOME in `subactor/offer`; the
+current catalog names the plans **Basic**, **Pro** and **Max**. Use
+"operacje agenta" rather than "akcje agenta" and "pakiet operacji" rather than
+"pakiet akcji". The offer does not communicate digital twins.
 
-- `Actions Plus` -> **Operations Plus**;
-- "akcje agenta" -> **operacje agenta**;
-- "pakiet akcji" -> **pakiet operacji**;
-- a plan with zero included operations -> **0 operacji w pakiecie — dokupujesz przez Operations Plus**;
-  keep the machine-readable entitlement `agent_operations_included: 0` and do
-  not use the ambiguous label "Brak".
-
-Compatibility plan identifiers such as `saas-business` and `prepaid-actions`
-can remain unchanged until a separately versioned commerce migration is ready.
-Presentation names and metering field names do not require an immediate SKU or
-URL change.
+Plan identifiers such as `saas-business` and `prepaid-actions` remain stable.
+Public codes are `basic`, `pro` and `max`; `operations-plus` and `twin-plus`
+are accepted only as read-only legacy inputs.

@@ -1,55 +1,61 @@
 # Profil reguł sprzedażowych Subactor
 
-Status: eksperymentalny profil domenowy Policy DSL v1
+Status: eksperymentalny profil domenowy Policy DSL v1 (`SUBACTOR_SALES`, wersja 2)
 
 ## Cel
 
-Profil przenosi kwalifikację promocji, sanitizację kodu, prezentację kodu i
-etykiety pakietów do jednego deterministycznego kontraktu. Backend, frontend i
-warstwa legacy nie powinny implementować osobnych wariantów tej samej reguły.
+Profil przenosi kwalifikację promocji, sanitizację kodu i jego prezentację do
+jednego deterministycznego kontraktu. Backend, frontend i warstwa legacy nie
+powinny implementować osobnych wariantów tej samej reguły.
 
 Źródłami profilu są:
 
-- `subactor-sales.policy` — deklaratywne reguły kwalifikacji, sanitizacji i
-  niejednoznacznej prezentacji;
-- `offer-catalog.json` — lokalna projekcja uprawnień/promo; **ceny publiczne HOME w `subactor/offer`**;
-  nazwy planów wg słownika `subactor/brand`;
+- `subactor-sales.policy` — deklaratywne reguły kwalifikacji i sanitizacji promocji;
+- `offer-catalog.json` — wyłącznie pola należące do profilu: identyfikator planu,
+  kod publiczny, zastane kody publiczne (tylko do odczytu), wymóg karty
+  i kwalifikujące kody promocyjne;
+- `offer-home.lock.json` — przypięty, **aktualny** katalog `subactor/offer`
+  (rewizja i digest). Nazwy planów, ceny, waluty i limity operacji pochodzą
+  wyłącznie z tego katalogu;
 - `reference_engine.py` — inertny evaluator decyzji, bez płatności i bez efektów;
 - `decision-matrix.json` — oczekiwane wyniki dla aktualnych planów;
 - `ADOPTION_PL.md` — migracja backendu, frontendu i legacy PHP.
 
+Profil nie przechowuje polskich etykiet ani informacji o bliźniakach. Oferta
+nie komunikuje już bliźniaków; teksty interfejsu należą do `subactor/offer`
+i `subactor/brand`.
+
 ## Aktualna reguła NOCC100
 
-Kod `NOCC100` jest kwalifikowany wyłącznie dla planu o zastanym identyfikatorze
-`saas-start` i publicznym kodzie `basic`.
+Kod `NOCC100` jest kwalifikowany wyłącznie dla planu `saas-start` (kod
+publiczny `basic`).
 
 | Plan | NOCC100 | Kod po normalizacji | Prezentacja |
 | --- | --- | --- | --- |
 | `saas-start` / Basic | `ELIGIBLE` | `NOCC100` | `VISIBLE` |
-| `saas-business` / Operations Plus | `INELIGIBLE` | pusty | `HIDDEN` |
-| `prepaid-actions` / Twin Plus | `INELIGIBLE` | pusty | `HIDDEN` |
+| `saas-business` / Pro | `INELIGIBLE` | pusty | `HIDDEN` |
+| `prepaid-actions` / Max | `INELIGIBLE` | pusty | `HIDDEN` |
 | `on-premise` | `INELIGIBLE` | pusty | `HIDDEN` |
 
-Wejście i wyjście są zamknięte przez `schemas/sales-request.schema.json` oraz
-`schemas/sales-decision.schema.json`. Policy DSL zwraca decyzję o kwalifikacji.
-Nie obciąża karty, nie modyfikuje
-subskrypcji i nie uruchamia promocji. Backend płatności pozostaje jedyną
-warstwą mogącą zastosować efekt po sprawdzeniu decyzji.
+Wejście i wyjście są zamknięte przez `schemas/sales-request.schema.json`
+(`subactor.sales/request/v2`) oraz `schemas/sales-decision.schema.json`
+(`subactor.sales/decision/v2`). Policy DSL zwraca decyzję o kwalifikacji. Nie
+obciąża karty, nie modyfikuje subskrypcji i nie uruchamia promocji. Backend
+płatności pozostaje jedyną warstwą mogącą zastosować efekt po sprawdzeniu decyzji.
 
-## Odwzorowanie aktualnej implementacji
+## Kody planów
 
-Profil zachowuje obecną semantykę trzech warstw, ale usuwa trzy niezależne
-źródła reguły:
+| Plan | Kod publiczny | Zastany kod (tylko odczyt) |
+| --- | --- | --- |
+| `saas-start` | `basic` | — |
+| `saas-business` | `pro` | `operations-plus` |
+| `prepaid-actions` | `max` | `twin-plus` |
+| `on-premise` | `on-premise` | — |
 
-| Obecne miejsce | Odpowiednik w decyzji profilu |
-| --- | --- |
-| `PromoEngine::apply(...)` i warunek planu | `promotion.eligibility`, `normalized_code` oraz dyrektywa `FORBID APPLY_PROMOTION` |
-| sanitizacja kodu w frontendzie | `promotion.normalized_code` i `promotion.presentation` |
-| czyszczenie `?promo=NOCC100` w legacy PHP | ten sam `normalized_code = ""` i `presentation = "HIDDEN"` |
-| opis pakietów i liczników w UI | `offer-catalog.json` oraz `metering` w decyzji |
-
-Backend pozostaje autorytatywny. Frontend i legacy nie powinny ponownie
-obliczać kwalifikacji na podstawie identyfikatora planu.
+Decyzja zawsze zwraca aktualny kod publiczny, nazwę z HOME
+(`offer.display_name`), typ handlowy (`offer.commercial_type`), liczbę operacji
+i okres rozliczenia (`metering`) oraz powiązanie z katalogiem HOME
+(`home.offer_ref`, `home.digest`).
 
 ## Semantyka zakazu promocji
 
@@ -62,25 +68,19 @@ Oznacza to:
 - wybrany plan i zwykły checkout pozostają dostępne;
 - decyzja nadal nie jest tokenem autoryzacji płatności.
 
-## Jedna decyzja i rozdzielone odpowiedzialności
-
-Katalog jest źródłem danych o ofercie i limitach. Polityka jest źródłem reguł
-kwalifikacji i zakazów. Evaluator odrzuca rozjazd ich zamkniętych kontraktów i
-emituje jeden wynik dla wszystkich adapterów.
-
-Docelowy przepływ:
+## Przepływ
 
 ```text
 surowe plan_id + promo_code
           |
           v
 Sales Decision Profile
-  - normalizacja
-  - katalog planów
+  - normalizacja kodu
+  - katalog profilu + zablokowany katalog HOME
   - Policy DSL
           |
           v
-subactor.sales/decision/v1
+subactor.sales/decision/v2
      |          |          |
   backend    frontend   legacy PHP
   waliduje   renderuje   renderuje
@@ -96,37 +96,20 @@ Obowiązki adapterów:
   `normalized_code` oraz `presentation`; nie może mieć własnej listy planów;
 - legacy PHP MUST wywoływać ten sam kontrakt albo adapter wygenerowany z tej
   samej polityki i katalogu; `decision-matrix.json` jest fixturem regresyjnym,
-  nie źródłem autoryzacji; legacy nie może powielać warunku `plan !=`;
-- wszystkie warstwy MUST logować `reason` i wersję dokumentu polityki.
-
-## Migracja nazewnictwa
-
-Kanoniczna jednostka handlowa to `AGENT_OPERATION` — „operacja agenta”. Nazwa
-`Actions Plus` pozostaje aliasem historycznym; nazwa publiczna profilu to
-`Operations Plus`. Pole `actions_included` jest aliasem odczytu dla
-`agent_operations_included`.
-
-Twin Plus ma zero własnych operacji, ponieważ dodaje aktywnego bliźniaka.
-Interfejs nie pokazuje „Brak”, tylko „0 operacji w pakiecie — dokupujesz
-przez Operations Plus”.
+  nie źródłem autoryzacji;
+- wszystkie warstwy MUST logować `reason`, wersję dokumentu polityki
+  i `home.digest`.
 
 ## Uruchomienie
 
 ```bash
-python3 profiles/sales/reference_engine.py decide \
-  --plan-id saas-start \
-  --promo-code NOCC100
-
-python3 profiles/sales/reference_engine.py matrix
-python3 profiles/sales/reference_engine.py matrix \
-  --check profiles/sales/decision-matrix.json
-python3 profiles/sales/reference_engine.py compare-www-plans \
-  --plans examples/sales/fixtures/www-plans.facade.json
-# or against a live portal checkout:
+python3 profiles/sales/reference_engine.py decide --plan-id pro --promo-code NOCC100
+python3 profiles/sales/reference_engine.py matrix --check profiles/sales/decision-matrix.json
+python3 profiles/sales/reference_engine.py compare-offer-home --home-root /path/to/subactor/offer
 python3 profiles/sales/reference_engine.py compare-www-plans \
   --plans /path/to/www-sub-actor/src/php_app/config/plans.json
 ```
 
-CI pins the thin facade at `examples/sales/fixtures/www-plans.facade.json`
-(`profiles/sales/www-plans.lock.json`). Amounts ADOPT `subactor/offer`; this
-profile must not become a second price SSOT.
+`compare-offer-home --home-root` odrzuca przypięty katalog, który nie jest
+jedyną aktualną wersją oferty. Zmiana cen, nazw lub limitów zaczyna się
+w `subactor/offer`; ten profil tylko przepina lock i odświeża macierz.

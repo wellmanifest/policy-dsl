@@ -38,41 +38,22 @@ Każdy efekt przechodzi przez niezależną granicę autoryzacji.
 
 ## Nazwy produktowe
 
-Rekomendowane nazwy publiczne:
+Nazwy planów, liczby operacji i ceny HOME w `subactor/offer`; aktualny katalog
+nazywa plany **Basic**, **Pro** i **Max**. Zalecane określenia:
 
-- `Actions Plus` -> **Operations Plus**;
 - „akcje agenta” -> **operacje agenta**;
 - „pakiet akcji” -> **pakiet operacji**;
 - „limit akcji” -> **limit operacji agenta**.
 
-Identyfikatory techniczne mogą pozostać przejściowo bez zmian, jeżeli są już
-częścią API, bazy danych lub rozliczeń. Warstwa kompatybilności powinna jednak
-mapować je na jednoznaczne kody publiczne:
+Oferta nie komunikuje bliźniaków. Identyfikatory techniczne pozostają bez zmian,
+a kody publiczne mapują je jednoznacznie:
 
-| Identyfikator zastany | Kod publiczny | Znaczenie |
+| Identyfikator planu | Kod publiczny | Zastany kod (tylko odczyt) |
 | --- | --- | --- |
-| `saas-start` | `basic` | Plan bazowy |
-| `saas-business` | `operations-plus` | Dodatek operacji |
-| `prepaid-actions` | `twin-plus` | Dodatek aktywnego bliźniaka |
-| `actions_included` | `agent_operations_included` | Liczba operacji w pakiecie |
-
-Nowy kod zapisuje wyłącznie nazwy kanoniczne. Odczyt aliasów zastanych MAY być
-utrzymany przez jeden okres migracyjny.
-
-## Etykieta Twin Plus
-
-Wartość `agent_operations_included: 0` jest prawidłowa, ale tekst „Brak” jest
-niejednoznaczny: może sugerować brak możliwości wykonywania operacji. Zalecana etykieta to:
-
-```text
-0 operacji w pakiecie — dokupujesz przez Operations Plus
-```
-
-Krótsza wersja do wiersza podsumowania:
-
-```text
-1 aktywny bliźniak • 0 operacji w pakiecie
-```
+| `saas-start` | `basic` | — |
+| `saas-business` | `pro` | `operations-plus` |
+| `prepaid-actions` | `max` | `twin-plus` |
+| `actions_included` | `agent_operations_included` | — |
 
 ## Nazwy alternatywne i ich zakres
 
