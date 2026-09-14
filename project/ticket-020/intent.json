@@ -1,0 +1,101 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-020",
+  "summary": "Publish sales catalog, request and decision v2 JSON Schemas",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P2",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "project/ticket-020/**",
+    "project/ticket-018/**",
+    "project/TICKETS.md",
+    "schemas/sales-offer-catalog.schema.json",
+    "schemas/sales-request.schema.json",
+    "schemas/sales-decision.schema.json",
+    "tests/test_sales_profile.py",
+    "dsl-manifest.json"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    ".governance/**",
+    "profiles/**",
+    "docs/**"
+  ],
+  "stacks": [],
+  "dependsOn": [
+    "ticket-018"
+  ],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "placement": {
+    "home": "wellmanifest",
+    "shape": "domain_pack",
+    "runtimeOwner": "wellmanifest",
+    "adopt": [
+      "wellmanifest/dsl"
+    ]
+  },
+  "delivery": {
+    "acceptedBaseSha": "5551a57b6ef1ff7ce9a33798262e8e9af6aae4c1",
+    "targetBranch": "main",
+    "outcome": "The closed JSON Schemas describe subactor.sales catalog/v2, request/v2 and decision/v2, and a dependency-free test validates the catalog, requests and every matrix decision against them.",
+    "nonGoals": [
+      "No evaluator or data change",
+      "No documentation update (follow-up ticket)",
+      "No change to consumers"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Replace the v1 schemas with versioned $id v2 schemas matching the ticket-018 contracts; validate with an in-test JSON Schema subset validator so the pack stays dependency-free.",
+      "components": [
+        {
+          "name": "sales-contracts",
+          "paths": [
+            "schemas/sales-offer-catalog.schema.json",
+            "schemas/sales-request.schema.json",
+            "schemas/sales-decision.schema.json",
+            "tests/test_sales_profile.py"
+          ]
+        },
+        {
+          "name": "dsl-manifest",
+          "paths": [
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [
+        "schemas/sales-*.schema.json publish catalog/v2, request/v2 and decision/v2 under versioned $id values"
+      ],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the schema, test and manifest digest changes."
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 -m unittest discover -s tests -p 'test_*.py'"
+        ],
+        "evidence": "All tests pass, including schema conformance of catalog, requests and matrix decisions."
+      }
+    ]
+  }
+}
