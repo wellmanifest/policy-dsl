@@ -23,7 +23,7 @@
       ],
       "workstream": "integration"
     },
-    "maxActiveTicketsPerWorkstream": 4,
+    "maxActiveTicketsPerWorkstream": 1,
     "mode": "workstreams",
     "rejectActiveScopeOverlap": true,
     "workstreams": {
@@ -103,7 +103,7 @@
       "M",
       "L"
     ],
-    "checkpointMinutes": 30,
+    "checkpointMinutes": 25,
     "dependencyManifestPaths": [
       "package.json",
       "pyproject.toml",
@@ -111,7 +111,7 @@
       "Cargo.toml",
       "pom.xml"
     ],
-    "maxActiveMinutes": 120,
+    "maxActiveMinutes": 30,
     "maxAffectedComponents": 5,
     "maxImplementationFiles": 15,
     "maxPublicInterfaceChanges": 3,
