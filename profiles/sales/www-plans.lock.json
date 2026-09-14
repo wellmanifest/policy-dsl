@@ -3,13 +3,12 @@
   "facade": {
     "repository": "https://github.com/subactor/www-sub-actor",
     "plans_path": "src/php_app/config/plans.json",
-    "offer_pin": "offer://subactor/offer/subactor-cloud/v1",
-    "notes": "CI fixture projects catalog plan ids only. List prices HOME in subactor/offer; sales catalog mirrors amounts; portal plans.json is a runtime facade."
+    "offer_pin": "offer://subactor/offer/subactor-cloud/v2",
+    "notes": "CI fixture projects the portal facade for catalog plan ids. Prices, names and operation entitlements HOME in subactor/offer; the portal plans.json is a runtime facade compared with the locked HOME catalog."
   },
   "fixture_path": "examples/sales/fixtures/www-plans.facade.json",
   "compared_fields": [
     "actions_included",
-    "active_twins_included",
     "name",
     "amount_monthly_minor",
     "amount_annual_minor",

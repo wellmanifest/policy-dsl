@@ -178,7 +178,7 @@
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:8e51c04c7a0f3209f1376abb77598f58c2f86a5d1ef7093ea0b49ae2bfb94e8b"
+      "digest": "sha256:424fcc7f403fa192df5f18211f7f007b4e9b7a3ae010421de4bf9e04daf05770"
     },
     {
       "path": "tests/test_manifest.py",
@@ -188,22 +188,22 @@
     {
       "path": "profiles/sales/subactor-sales.policy",
       "role": "example",
-      "digest": "sha256:3fa338353f839f448e3484919570afa33260f0e9ef25426db4b9206a891d16a2"
+      "digest": "sha256:6fdf21411c6617c2b0c17b3a5877df77c05830400f47464c9e3a4be71d765ce3"
     },
     {
       "path": "profiles/sales/offer-catalog.json",
       "role": "example",
-      "digest": "sha256:ea64e73893efe7f00e48c1c7e68ebd80ee82129120f51145844e9e8e50f56ba0"
+      "digest": "sha256:7bb92ec77390613ce6bfa16634c3bfe6f978fcd81dbe7d9cd4069e0077c15c5b"
     },
     {
       "path": "profiles/sales/decision-matrix.json",
       "role": "example",
-      "digest": "sha256:a30e906acb8f1d62d35c8294047c4309aa2d6ca46957c430da53940ad048a62f"
+      "digest": "sha256:82d0bb3591979f39ab188981cf409d28bc479db79bdcd06828e7387b2ac03c04"
     },
     {
       "path": "profiles/sales/reference_engine.py",
       "role": "parser-contract",
-      "digest": "sha256:136f13e59d5d3f3e1befb5dcd0852f5f9a6b2d4e3233b4c2b28c7ff07e1c9191"
+      "digest": "sha256:c590491df22dc71c337c4a36e4c4304df428e0674941d3f9aa423393163d9bf1"
     },
     {
       "path": "profiles/sales/README.md",
@@ -236,34 +236,29 @@
       "digest": "sha256:e95bde3a6284e9ead0437014e478b8d53a37e87562cb30807a23c12c05104461"
     },
     {
-      "path": "examples/sales/decisions/matrix.v1.json",
+      "path": "examples/sales/decisions/matrix.v2.json",
       "role": "example",
-      "digest": "sha256:a30e906acb8f1d62d35c8294047c4309aa2d6ca46957c430da53940ad048a62f"
-    },
-    {
-      "path": "examples/sales/subactor-pricing-section.html",
-      "role": "example",
-      "digest": "sha256:2ef4a99d9ae5832c99219a21ef1a40d1aedaa1668d4964dcf40b7025d44752c6"
+      "digest": "sha256:82d0bb3591979f39ab188981cf409d28bc479db79bdcd06828e7387b2ac03c04"
     },
     {
       "path": "profiles/sales/offer-home.lock.json",
       "role": "profile",
-      "digest": "sha256:5dfec8efc543d13b3285aa8cf4d558f9242ef6d00b8d99b2c120226277366940"
+      "digest": "sha256:609e6e7b23597124c5c439046399f2429b4e3b720ff0d900afb44130c94a6ca0"
     },
     {
       "path": "profiles/sales/www-plans.lock.json",
       "role": "profile",
-      "digest": "sha256:bd1e0a0ac699a6c10a61aff4f97c39ded1cf95e27ddd8d967a99ddb3e1481d63"
+      "digest": "sha256:422cdece06bfe66772ba6259f8652acc5ca4763389bb8d602c5a5c48ba4e7857"
     },
     {
-      "path": "examples/sales/fixtures/subactor-cloud-v1.offer.json",
+      "path": "examples/sales/fixtures/subactor-cloud-v2.offer.json",
       "role": "example",
-      "digest": "sha256:95c3392d3b677092240eb9b7781c70eb079d30e2c7b84eac337dd3de8a03a2dc"
+      "digest": "sha256:d32984e08d545646d1504040e96787c19cb8ec02a4416eaafad03ccc193a6775"
     },
     {
       "path": "examples/sales/fixtures/www-plans.facade.json",
       "role": "example",
-      "digest": "sha256:59f8baeb5355b9c7a0517245089a330b034e501486abd4c21db725729fc9e478"
+      "digest": "sha256:24bb667eec6bb05e6c87ca0b8899d5ec05ea162e0d551f3565a910db46bc5fb7"
     },
     {
       "path": "profiles/llm-credential/subactor-llm-credential.policy",
