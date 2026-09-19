@@ -2,8 +2,8 @@
 
 - **ID**: ticket-021
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Session execution authorization**: user requested implementation of wellmanifest/policy-dsl#23 follow-ups and autonomous continuation (2026-09-14)
 - **Created**: 2026-09-14
 - **Depends on**: ticket-018 (PR #25), ticket-020 (PR #27)

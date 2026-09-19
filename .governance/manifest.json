@@ -59,7 +59,9 @@
           "project/**",
           "scripts/install-agent-hosts.sh",
           "scripts/runtime.sh",
-          "worktree-guard.yaml"
+          "wellmanifest_governance.py",
+          "worktree-guard.yaml",
+          ".subactor/**"
         ]
       },
       "infrastructure": {
@@ -194,7 +196,7 @@
   "stacks": [],
   "standard": {
     "id": "wellmanifest/new-project",
-    "version": "0.20.28"
+    "version": "0.20.32"
   },
   "ticket": {
     "activeStatuses": [
