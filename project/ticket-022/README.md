@@ -2,8 +2,8 @@
 
 - **ID**: ticket-022
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
-- **Workflow state**: VALIDATION
+- **Status**: DONE
+- **Workflow state**: DONE
 - **Session execution authorization**: user requested autonomous continuation of the wellmanifest/policy-dsl#23 follow-ups (2026-09-14)
 - **Created**: 2026-09-14
 - **Depends on**: ticket-021 (PR #28)
@@ -18,4 +18,4 @@ sentence with the v2 summary.
 ## Acceptance criteria
 
 - [x] AC-01: unit suite passes.
-- [ ] AC-02: `./project/governance-check.sh` passes on the published head.
+- [x] AC-02: `./project/governance-check.sh` passes on the published head.

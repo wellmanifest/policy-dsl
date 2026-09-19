@@ -14,3 +14,6 @@ dist/
 /.subactor/receipts/
 /.subactor/cache/
 /.subactor/snapshots/
+.planfile/
+.planfile_analysis/
+.github/workflows/planfile-github-sync.yml
