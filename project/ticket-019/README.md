@@ -2,7 +2,7 @@
 
 - **ID**: ticket-019
 - **Owner**: unresolved:human
-- **Status**: IN_PROGRESS
+- **Status**: DONE
 - **Workflow state**: PUBLICATION
 - **Created**: 2026-09-14
 
