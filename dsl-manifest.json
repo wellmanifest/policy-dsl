@@ -311,14 +311,13 @@
     "authoritySchema": null
   },
   "llm": {
-    "mode": "output",
+    "mode": "none",
     "requestSchemas": [],
-    "responseSchemas": [
-      "schemas/policy-ir.schema.json"
-    ],
+    "responseSchemas": [],
     "naturalLanguage": "forbidden",
     "sourceSchema": null,
-    "modelAuthority": "propose-only",
+    "decisionProtocol": "none",
+    "modelAuthority": "none",
     "strict": true
   },
   "documentation": {
