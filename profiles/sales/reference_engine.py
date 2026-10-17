@@ -749,7 +749,7 @@ def load_home_offer(home_catalog_path: Path | None = None) -> dict[str, Any]:
         if plan["plan_id"] in by_id:
             raise SalesPolicyError(f"duplicate HOME plan_id {plan['plan_id']}")
         for field in ("canonical_display_name", "commercial_type", "unit", "currency"):
-            _require_string(plan.get(field), f"HOME {plan['plan_id']}.{field}")
+            _require_string(plan.get(field), f"HOME {plan['plan_id']}.{field}", nullable=False)
         _require_optional_non_negative_integer(
             plan.get("agent_operations_included"), f"HOME {plan['plan_id']}.agent_operations_included"
         )

@@ -203,7 +203,7 @@
     {
       "path": "profiles/sales/reference_engine.py",
       "role": "parser-contract",
-      "digest": "sha256:c590491df22dc71c337c4a36e4c4304df428e0674941d3f9aa423393163d9bf1"
+      "digest": "sha256:6ef014629cb46b70f8b227d5b6ff26b5a64d37cae287ec476a11208dc52f79e8"
     },
     {
       "path": "profiles/sales/README.md",
