@@ -1,0 +1,84 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-029",
+  "summary": "Compact sales policy profile with TEMPLATE and verify zero compaction findings",
+  "workstream": "integration",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "project/ticket-029/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "dsl-manifest.json",
+    "profiles/sales/subactor-sales.policy",
+    "tests/test_sales_profile.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "345b3a6513661aaf5954860b7e752daa826abd4f",
+    "targetBranch": "main",
+    "outcome": "Compact profiles/sales/subactor-sales.policy with TEMPLATE HIDE_INELIGIBLE_PROMO, sync dsl-manifest.json, and assert zero compaction findings across all reference policy profiles.",
+    "nonGoals": [
+      "No changes to closed Policy IR v1 or sales decision schemas"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 15,
+    "budgets": {
+      "maxImplementationFiles": 3,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Extract TEMPLATE HIDE_INELIGIBLE_PROMO in subactor-sales.policy and add regression test asserting zero compaction findings across all reference profiles.",
+      "components": [
+        {
+          "name": "sales-profile-compaction",
+          "paths": [
+            "profiles/sales/subactor-sales.policy",
+            "tests/test_sales_profile.py",
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket branch commit or close the pull request before merge."
+    },
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "pytest -q"
+        ],
+        "evidence": "project/ticket-029/README.md"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "./project/governance-check.sh"
+        ],
+        "evidence": "project/ticket-029/README.md"
+      }
+    ],
+    "runtimeDependencies": []
+  }
+}

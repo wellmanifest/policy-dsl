@@ -457,6 +457,19 @@ class SubactorSalesProfileTest(unittest.TestCase):
             self.skipTest("subactor/offer checkout not available on this host")
         SALES.compare_offer_home(home_root=home_root)
 
+    def test_all_reference_profiles_have_zero_compaction_findings(self):
+        for rel_path in (
+            "examples/hosting/subactor-production-server.policy",
+            "examples/hosting/subactor-rpi5.policy",
+            "profiles/llm-credential/subactor-llm-credential.policy",
+            "profiles/sales/subactor-sales.policy",
+        ):
+            with self.subTest(profile=rel_path):
+                source = (ROOT / rel_path).read_text(encoding="utf-8")
+                audit = SALES.CHECK.audit_compaction(source)
+                self.assertEqual(0, audit["stats"]["findings"], audit["findings"])
+
 
 if __name__ == "__main__":
     unittest.main()
+

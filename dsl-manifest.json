@@ -178,7 +178,7 @@
     {
       "path": "tests/test_sales_profile.py",
       "role": "parser-contract",
-      "digest": "sha256:4acaf53937b46b9867a5314135cd69247c4450d086fc494fe1516ae8695f788b"
+      "digest": "sha256:39716b59349a760c7684a137e054137f4c6bf45066af6cb3f8912466c1202d01"
     },
     {
       "path": "tests/test_manifest.py",
@@ -188,7 +188,7 @@
     {
       "path": "profiles/sales/subactor-sales.policy",
       "role": "example",
-      "digest": "sha256:6fdf21411c6617c2b0c17b3a5877df77c05830400f47464c9e3a4be71d765ce3"
+      "digest": "sha256:93f0ac1f9c0ebacd539d2f5cddcec16e090426aa2510260cf7669ae22f2dbe67"
     },
     {
       "path": "profiles/sales/offer-catalog.json",
