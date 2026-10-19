@@ -43,12 +43,12 @@
     {
       "path": "spec/POLICY_DSL.md",
       "role": "normative-source",
-      "digest": "sha256:8c258ff5c5bc7993459971765c74bf24f3249c472e2f4c85d231c84b30fc7791"
+      "digest": "sha256:c02c3550eac3967f5ecb37bd200240dd035f6696534585190afeb7d687e73320"
     },
     {
       "path": "spec/policy-dsl.ebnf",
       "role": "normative-source",
-      "digest": "sha256:78423cac9bd9172006fd292feeb68bacd4586ae5ebf89299e2c05a58643bc982"
+      "digest": "sha256:9568fb3271933e595b8b559865cd66a1b54b5c8370c23a6683eef115bfb4d005"
     },
     {
       "path": "spec/policy-dsl-candidate.v1.gbnf",
@@ -63,12 +63,12 @@
     {
       "path": "tests/policy_dsl_check.py",
       "role": "parser-contract",
-      "digest": "sha256:9688481337292397f4453c4f22954832cb4fff4ed6976e5c0f51924a6bd20d70"
+      "digest": "sha256:1178b637e653b6952e2a6d411471d67644a9509e2480e2afa4ccc9a57de1baee"
     },
     {
       "path": "tests/test_policy_dsl.py",
       "role": "parser-contract",
-      "digest": "sha256:3f3e93c13113f86f51689269d4bb1e6d7cf52e100914ccd908a7e01e78776176"
+      "digest": "sha256:ae01a073612c7e30cf83cfed4a32397dc0cc35cc80327be0566355adbea11ce8"
     },
     {
       "path": "examples/valid/contributing.policy",
@@ -289,6 +289,11 @@
       "path": "examples/invalid/unclassified-dsl-fence.md",
       "role": "example",
       "digest": "sha256:408b46b25165fd5fa0fb56920b39599135473fc2a710b020c444291c3a0048d8"
+    },
+    {
+      "path": "docs/POLICY_COMPACTION_ARCHITECTURE.md",
+      "role": "documentation",
+      "digest": "sha256:26aceeeb6eabf901317ee3b83a20eda2f805e96dd1b1c09a095c69b1793c8d3e"
     }
   ],
   "namespaces": [

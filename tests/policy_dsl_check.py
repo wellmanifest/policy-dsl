@@ -102,7 +102,10 @@ def statements(source: str) -> list[Statement]:
                 emit()
             continue
         indented = raw[:1].isspace()
-        if buffer and square == 0 and round_ == 0 and continuation and not indented:
+        block_keyword = line == "END" or line.startswith(
+            ("RULE ", "DO ", "FORBID ", "ASSERT ", "NEXT ", "STATE ", "STATES ", "TRANSITION ", "TEMPLATE ", "SCOPE ")
+        )
+        if buffer and square == 0 and round_ == 0 and continuation and (not indented or block_keyword):
             emit()
         # Shell syntax outside a quoted literal violates the inert boundary.
         unquoted = re.sub(r'"(?:\\.|[^"\\])*"', '""', line)
@@ -168,7 +171,18 @@ def extract_markdown(source: str) -> str:
     selected: list[str] = []
     binding_start = re.compile(r"^" + SYMBOL + r"\s+(?:=|IN)\s+")
     schema_line = re.compile(r'^SCHEMA\s+"([^"]*)"$')
-    policy_starts = ("RULE ", "STATE ", "TRANSITION ", "ENV_FILE ", "VARIABLE ", "SECRET ", "ASSERT ")
+    policy_starts = (
+        "RULE ",
+        "STATE ",
+        "STATES ",
+        "TRANSITION ",
+        "TEMPLATE ",
+        "SCOPE ",
+        "ENV_FILE ",
+        "VARIABLE ",
+        "SECRET ",
+        "ASSERT ",
+    )
     for block, opened in blocks:
         significant = [_strip_comment(line).strip() for line in block.splitlines()]
         significant = [line for line in significant if line]
@@ -409,10 +423,23 @@ def _quoted(value: str, line: int) -> str:
     return parsed
 
 
+def _parse_symbol_list(text: str, line: int) -> list[str]:
+    expr = parse_expression(text, line)
+    if expr.get("node") != "list" or not expr.get("items"):
+        raise PolicyError("POLICY-SYNTAX-001", "expected non-empty state symbol list", line)
+    names: list[str] = []
+    for item in expr["items"]:
+        if item.get("node") != "symbol" or not re.fullmatch(SYMBOL, item.get("name", "")):
+            raise PolicyError("POLICY-SYNTAX-001", "state list items must be valid symbols", line)
+        names.append(item["name"])
+    return names
+
+
 class PolicyParser:
     def __init__(self, source: str):
         self.items = statements(source)
         self.index = 0
+        self.templates: dict[str, dict[str, Any]] = {}
 
     @property
     def current(self) -> Statement | None:
@@ -477,8 +504,14 @@ class PolicyParser:
                 if not match:
                     raise PolicyError("POLICY-SYNTAX-001", "invalid STATE", item.line)
                 result["states"].append(match.group(1))
+            elif text.startswith("STATES "):
+                result["states"].extend(self.parse_states())
             elif text.startswith("TRANSITION "):
-                result["transitions"].append(self.parse_transition())
+                result["transitions"].extend(self.parse_transitions())
+            elif text.startswith("TEMPLATE "):
+                self.parse_template()
+            elif text.startswith("SCOPE "):
+                self.parse_scope(result)
             elif text.startswith("ASSERT "):
                 item = self.take()
                 result["assertions"].append(parse_expression(item.text[7:], item.line))
@@ -520,15 +553,121 @@ class PolicyParser:
             raise PolicyError("POLICY-SYNTAX-001", "unknown top-level statement", item.line)
         return {"name": match.group(1), "operator": match.group(2), "value": parse_condition(match.group(3), item.line)}
 
-    def parse_transition(self) -> dict[str, Any]:
+    def parse_states(self) -> list[str]:
         item = self.take()
-        match = re.fullmatch(r"TRANSITION (" + SYMBOL + r") -> (" + SYMBOL + r")(?: WHEN (.+))?", item.text)
+        match = re.fullmatch(r"STATES (\[.+\])", item.text)
         if not match:
-            raise PolicyError("POLICY-SYNTAX-001", "invalid TRANSITION", item.line)
-        condition = parse_condition(match.group(3), item.line) if match.group(3) else None
-        return {"from": match.group(1), "to": match.group(2), "condition": condition}
+            raise PolicyError("POLICY-SYNTAX-001", "invalid STATES list", item.line)
+        return _parse_symbol_list(match.group(1), item.line)
 
-    def parse_rule(self) -> dict[str, Any]:
+    def parse_transitions(self, scope_guard: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        item = self.take()
+        list_match = re.fullmatch(r"TRANSITION (\[.+\]) -> (" + SYMBOL + r")(?: WHEN (.+))?", item.text)
+        if list_match:
+            origins = _parse_symbol_list(list_match.group(1), item.line)
+            target = list_match.group(2)
+            raw_condition = list_match.group(3)
+        else:
+            match = re.fullmatch(r"TRANSITION (" + SYMBOL + r") -> (" + SYMBOL + r")(?: WHEN (.+))?", item.text)
+            if not match:
+                raise PolicyError("POLICY-SYNTAX-001", "invalid TRANSITION", item.line)
+            origins = [match.group(1)]
+            target = match.group(2)
+            raw_condition = match.group(3)
+        condition = parse_condition(raw_condition, item.line) if raw_condition else None
+        if scope_guard is not None:
+            condition = (
+                scope_guard
+                if condition is None
+                else {"node": "binary", "operator": "AND", "left": scope_guard, "right": condition}
+            )
+        return [{"from": origin, "to": target, "condition": condition} for origin in origins]
+
+    def _apply_template_to_target(self, target: dict[str, Any], action: dict[str, Any], line: int) -> None:
+        payload = action.get("payload")
+        if action.get("guard") is not None or not isinstance(payload, dict) or payload.get("node") != "symbol":
+            raise PolicyError("POLICY-SYNTAX-001", "APPLY_TEMPLATE requires a single template identifier without WHEN", line)
+        template_id = payload["name"]
+        template = self.templates.get(template_id)
+        if template is None:
+            raise PolicyError("POLICY-SEMANTIC-001", f"unknown template {template_id}", line)
+        target["actions"].extend(dict(item) for item in template["actions"])
+        target["forbidden"].extend(dict(item) for item in template["forbidden"])
+        target["assertions"].extend(dict(item) for item in template["assertions"])
+        if template["next"] and not target["next"]:
+            target["next"] = [dict(item) for item in template["next"]]
+
+    def _collect_directives(self, target: dict[str, Any]) -> None:
+        while self.current is not None:
+            item = self.current
+            if item.text.startswith("DO "):
+                self.take()
+                action = parse_action(item.text[3:], item.line)
+                if action["opcode"] == "APPLY_TEMPLATE":
+                    self._apply_template_to_target(target, action, item.line)
+                else:
+                    target["actions"].append(action)
+            elif item.text.startswith("FORBID "):
+                self.take()
+                target["forbidden"].append(parse_action(item.text[7:], item.line))
+            elif item.text.startswith("ASSERT "):
+                self.take()
+                target["assertions"].append(parse_expression(item.text[7:], item.line))
+            elif item.text.startswith("NEXT "):
+                self.take()
+                target["next"] = parse_next(item.text[5:], item.line)
+                break
+            else:
+                break
+
+    def parse_template(self) -> None:
+        header = self.take()
+        match = re.fullmatch(r"TEMPLATE (" + STABLE_ID + r")", header.text)
+        if not match:
+            raise PolicyError("POLICY-SYNTAX-001", "invalid TEMPLATE header", header.line)
+        template_id = match.group(1)
+        if template_id in self.templates:
+            raise PolicyError("POLICY-SEMANTIC-001", f"duplicate template {template_id}", header.line)
+        bundle: dict[str, Any] = {"actions": [], "forbidden": [], "assertions": [], "next": []}
+        self._collect_directives(bundle)
+        if self.current is None or self.current.text != "END":
+            line = self.current.line if self.current is not None else header.line
+            raise PolicyError("POLICY-SYNTAX-001", "TEMPLATE requires closing END", line)
+        self.take()
+        if not (bundle["actions"] or bundle["forbidden"] or bundle["assertions"] or bundle["next"]):
+            raise PolicyError("POLICY-SEMANTIC-001", f"empty template {template_id}", header.line)
+        self.templates[template_id] = bundle
+
+    def parse_scope(self, result: dict[str, Any], outer_guard: dict[str, Any] | None = None) -> None:
+        header = self.take()
+        match = re.fullmatch(r"SCOPE WHEN (.+)", header.text)
+        if not match:
+            raise PolicyError("POLICY-SYNTAX-001", "invalid SCOPE WHEN header", header.line)
+        guard = parse_condition(match.group(1), header.line)
+        if outer_guard is not None:
+            guard = {"node": "binary", "operator": "AND", "left": outer_guard, "right": guard}
+        count = 0
+        while self.current is not None and self.current.text != "END":
+            text = self.current.text
+            if text.startswith("RULE "):
+                result["rules"].append(self.parse_rule(scope_guard=guard))
+                count += 1
+            elif text.startswith("TRANSITION "):
+                result["transitions"].extend(self.parse_transitions(scope_guard=guard))
+                count += 1
+            elif text.startswith("SCOPE "):
+                self.parse_scope(result, outer_guard=guard)
+                count += 1
+            else:
+                raise PolicyError("POLICY-SYNTAX-001", "SCOPE block accepts only RULE, TRANSITION, or nested SCOPE", self.current.line)
+        if self.current is None or self.current.text != "END":
+            line = self.current.line if self.current is not None else header.line
+            raise PolicyError("POLICY-SYNTAX-001", "SCOPE requires closing END", line)
+        self.take()
+        if count == 0:
+            raise PolicyError("POLICY-SEMANTIC-001", "empty SCOPE block", header.line)
+
+    def parse_rule(self, scope_guard: dict[str, Any] | None = None) -> dict[str, Any]:
         header = self.take()
         match = re.fullmatch(r"RULE (" + STABLE_ID + r")(?: TYPE (REQUIRED|FORBIDDEN))?", header.text)
         if not match:
@@ -536,32 +675,19 @@ class PolicyParser:
         if not self.current or not self.current.text.startswith("WHEN "):
             raise PolicyError("POLICY-SYNTAX-001", "RULE requires WHEN", header.line)
         condition_item = self.take()
-        rule = {
+        condition = parse_condition(condition_item.text[5:], condition_item.line)
+        if scope_guard is not None:
+            condition = {"node": "binary", "operator": "AND", "left": scope_guard, "right": condition}
+        rule: dict[str, Any] = {
             "id": match.group(1),
             "type": match.group(2) or "REQUIRED",
-            "condition": parse_condition(condition_item.text[5:], condition_item.line),
+            "condition": condition,
             "actions": [],
             "forbidden": [],
             "assertions": [],
             "next": [],
         }
-        while self.current is not None:
-            item = self.current
-            if item.text.startswith("DO "):
-                self.take()
-                rule["actions"].append(parse_action(item.text[3:], item.line))
-            elif item.text.startswith("FORBID "):
-                self.take()
-                rule["forbidden"].append(parse_action(item.text[7:], item.line))
-            elif item.text.startswith("ASSERT "):
-                self.take()
-                rule["assertions"].append(parse_expression(item.text[7:], item.line))
-            elif item.text.startswith("NEXT "):
-                self.take()
-                rule["next"] = parse_next(item.text[5:], item.line)
-                break
-            else:
-                break
+        self._collect_directives(rule)
         return rule
 
     @staticmethod
@@ -793,6 +919,141 @@ def schema_is_closed(schema: Any) -> bool:
     return True
 
 
+def _walk_symbols(node: Any, out: set[str]) -> None:
+    if isinstance(node, dict):
+        if node.get("node") == "symbol" and isinstance(node.get("name"), str):
+            out.add(node["name"])
+        for value in node.values():
+            _walk_symbols(value, out)
+    elif isinstance(node, list):
+        for item in node:
+            _walk_symbols(item, out)
+
+
+def _top_and_conjuncts(node: dict[str, Any]) -> list[dict[str, Any]]:
+    if node.get("node") == "binary" and node.get("operator") == "AND":
+        return _top_and_conjuncts(node["left"]) + _top_and_conjuncts(node["right"])
+    return [node]
+
+
+def audit_compaction(source: str, *, markdown: bool = False) -> dict[str, Any]:
+    ir = parse_markdown(source) if markdown else parse(source)
+    findings: list[dict[str, Any]] = []
+    saved_lines = 0
+
+    symbols: set[str] = set()
+    _walk_symbols(ir["rules"], symbols)
+    _walk_symbols(ir["assertions"], symbols)
+    _walk_symbols(ir["bindings"], symbols)
+    prose_symbols = sorted(
+        (name for name in symbols if len(name) > 48 or name.count("_") >= 6),
+        key=lambda item: (-len(item), item),
+    )
+    if prose_symbols:
+        findings.append(
+            {
+                "code": "POLICY-COMPACT-001",
+                "construct": "SYMBOL_BINDING / OQL_REF",
+                "count": len(prose_symbols),
+                "examples": prose_symbols[:10],
+                "message": "Prose-encoded symbols (>48 chars or >=6 underscores) should be replaced with atomic domain symbols and contract references",
+            }
+        )
+
+    fan_in_groups: dict[tuple[str, str], list[str]] = {}
+    for transition in ir["transitions"]:
+        cond_key = json.dumps(transition["condition"], sort_keys=True)
+        key = (transition["to"], cond_key)
+        fan_in_groups.setdefault(key, []).append(transition["from"])
+    for (target, _), origins in sorted(fan_in_groups.items()):
+        if len(origins) >= 3:
+            delta = len(origins) - 1
+            saved_lines += delta
+            findings.append(
+                {
+                    "code": "POLICY-COMPACT-002",
+                    "construct": f"TRANSITION [{', '.join(origins)}] -> {target}",
+                    "count": len(origins),
+                    "lines_saved": delta,
+                    "message": f"{len(origins)} transitions into {target} share an identical guard and can collapse into one state-set TRANSITION",
+                }
+            )
+
+    conjunct_rules: dict[str, list[str]] = {}
+    for rule in ir["rules"]:
+        seen_in_rule: set[str] = set()
+        for conjunct in _top_and_conjuncts(rule["condition"]):
+            ckey = json.dumps(conjunct, sort_keys=True)
+            if ckey not in seen_in_rule:
+                seen_in_rule.add(ckey)
+                conjunct_rules.setdefault(ckey, []).append(rule["id"])
+    for ckey, rule_ids in sorted(conjunct_rules.items(), key=lambda item: (-len(item[1]), item[0])):
+        if len(rule_ids) >= 3:
+            delta = len(rule_ids) - 1
+            saved_lines += delta
+            findings.append(
+                {
+                    "code": "POLICY-COMPACT-003",
+                    "construct": "SCOPE WHEN <guard> ... END",
+                    "count": len(rule_ids),
+                    "lines_saved": delta,
+                    "rules": rule_ids,
+                    "guard": json.loads(ckey),
+                    "message": f"Guard predicate is repeated across {len(rule_ids)} rules and can be factored into SCOPE WHEN",
+                }
+            )
+
+    directive_support: dict[str, list[str]] = {}
+    for rule in ir["rules"]:
+        rule_directives: set[str] = set()
+        for act in rule["actions"]:
+            rule_directives.add("DO:" + json.dumps(act, sort_keys=True))
+        for fbd in rule["forbidden"]:
+            rule_directives.add("FORBID:" + json.dumps(fbd, sort_keys=True))
+        for asrt in rule["assertions"]:
+            rule_directives.add("ASSERT:" + json.dumps(asrt, sort_keys=True))
+        if rule["next"]:
+            rule_directives.add("NEXT:" + json.dumps(rule["next"], sort_keys=True))
+        for dkey in rule_directives:
+            directive_support.setdefault(dkey, []).append(rule["id"])
+
+    support_bundles: dict[tuple[str, ...], list[str]] = {}
+    for dkey, r_ids in directive_support.items():
+        if len(r_ids) >= 2:
+            support_bundles.setdefault(tuple(r_ids), []).append(dkey)
+
+    for r_tuple, dkeys in sorted(support_bundles.items(), key=lambda item: (-len(item[0]) * len(item[1]), item[0])):
+        if len(dkeys) >= 2:
+            dcount = len(dkeys)
+            rcount = len(r_tuple)
+            delta = (rcount - 1) * (dcount - 1)
+            saved_lines += max(0, delta)
+            findings.append(
+                {
+                    "code": "POLICY-COMPACT-004",
+                    "construct": "TEMPLATE <ID> ... END + DO APPLY_TEMPLATE <ID>",
+                    "count": rcount,
+                    "directives_per_rule": dcount,
+                    "lines_saved": max(0, delta),
+                    "rules": list(r_tuple),
+                    "message": f"Shared {dcount}-directive bundle across {rcount} rules can be extracted into a TEMPLATE",
+                }
+            )
+
+    return {
+        "schema": "wellmanifest.policy/compaction-audit/v1",
+        "document": ir["document"]["name"],
+        "stats": {
+            "rules": len(ir["rules"]),
+            "states": len(ir["states"]),
+            "transitions": len(ir["transitions"]),
+            "findings": len(findings),
+            "estimated_lines_saved": saved_lines,
+        },
+        "findings": findings,
+    }
+
+
 def self_test() -> None:
     valid_path = ROOT / "examples/valid/contributing.policy"
     invalid_path = ROOT / "examples/invalid/shell-injection.policy"
@@ -836,6 +1097,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     ir_command.add_argument("--check-schema", action="store_true")
     candidate_command = subparsers.add_parser("validate-candidate")
     candidate_command.add_argument("path", type=Path)
+    audit_command = subparsers.add_parser("audit")
+    audit_command.add_argument("path", type=Path)
+    audit_command.add_argument("--markdown", action="store_true")
     subparsers.add_parser("self-test")
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
@@ -847,6 +1111,11 @@ def main(argv: Iterable[str] | None = None) -> int:
         elif args.command == "validate-markdown":
             parse_markdown(args.path.read_text(encoding="utf-8"))
             print("POLICY-MARKDOWN-PASS")
+        elif args.command == "audit":
+            raw = args.path.read_text(encoding="utf-8")
+            is_md = args.markdown or args.path.suffix.lower() == ".md"
+            report = audit_compaction(raw, markdown=is_md)
+            print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         else:
             ir = parse(args.path.read_text(encoding="utf-8"))
             if args.command == "ir":

@@ -1,7 +1,7 @@
 (* Policy DSL 1 canonical grammar. Semantic constraints are normative in
    POLICY_DSL.md. UTF-8 and LF are required. *)
 
-document       = metadata, { declaration | binding | state | transition | rule } ;
+document       = metadata, { declaration | binding | state | states | transition | template | scope | rule } ;
 metadata       = "DOCUMENT", symbol, EOL,
                  "VERSION", integer, EOL,
                  [ "LANGUAGE", symbol, EOL ],
@@ -19,8 +19,18 @@ scalar-type    = "STRING" | "INTEGER" | "NUMBER" | "BOOLEAN" | "URL" | "PATH" ;
 
 binding        = symbol, ("=", expression | "IN", list), EOL ;
 state          = "STATE", symbol, EOL ;
-transition     = "TRANSITION", symbol, "->", symbol,
+states         = "STATES", state-list, EOL ;
+state-list     = "[", symbol, { ",", symbol }, "]" ;
+transition     = "TRANSITION", ( symbol | state-list ), "->", symbol,
                  [ "WHEN", condition ], EOL ;
+
+template       = "TEMPLATE", stable-id, EOL,
+                 { do | forbid | assert },
+                 [ next ],
+                 "END", EOL ;
+scope          = "SCOPE", "WHEN", condition, EOL,
+                 { rule | transition },
+                 "END", EOL ;
 
 rule           = "RULE", stable-id, [ "TYPE", rule-type ], EOL,
                  "WHEN", condition, EOL,

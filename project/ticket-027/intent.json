@@ -1,0 +1,93 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-027",
+  "summary": "Add compact policy constructs and compaction analyzer",
+  "workstream": "integration",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "project/ticket-027/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "docs/POLICY_COMPACTION_ARCHITECTURE.md",
+    "dsl-manifest.json",
+    "spec/POLICY_DSL.md",
+    "spec/policy-dsl.ebnf",
+    "tests/policy_dsl_check.py",
+    "tests/test_policy_dsl.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "7f2abd5a6a23b1a29eab597ac8f32d8277fda1ea",
+    "targetBranch": "main",
+    "outcome": "Extend Policy DSL v1 with deterministic compact constructs (STATES, state-set TRANSITION, SCOPE WHEN, TEMPLATE / APPLY_TEMPLATE) that desugar to closed Policy IR v1, add static compaction analyzer, and document policy compaction architecture.",
+    "nonGoals": [
+      "No breaking changes to closed Policy IR v1 schema (schemas/policy-ir.schema.json)",
+      "No runtime command execution or shell interpolation"
+    ],
+    "complexity": "M",
+    "estimatedMinutes": 35,
+    "budgets": {
+      "maxImplementationFiles": 6,
+      "maxAffectedComponents": 3,
+      "maxPublicInterfaceChanges": 1,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Desugar compact policy constructs (STATES list, multi-origin TRANSITION list, SCOPE WHEN guard block, TEMPLATE directive macro) at parse time into canonical closed Policy IR v1 and expose static compaction audit diagnostics.",
+      "components": [
+        {
+          "name": "policy-dsl-parser-and-spec",
+          "paths": [
+            "spec/POLICY_DSL.md",
+            "spec/policy-dsl.ebnf",
+            "tests/policy_dsl_check.py",
+            "tests/test_policy_dsl.py",
+            "docs/POLICY_COMPACTION_ARCHITECTURE.md",
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket branch commit or close the pull request before merge."
+    },
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python3 tests/policy_dsl_check.py self-test",
+          "pytest -q"
+        ],
+        "evidence": "project/ticket-027/README.md"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python3 .governance/standard_pack_check.py --root .",
+          "./project/governance-check.sh"
+        ],
+        "evidence": "project/ticket-027/README.md"
+      }
+    ],
+    "runtimeDependencies": []
+  }
+}
