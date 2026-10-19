@@ -100,10 +100,11 @@ classifies every fence whose info string is exactly `dsl`, in source order:
 3. a fence whose first statement starts a registered independent record kind is
    ignored. The closed registry for Policy DSL 1 contains `DECISION`
    (`new-project` decision records); extending it is a specification change;
-4. a fence whose first statement begins with `RULE`, `STATE`, `TRANSITION`,
-   `ENV_FILE`, `VARIABLE`, `SECRET` or `ASSERT`, or is a top-level
-   `symbol = expression` / `symbol IN list` binding, is selected after the
-   header. The same fence before the header MUST be rejected;
+4. a fence whose first statement begins with `RULE`, `STATE`, `STATES`,
+   `TRANSITION`, `TEMPLATE`, `SCOPE`, `ENV_FILE`, `VARIABLE`, `SECRET` or
+   `ASSERT`, or is a top-level `symbol = expression` / `symbol IN list`
+   binding, is selected after the header. The same fence before the header MUST
+   be rejected;
 5. any other non-empty `dsl` fence MUST be rejected with `POLICY-SYNTAX-001`;
 6. selected fences are concatenated in source order and the complete result is
    parsed.
@@ -114,6 +115,30 @@ normative and a parse failure MUST NOT be silently skipped. A consumer MUST NOT
 silently drop a `dsl` fence that it cannot classify: normative-looking text
 that is not Policy DSL either becomes a Policy DSL rule or moves to a non-`dsl`
 fence such as `text`.
+
+### 3.3 Compact constructs and deterministic desugaring
+
+To eliminate rule and state-graph bloat while keeping `policy-ir.schema.json`
+(`wellmanifest.policy/ir/v1`) closed and unchanged, Policy DSL v1 provides four
+compile-time desugaring constructs:
+
+1. **Batch state declarations (`STATES [S1, S2, ...]`)**: expands in source
+   order to individual entries in `ir["states"]`.
+2. **State-set transitions (`TRANSITION [S1, S2, ...] -> TARGET [WHEN ...]`)**:
+   expands in source order to one `ir["transitions"]` edge per source state
+   with an identical `to` state and normalized `condition`.
+3. **Scoped guard blocks (`SCOPE WHEN <guard> ... END`)**: wraps one or more
+   `RULE` or `TRANSITION` statements. Each nested rule's condition is normalized
+   to `{"node": "binary", "operator": "AND", "left": <guard>, "right": <inner>}`.
+   Each nested transition's condition is `<guard>` when the transition omits
+   `WHEN`, or `AND(<guard>, <inner>)` when `WHEN` is present.
+4. **Directive templates (`TEMPLATE <ID> ... END` and `DO APPLY_TEMPLATE <ID>`)**:
+   declares a reusable bundle of `DO`, `FORBID`, `ASSERT` and optional `NEXT`
+   clauses. When a `RULE` invokes `DO APPLY_TEMPLATE <ID>` (without a payload
+   guard), the parser splices the template's `actions`, `forbidden`, and
+   `assertions` in place, and adopts the template's `next` targets unless the
+   rule declares its own explicit `NEXT`. Referencing an undeclared or duplicate
+   template MUST fail with `POLICY-SEMANTIC-001`.
 
 ## 4. Expressions
 

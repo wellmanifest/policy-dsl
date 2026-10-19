@@ -123,6 +123,132 @@ class PolicyDslConformanceTest(unittest.TestCase):
                 with self.assertRaisesRegex(CHECK.PolicyError, message):
                     CHECK.parse((ROOT / "examples/invalid" / name).read_text(encoding="utf-8"))
 
+    def test_compact_constructs_desugar_to_identical_closed_ir(self):
+        expanded = """DOCUMENT COMPACT_EQ
+VERSION 1
+MODE STRICT
+STATE START
+STATE EDIT
+STATE VALIDATION
+STATE BLOCKED
+STATE REJECTED
+TRANSITION START -> BLOCKED WHEN EVIDENCE_MISSING = TRUE
+TRANSITION EDIT -> BLOCKED WHEN EVIDENCE_MISSING = TRUE
+TRANSITION VALIDATION -> BLOCKED WHEN EVIDENCE_MISSING = TRUE
+RULE R-LOW-RAM TYPE REQUIRED
+WHEN HOST_KIND = "PRODUCTION_SERVER" AND RAM_GIB < 8
+DO RECORD HOST_FIT "REJECT"
+FORBID DEPLOY_PLATFORM
+DO RECORD REJECT_REASON "RAM_BELOW_MINIMUM"
+NEXT REJECTED
+RULE R-LOW-CPU TYPE REQUIRED
+WHEN HOST_KIND = "PRODUCTION_SERVER" AND VCPU < 4
+DO RECORD HOST_FIT "REJECT"
+FORBID DEPLOY_PLATFORM
+DO RECORD REJECT_REASON "VCPU_BELOW_MINIMUM"
+NEXT REJECTED
+"""
+        compact = """DOCUMENT COMPACT_EQ
+VERSION 1
+MODE STRICT
+STATES [START, EDIT, VALIDATION, BLOCKED, REJECTED]
+TRANSITION [START, EDIT, VALIDATION] -> BLOCKED WHEN EVIDENCE_MISSING = TRUE
+TEMPLATE REJECT_HOST
+DO RECORD HOST_FIT "REJECT"
+FORBID DEPLOY_PLATFORM
+NEXT REJECTED
+END
+SCOPE WHEN HOST_KIND = "PRODUCTION_SERVER"
+RULE R-LOW-RAM TYPE REQUIRED
+WHEN RAM_GIB < 8
+DO APPLY_TEMPLATE REJECT_HOST
+DO RECORD REJECT_REASON "RAM_BELOW_MINIMUM"
+RULE R-LOW-CPU TYPE REQUIRED
+WHEN VCPU < 4
+DO APPLY_TEMPLATE REJECT_HOST
+DO RECORD REJECT_REASON "VCPU_BELOW_MINIMUM"
+END
+"""
+        ir_expanded = CHECK.parse(expanded)
+        ir_compact = CHECK.parse(compact)
+        self.assertEqual(ir_expanded, ir_compact)
+
+    def test_compact_constructs_in_markdown_carrier(self):
+        markdown = """# Compact Policy
+```dsl
+DOCUMENT COMPACT_MD
+VERSION 1
+MODE STRICT
+```
+```dsl
+STATES [PLAN, EDIT, BLOCKED]
+TRANSITION [PLAN, EDIT] -> BLOCKED WHEN BLOCKED_FLAG = TRUE
+```
+```dsl
+TEMPLATE T-REQ
+DO REQUIRE CHECK_PASSED
+NEXT EDIT
+END
+SCOPE WHEN ACTIVE = TRUE
+RULE R-MD-001
+WHEN READY = TRUE
+DO APPLY_TEMPLATE T-REQ
+END
+```
+"""
+        ir = CHECK.parse_markdown(markdown)
+        self.assertEqual(["PLAN", "EDIT", "BLOCKED"], ir["states"])
+        self.assertEqual(2, len(ir["transitions"]))
+        self.assertEqual("AND", ir["rules"][0]["condition"]["operator"])
+        self.assertEqual("CHECK_PASSED", ir["rules"][0]["actions"][0]["payload"]["name"])
+        self.assertEqual("EDIT", ir["rules"][0]["next"][0]["target"])
+
+    def test_compact_construct_error_diagnostics(self):
+        base = "DOCUMENT ERR\nVERSION 1\nMODE STRICT\nSTATES [A, B]\n"
+        with self.assertRaisesRegex(CHECK.PolicyError, "unknown template"):
+            CHECK.parse(base + "RULE R-1\nWHEN X = 1\nDO APPLY_TEMPLATE MISSING\n")
+        with self.assertRaisesRegex(CHECK.PolicyError, "duplicate template"):
+            CHECK.parse(base + "TEMPLATE T1\nDO ALLOW X\nEND\nTEMPLATE T1\nDO ALLOW Y\nEND\n")
+        with self.assertRaisesRegex(CHECK.PolicyError, "empty template"):
+            CHECK.parse(base + "TEMPLATE T1\nEND\n")
+        with self.assertRaisesRegex(CHECK.PolicyError, "empty SCOPE block"):
+            CHECK.parse(base + "SCOPE WHEN X = 1\nEND\n")
+        with self.assertRaisesRegex(CHECK.PolicyError, "SCOPE requires closing END"):
+            CHECK.parse(base + "SCOPE WHEN X = 1\nRULE R-1\nWHEN Y = 2\nDO ALLOW Z\n")
+
+    def test_audit_compaction_detects_all_four_patterns(self):
+        bloated = """DOCUMENT BLOATED_TEST
+VERSION 1
+MODE STRICT
+STATES [S1, S2, S3, BLOCKED, REJECTED]
+TRANSITION S1 -> BLOCKED WHEN ERR = TRUE
+TRANSITION S2 -> BLOCKED WHEN ERR = TRUE
+TRANSITION S3 -> BLOCKED WHEN ERR = TRUE
+RULE R-1
+WHEN ENV = "PROD" AND VERY_LONG_PROSE_SYMBOL_THAT_ENCODES_AN_ENTIRE_SENTENCE_WITH_MANY_UNDERSCORES = TRUE
+DO RECORD FIT "REJECT"
+FORBID DEPLOY_ALL
+NEXT REJECTED
+RULE R-2
+WHEN ENV = "PROD" AND MEM < 8
+DO RECORD FIT "REJECT"
+FORBID DEPLOY_ALL
+NEXT REJECTED
+RULE R-3
+WHEN ENV = "PROD" AND CPU < 4
+DO RECORD FIT "REJECT"
+FORBID DEPLOY_ALL
+NEXT REJECTED
+"""
+        report = CHECK.audit_compaction(bloated)
+        codes = {item["code"] for item in report["findings"]}
+        self.assertEqual(
+            {"POLICY-COMPACT-001", "POLICY-COMPACT-002", "POLICY-COMPACT-003", "POLICY-COMPACT-004"},
+            codes,
+        )
+        self.assertGreaterEqual(report["stats"]["estimated_lines_saved"], 8)
+
 
 if __name__ == "__main__":
     unittest.main()
+
