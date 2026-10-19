@@ -440,6 +440,10 @@ class PolicyParser:
         self.items = statements(source)
         self.index = 0
         self.templates: dict[str, dict[str, Any]] = {}
+        self.uncompacted_rules: list[dict[str, Any]] = []
+        self.uncompacted_transitions: list[dict[str, Any]] = []
+        self.scoped_rule_count = 0
+        self.state_set_transition_count = 0
 
     @property
     def current(self) -> Statement | None:
@@ -567,6 +571,7 @@ class PolicyParser:
             origins = _parse_symbol_list(list_match.group(1), item.line)
             target = list_match.group(2)
             raw_condition = list_match.group(3)
+            is_list = True
         else:
             match = re.fullmatch(r"TRANSITION (" + SYMBOL + r") -> (" + SYMBOL + r")(?: WHEN (.+))?", item.text)
             if not match:
@@ -574,14 +579,21 @@ class PolicyParser:
             origins = [match.group(1)]
             target = match.group(2)
             raw_condition = match.group(3)
-        condition = parse_condition(raw_condition, item.line) if raw_condition else None
+            is_list = False
+        own_condition = parse_condition(raw_condition, item.line) if raw_condition else None
+        condition = own_condition
         if scope_guard is not None:
             condition = (
                 scope_guard
                 if condition is None
                 else {"node": "binary", "operator": "AND", "left": scope_guard, "right": condition}
             )
-        return [{"from": origin, "to": target, "condition": condition} for origin in origins]
+        edges = [{"from": origin, "to": target, "condition": condition} for origin in origins]
+        if is_list:
+            self.state_set_transition_count += len(origins)
+        else:
+            self.uncompacted_transitions.append({"from": origins[0], "to": target, "condition": own_condition})
+        return edges
 
     def _apply_template_to_target(self, target: dict[str, Any], action: dict[str, Any], line: int) -> None:
         payload = action.get("payload")
@@ -597,7 +609,7 @@ class PolicyParser:
         if template["next"] and not target["next"]:
             target["next"] = [dict(item) for item in template["next"]]
 
-    def _collect_directives(self, target: dict[str, Any]) -> None:
+    def _collect_directives(self, target: dict[str, Any], raw_inline: dict[str, Any] | None = None) -> None:
         while self.current is not None:
             item = self.current
             if item.text.startswith("DO "):
@@ -607,15 +619,26 @@ class PolicyParser:
                     self._apply_template_to_target(target, action, item.line)
                 else:
                     target["actions"].append(action)
+                    if raw_inline is not None:
+                        raw_inline["actions"].append(action)
             elif item.text.startswith("FORBID "):
                 self.take()
-                target["forbidden"].append(parse_action(item.text[7:], item.line))
+                forbidden = parse_action(item.text[7:], item.line)
+                target["forbidden"].append(forbidden)
+                if raw_inline is not None:
+                    raw_inline["forbidden"].append(forbidden)
             elif item.text.startswith("ASSERT "):
                 self.take()
-                target["assertions"].append(parse_expression(item.text[7:], item.line))
+                assertion = parse_expression(item.text[7:], item.line)
+                target["assertions"].append(assertion)
+                if raw_inline is not None:
+                    raw_inline["assertions"].append(assertion)
             elif item.text.startswith("NEXT "):
                 self.take()
-                target["next"] = parse_next(item.text[5:], item.line)
+                next_targets = parse_next(item.text[5:], item.line)
+                target["next"] = next_targets
+                if raw_inline is not None:
+                    raw_inline["next"] = next_targets
                 break
             else:
                 break
@@ -675,9 +698,11 @@ class PolicyParser:
         if not self.current or not self.current.text.startswith("WHEN "):
             raise PolicyError("POLICY-SYNTAX-001", "RULE requires WHEN", header.line)
         condition_item = self.take()
-        condition = parse_condition(condition_item.text[5:], condition_item.line)
+        own_condition = parse_condition(condition_item.text[5:], condition_item.line)
+        condition = own_condition
         if scope_guard is not None:
-            condition = {"node": "binary", "operator": "AND", "left": scope_guard, "right": condition}
+            self.scoped_rule_count += 1
+            condition = {"node": "binary", "operator": "AND", "left": scope_guard, "right": own_condition}
         rule: dict[str, Any] = {
             "id": match.group(1),
             "type": match.group(2) or "REQUIRED",
@@ -687,7 +712,16 @@ class PolicyParser:
             "assertions": [],
             "next": [],
         }
-        self._collect_directives(rule)
+        raw_inline: dict[str, Any] = {
+            "id": match.group(1),
+            "condition": own_condition,
+            "actions": [],
+            "forbidden": [],
+            "assertions": [],
+            "next": [],
+        }
+        self._collect_directives(rule, raw_inline)
+        self.uncompacted_rules.append(raw_inline)
         return rule
 
     @staticmethod
@@ -937,7 +971,9 @@ def _top_and_conjuncts(node: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def audit_compaction(source: str, *, markdown: bool = False) -> dict[str, Any]:
-    ir = parse_markdown(source) if markdown else parse(source)
+    raw_policy = extract_markdown(source) if markdown else source
+    parser = PolicyParser(raw_policy)
+    ir = parser.parse()
     findings: list[dict[str, Any]] = []
     saved_lines = 0
 
@@ -961,7 +997,7 @@ def audit_compaction(source: str, *, markdown: bool = False) -> dict[str, Any]:
         )
 
     fan_in_groups: dict[tuple[str, str], list[str]] = {}
-    for transition in ir["transitions"]:
+    for transition in parser.uncompacted_transitions:
         cond_key = json.dumps(transition["condition"], sort_keys=True)
         key = (transition["to"], cond_key)
         fan_in_groups.setdefault(key, []).append(transition["from"])
@@ -980,7 +1016,7 @@ def audit_compaction(source: str, *, markdown: bool = False) -> dict[str, Any]:
             )
 
     conjunct_rules: dict[str, list[str]] = {}
-    for rule in ir["rules"]:
+    for rule in parser.uncompacted_rules:
         seen_in_rule: set[str] = set()
         for conjunct in _top_and_conjuncts(rule["condition"]):
             ckey = json.dumps(conjunct, sort_keys=True)
@@ -1004,7 +1040,7 @@ def audit_compaction(source: str, *, markdown: bool = False) -> dict[str, Any]:
             )
 
     directive_support: dict[str, list[str]] = {}
-    for rule in ir["rules"]:
+    for rule in parser.uncompacted_rules:
         rule_directives: set[str] = set()
         for act in rule["actions"]:
             rule_directives.add("DO:" + json.dumps(act, sort_keys=True))
@@ -1047,6 +1083,9 @@ def audit_compaction(source: str, *, markdown: bool = False) -> dict[str, Any]:
             "rules": len(ir["rules"]),
             "states": len(ir["states"]),
             "transitions": len(ir["transitions"]),
+            "templates_used": len(parser.templates),
+            "scoped_rules": parser.scoped_rule_count,
+            "state_set_transitions": parser.state_set_transition_count,
             "findings": len(findings),
             "estimated_lines_saved": saved_lines,
         },

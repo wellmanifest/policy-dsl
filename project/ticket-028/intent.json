@@ -1,0 +1,88 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-028",
+  "summary": "Compact reference policy profiles and refine compaction audit",
+  "workstream": "integration",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "project/ticket-028/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "dsl-manifest.json",
+    "examples/hosting/subactor-production-server.policy",
+    "examples/hosting/subactor-rpi5.policy",
+    "profiles/llm-credential/subactor-llm-credential.policy",
+    "tests/policy_dsl_check.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [
+    "python"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "24439bb47c1c66e410e984cdbf604b5ba1738be5",
+    "targetBranch": "main",
+    "outcome": "Compact reference policy profiles (production-server, rpi5, sales, llm-credential) using STATES, SCOPE WHEN, and TEMPLATE constructs and track uncompacted inline AST nodes in audit_compaction.",
+    "nonGoals": [
+      "No breaking changes to closed Policy IR v1 schema (schemas/policy-ir.schema.json)"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 25,
+    "budgets": {
+      "maxImplementationFiles": 5,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Track uncompacted inline AST nodes in PolicyParser for accurate audit_compaction reporting and apply STATES, SCOPE WHEN, and TEMPLATE constructs across the four reference profiles.",
+      "components": [
+        {
+          "name": "policy-dsl-profiles-compaction",
+          "paths": [
+            "examples/hosting/subactor-production-server.policy",
+            "examples/hosting/subactor-rpi5.policy",
+            "profiles/llm-credential/subactor-llm-credential.policy",
+            "tests/policy_dsl_check.py",
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "responsibilityChanges": false,
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the ticket branch commit or close the pull request before merge."
+    },
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "pytest -q"
+        ],
+        "evidence": "project/ticket-028/README.md"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "./project/governance-check.sh"
+        ],
+        "evidence": "project/ticket-028/README.md"
+      }
+    ],
+    "runtimeDependencies": []
+  }
+}

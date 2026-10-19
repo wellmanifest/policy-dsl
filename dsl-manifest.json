@@ -63,7 +63,7 @@
     {
       "path": "tests/policy_dsl_check.py",
       "role": "parser-contract",
-      "digest": "sha256:1178b637e653b6952e2a6d411471d67644a9509e2480e2afa4ccc9a57de1baee"
+      "digest": "sha256:1bbe2aed2d7c56b1dd983125541daf23f6cf5a58ed9d279e02ea21ee450c9215"
     },
     {
       "path": "tests/test_policy_dsl.py",
@@ -113,12 +113,12 @@
     {
       "path": "examples/hosting/subactor-production-server.policy",
       "role": "profile",
-      "digest": "sha256:c880d0416e409634322a2f02cdbdda3d841719a3f160846c7f07984018527915"
+      "digest": "sha256:aa699a00b4b710da31c64281f4c2c0d36fb25fb1f0381dce3af8d6200c5b8ba9"
     },
     {
       "path": "examples/hosting/subactor-rpi5.policy",
       "role": "profile",
-      "digest": "sha256:9f51d4d40bd4ea52ba12be8c1480b88bea4bce872c3024012acdf6fb5c3b2674"
+      "digest": "sha256:5089d21203ef326863b5805067e4555617ee266a5dba6f93dfedf2613cf0bd94"
     },
     {
       "path": "examples/hosting/README.md",
@@ -263,7 +263,7 @@
     {
       "path": "profiles/llm-credential/subactor-llm-credential.policy",
       "role": "example",
-      "digest": "sha256:dc6777f73ad60c892b8c1e24ebbf68a5c216616f932b7aa1b833b0fb6ab6c3b4"
+      "digest": "sha256:2c5e6a4637597481bf6be117b61375335cf93846c54f0e69da4c9bbb763b5c9b"
     },
     {
       "path": "profiles/llm-credential/strategy-catalog.json",
