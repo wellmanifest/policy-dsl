@@ -63,12 +63,12 @@
     {
       "path": "tests/policy_dsl_check.py",
       "role": "parser-contract",
-      "digest": "sha256:1bbe2aed2d7c56b1dd983125541daf23f6cf5a58ed9d279e02ea21ee450c9215"
+      "digest": "sha256:15439706ef54953ff90a20bbd2a89c9fef2e6ef9ec7a423025d9d597c78a848c"
     },
     {
       "path": "tests/test_policy_dsl.py",
       "role": "parser-contract",
-      "digest": "sha256:ae01a073612c7e30cf83cfed4a32397dc0cc35cc80327be0566355adbea11ce8"
+      "digest": "sha256:6a99cae4b07d704e447e32d36f536a87f27a042fb7ecfe7747713623ffc838f6"
     },
     {
       "path": "examples/valid/contributing.policy",

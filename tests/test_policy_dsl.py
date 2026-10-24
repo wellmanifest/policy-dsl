@@ -22,6 +22,31 @@ class PolicyDslConformanceTest(unittest.TestCase):
         self.assertEqual("symbol", ir["rules"][0]["actions"][0]["payload"]["node"])
         self.assertNotIn('"text"', json.dumps(ir))
 
+    def test_environment_default_requires_a_literal(self):
+        source = (ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8")
+        for suffix in ("DEFAULT", "DEFAULT ", "DEFAULT\t", "DEFAULT \t "):
+            with self.subTest(suffix=suffix):
+                policy = source.replace('DEFAULT "codex"', suffix)
+                with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SYNTAX-001"):
+                    CHECK.parse(policy)
+
+    def test_explicit_defaults_and_required_preserve_environment_ir(self):
+        source = (ROOT / "examples/valid/contributing.policy").read_text(encoding="utf-8")
+        original = 'VARIABLE DEFAULT_AGENT TYPE STRING FROM ENV DEFAULT "codex"'
+        cases = (("STRING", 'DEFAULT ""', False, ""),
+                 ("STRING", 'DEFAULT "codex"', False, "codex"),
+                 ("INTEGER", "DEFAULT 0", False, 0),
+                 ("BOOLEAN", "DEFAULT FALSE", False, False),
+                 ("STRING", "REQUIRED", True, None))
+        for value_type, tail, required, default in cases:
+            with self.subTest(value_type=value_type, tail=tail):
+                policy = source.replace(original, f"VARIABLE DEFAULT_AGENT TYPE {value_type} FROM ENV {tail}")
+                variable = next(item for item in CHECK.parse(policy)["environment"]
+                                if item["kind"] == "variable")
+                self.assertEqual(variable, {"kind": "variable", "name": "DEFAULT_AGENT",
+                                           "value_type": value_type, "required": required,
+                                           "default": default})
+
     def test_invalid_shell_fixture_is_rejected(self):
         with self.assertRaisesRegex(CHECK.PolicyError, "POLICY-SECURITY-001"):
             CHECK.parse((ROOT / "examples/invalid/shell-injection.policy").read_text(encoding="utf-8"))

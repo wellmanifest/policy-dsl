@@ -530,7 +530,7 @@ class PolicyParser:
         match = re.fullmatch(r"ENV_FILE (\".*\") (OPTIONAL|REQUIRED)", item.text)
         if match:
             return {"kind": "env_file", "path": _quoted(match.group(1), item.line), "required": match.group(2) == "REQUIRED"}
-        match = re.fullmatch(r"VARIABLE (" + SYMBOL + r") TYPE (\w+) FROM ENV (REQUIRED|DEFAULT(?: .+)?)", item.text)
+        match = re.fullmatch(r"VARIABLE (" + SYMBOL + r") TYPE (\w+) FROM ENV (REQUIRED|DEFAULT .+)", item.text)
         if match:
             value_type, tail = match.group(2), match.group(3)
             if value_type not in SCALAR_TYPES:
