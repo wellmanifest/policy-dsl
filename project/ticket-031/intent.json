@@ -1,0 +1,86 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-031",
+  "summary": "Require DEFAULT literals and publish matching parser artifact digests",
+  "workstream": "integration",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "requested"
+  },
+  "allowedPaths": [
+    "project/ticket-031/**",
+    "TODO.md",
+    "project/TICKETS.md",
+    "dsl-manifest.json",
+    "tests/policy_dsl_check.py",
+    "tests/test_policy_dsl.py"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "delivery": {
+    "outcome": "Reject VARIABLE environment declarations that omit the literal after DEFAULT with POLICY-SYNTAX-001; preserve valid literal defaults and REQUIRED behavior. Producer fix for wellmanifest/new-project#534 finding1.",
+    "complexity": "S",
+    "estimatedMinutes": 20,
+    "budgets": {
+      "maxImplementationFiles": 3,
+      "maxAffectedComponents": 1,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "runtimeDependencies": [],
+    "nonGoals": [
+      "No schema, public grammar, endpoint membership, release or adopter pin changes; update only the two existing artifact integrity digests.",
+      "No allocator/adoption changes; use exact independently merged canonical allocator as an external tool.",
+      "No runtime-policy weakening or changes to source ownership of another repository."
+    ],
+    "targetBranch": "main",
+    "acceptedBaseSha": "7855f21bb9586fe332c5ed32ef424009a67d47d5",
+    "architecture": {
+      "status": "accepted",
+      "decision": "Require an actual DEFAULT operand in the existing environment declaration regex. Exercise empty and whitespace-only operands through the public parse entry point; preserve legitimate empty string, false, zero and REQUIRED. Refresh only the two affected artifact digests in the integration-owned manifest. A previous uncommitted application slice explicitly handed off after identifying this dependency; its source delta and metadata were preserved and its controller lease released before integration allocation.",
+      "responsibilityChanges": false,
+      "components": [
+        {
+          "name": "environment-declaration-parser",
+          "paths": [
+            "tests/policy_dsl_check.py",
+            "tests/test_policy_dsl.py",
+            "dsl-manifest.json"
+          ]
+        }
+      ],
+      "interfaceChanges": [],
+      "dataChanges": [],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert material implementation through independent protected publication."
+    },
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": [
+          "python -B -m unittest discover -s tests -p test_policy_dsl.py"
+        ],
+        "evidence": "Bare and whitespace-only DEFAULT are rejected with POLICY-SYNTAX-001; valid explicit literals and REQUIRED retain exact IR semantics."
+      },
+      {
+        "criterion": "AC-02",
+        "commands": [
+          "python -B -m unittest discover -s tests",
+          "./project/governance-check.sh",
+          "git diff --check"
+        ],
+        "evidence": "Full conformance suite and adopted governance pass before independent exact-head review and protected publication."
+      }
+    ]
+  }
+}
